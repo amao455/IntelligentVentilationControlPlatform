@@ -1,0 +1,260 @@
+﻿.home-cockpit {
+  position: relative;
+  min-height: calc(100vh - 64px);
+  overflow: hidden;
+  padding: 20px 24px 24px;
+}
+
+.home-background-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto; /* 改为auto以接收鼠标事件 */
+  background:
+    radial-gradient(circle at 50% 50%, rgba(156, 208, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 20% 30%, rgba(107, 181, 240, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(74, 157, 232, 0.06) 0%, transparent 40%);
+}
+
+.home-background-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(156, 208, 255, 0.03),
+      rgba(156, 208, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(156, 208, 255, 0.03),
+      rgba(156, 208, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 60px
+    );
+  pointer-events: none;
+  animation: grid-glow 3s ease-in-out infinite;
+}
+
+@keyframes grid-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.home-background-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(156, 208, 255, 0.7);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.4);
+}
+
+.home-background-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(156, 208, 255, 0.12), transparent 60%),
+    radial-gradient(circle at 15% 20%, rgba(107, 181, 240, 0.1), transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(74, 157, 232, 0.08), transparent 38%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(156, 208, 255, 0.04),
+      rgba(156, 208, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(156, 208, 255, 0.04),
+      rgba(156, 208, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 60px
+    );
+  pointer-events: none;
+  animation: grid-glow 3s ease-in-out infinite;
+}
+
+.home-content-layer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  pointer-events: none; /* 容器本身不接收事件 */
+}
+
+/* 卡片需要接收鼠标事件 */
+.home-content-layer > * {
+  pointer-events: auto;
+}
+
+/* Keep side cards clickable while letting the center tunnel area pass events to WebGL canvas */
+.home-main-layout-row {
+  pointer-events: none;
+}
+
+.home-main-layout-row .home-side-column,
+.home-main-layout-row .home-side-column * {
+  pointer-events: auto;
+}
+
+.home-main-layout-row .home-model-column,
+.home-main-layout-row .home-model-column * {
+  pointer-events: none;
+}
+
+/* 透明卡片样式 */
+.home-transparent-card.page-card {
+  background: rgba(16, 52, 90, 0.3) !important;
+  border-color: rgba(150, 205, 255, 0.4) !important;
+  box-shadow:
+    0 4px 20px rgba(11, 35, 62, 0.4),
+    inset 0 1px 0 rgba(196, 225, 255, 0.12) !important;
+  backdrop-filter: blur(12px) !important;
+  transition: all 0.3s ease;
+}
+
+.home-transparent-card.page-card:hover {
+  background: rgba(16, 52, 90, 0.4) !important;
+  border-color: rgba(156, 208, 255, 0.6) !important;
+  box-shadow:
+    0 6px 30px rgba(11, 35, 62, 0.5),
+    0 0 20px rgba(156, 208, 255, 0.2),
+    inset 0 1px 0 rgba(196, 225, 255, 0.18) !important;
+  transform: translateY(-2px);
+}
+
+.home-transparent-card .ant-card-head {
+  background: rgba(89, 154, 221, 0.15) !important;
+  border-bottom-color: rgba(150, 205, 255, 0.3) !important;
+}
+
+.home-transparent-card .ant-card-head-title {
+  color: #e8f2ff !important;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.3);
+}
+
+.home-transparent-card .ant-card-body {
+  background: rgba(9, 37, 67, 0.25) !important;
+  color: #d4e8ff;
+}
+
+/* 高亮卡片 */
+.home-highlight-card {
+  border-color: rgba(156, 208, 255, 0.7) !important;
+  box-shadow:
+    0 6px 30px rgba(11, 35, 62, 0.5),
+    0 0 30px rgba(156, 208, 255, 0.3),
+    inset 0 1px 0 rgba(196, 225, 255, 0.2) !important;
+}
+
+.home-highlight-card .ant-card-head {
+  background: rgba(89, 154, 221, 0.22) !important;
+}
+
+/* KPI 卡片 */
+.home-kpi-row .ant-col {
+  min-width: 0;
+}
+
+.home-kpi-row .page-card {
+  background: rgba(16, 52, 90, 0.35) !important;
+  border-color: rgba(150, 205, 255, 0.45) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow:
+    0 2px 12px rgba(11, 35, 62, 0.3),
+    inset 0 1px 0 rgba(196, 225, 255, 0.1) !important;
+}
+
+/* 列表样式 */
+.home-status-list .ant-list-item {
+  padding: 10px 0;
+  border-bottom-color: rgba(150, 205, 255, 0.18);
+}
+
+.home-status-list .ant-typography {
+  color: #d4e8ff;
+}
+
+/* 日志卡片 */
+.home-log-card {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.home-log-card .ant-timeline-item-content {
+  color: #d4e8ff;
+}
+
+/* 表格样式 */
+.home-transparent-card .ant-table {
+  background: transparent !important;
+}
+
+.home-transparent-card .ant-table-thead > tr > th {
+  background: rgba(89, 154, 221, 0.18) !important;
+  color: #e8f2ff !important;
+  border-bottom-color: rgba(150, 205, 255, 0.35) !important;
+  text-shadow: 0 0 8px rgba(156, 208, 255, 0.2);
+}
+
+.home-transparent-card .ant-table-tbody > tr > td {
+  border-bottom-color: rgba(150, 205, 255, 0.12) !important;
+  color: #d4e8ff !important;
+}
+
+.home-transparent-card .ant-table-tbody > tr:hover > td {
+  background: rgba(89, 154, 221, 0.15) !important;
+}
+
+/* 图表面板 */
+.home-transparent-card.chart-panel {
+  background: rgba(17, 54, 94, 0.25) !important;
+}
+
+/* 标签样式 */
+.home-transparent-card .ant-tag {
+  background: rgba(89, 154, 221, 0.25);
+  border-color: rgba(150, 205, 255, 0.45);
+  color: #e8f2ff;
+  box-shadow: 0 0 8px rgba(156, 208, 255, 0.15);
+}
+
+/* 进度条 */
+.home-transparent-card .ant-progress-bg {
+  background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+}
+
+/* 响应式 */
+@media (max-width: 1600px) {
+  .home-cockpit {
+    padding: 16px 20px 20px;
+  }
+
+  .home-content-layer {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .home-cockpit {
+    padding: 14px 16px 16px;
+  }
+
+  .home-content-layer {
+    gap: 12px;
+  }
+}
