@@ -3,6 +3,9 @@ import { MainLayout } from '../layout/MainLayout/MainLayout';
 import LoginPage from '../pages/Login/LoginPage';
 import HomePage from '../pages/Home/HomePage';
 import RealtimeOverviewPage from '../pages/Monitor/RealtimeOverviewPage';
+import AirflowRealtimePage from '../pages/Monitor/AirflowRealtimePage';
+import GasRealtimePage from '../pages/Monitor/GasRealtimePage';
+import PersonnelRealtimePage from '../pages/Monitor/PersonnelRealtimePage';
 import KeyAreaPage from '../pages/Monitor/KeyAreaPage';
 import DeviceStatusPage from '../pages/Monitor/DeviceStatusPage';
 import HistoryTrendPage from '../pages/Monitor/HistoryTrendPage';
@@ -45,6 +48,9 @@ export function AppRouter() {
         <Route path="/home" element={<HomePage />} />
 
         <Route path="/monitor/realtime-overview" element={<RealtimeOverviewPage />} />
+        <Route path="/monitor/airflow-realtime" element={<AirflowRealtimePage />} />
+        <Route path="/monitor/gas-realtime" element={<GasRealtimePage />} />
+        <Route path="/monitor/personnel-realtime" element={<PersonnelRealtimePage />} />
         <Route path="/monitor/key-area" element={<KeyAreaPage />} />
         <Route path="/monitor/device-status" element={<DeviceStatusPage />} />
         <Route path="/monitor/history-trend" element={<HistoryTrendPage />} />

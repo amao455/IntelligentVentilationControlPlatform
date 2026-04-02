@@ -24,5 +24,19 @@ interface StatusTagProps {
 }
 
 export function StatusTag({ status }: StatusTagProps) {
-  return <Tag color={colorMap[status]}>{textMap[status]}</Tag>;
+  return (
+    <Tag
+      color={colorMap[status]}
+      style={{
+        margin: 0,
+        padding: '2px 8px',
+        fontSize: 12,
+        lineHeight: 1.4,
+        whiteSpace: 'nowrap',
+        display: 'inline-block'
+      }}
+    >
+      {textMap[status]}
+    </Tag>
+  );
 }

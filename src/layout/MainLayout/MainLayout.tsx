@@ -16,14 +16,14 @@ export function MainLayout() {
   const shouldShowRightPanel = rightPanelVisible && !hideRightPanelByPage && !isHomePage;
 
   return (
-    <Layout className="app-layout">
+    <Layout className="app-layout" style={{ minHeight: '100vh' }}>
       <Header
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
-          height: 64,
+          height: 80,
           padding: 0,
           zIndex: 100,
           background: 'var(--header-bg)',
@@ -32,14 +32,14 @@ export function MainLayout() {
         <TopNav />
       </Header>
 
-      <Layout style={{ marginTop: 64, minHeight: 'calc(100vh - 64px)' }}>
+      <Layout style={{ marginTop: 80, minHeight: 'calc(100vh - 80px)' }}>
         {!isHomePage && (
           <Sider width={240} theme="light" style={{ background: 'var(--bg-sider)' }}>
             <SideMenu />
           </Sider>
         )}
 
-        <Content style={{ padding: 0, overflow: 'auto' }}>
+        <Content style={{ padding: 0, overflow: 'auto', background: 'transparent', minHeight: 'calc(100vh - 80px)' }}>
           <Outlet />
         </Content>
 

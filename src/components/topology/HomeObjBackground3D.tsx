@@ -101,7 +101,7 @@ export function HomeObjBackground3D({
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x11365e, 1);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 

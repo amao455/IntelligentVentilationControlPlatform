@@ -20,7 +20,6 @@ import {
   FullscreenExitOutlined,
   FullscreenOutlined,
   QuestionCircleOutlined,
-  SearchOutlined,
   UserOutlined,
   WifiOutlined,
 } from '@ant-design/icons';
@@ -102,7 +101,7 @@ export function TopNav() {
     <header
       className="top-nav-shell"
       style={{
-        height: 64,
+        height: 80,
         borderBottom: '1px solid #2b527c',
         background: 'linear-gradient(180deg, var(--header-bg) 0%, var(--header-bg-secondary) 100%)',
         padding: '0 16px',
@@ -293,9 +292,6 @@ export function TopNav() {
       </div>
 
       <Space className="top-nav-actions" size={8}>
-        <Tooltip title="全局搜索">
-          <Button className="top-nav-action" type="text" icon={<SearchOutlined />} />
-        </Tooltip>
         <Tooltip title="消息通知">
           <Badge count={3}>
             <Button className="top-nav-action" type="text" icon={<BellOutlined />} />

@@ -1,42 +1,91 @@
-﻿.home-cockpit {
+﻿/* 统一文字大小规范 */
+:root {
+  --card-title-size: 14px;
+  --card-title-icon-size: 15px;
+  --card-label-size: 12px;
+  --card-value-size: 14px;
+  --card-value-large-size: 16px;
+  --card-unit-size: 11px;
+  --card-status-size: 11px;
+  --card-description-size: 13px;
+}
+
+.home-cockpit {
   position: relative;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 80px);
+  max-height: calc(100vh - 80px);
   overflow: hidden;
-  padding: 20px 24px 24px;
+  padding: 16px 20px 20px;
+}
+
+/* 文字溢出处理 - 全局 */
+* {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.ant-typography {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* 强制所有文本元素换行 */
+.home-transparent-card * {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* 表格单元格文字处理 */
+.home-transparent-card .ant-table-cell {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 200px;
+}
+
+/* 风险排行表格特殊处理 */
+.home-transparent-card .ant-table-tbody > tr > td:nth-child(4) {
+  white-space: nowrap !important;
+  padding: 8px 12px !important;
+}
+
+.home-transparent-card .ant-table-tbody > tr > td:nth-child(1),
+.home-transparent-card .ant-table-tbody > tr > td:nth-child(3) {
+  white-space: nowrap !important;
+}
+
+/* 列表项文字处理 */
+.home-transparent-card .ant-list-item {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* 时间轴文字处理 */
+.home-transparent-card .ant-timeline-item-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
 }
 
 .home-background-layer {
   position: absolute;
   inset: 0;
   z-index: 0;
-  pointer-events: auto; /* 改为auto以接收鼠标事件 */
-  background:
-    radial-gradient(circle at 50% 50%, rgba(156, 208, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 20% 30%, rgba(107, 181, 240, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(74, 157, 232, 0.06) 0%, transparent 40%);
+  pointer-events: auto;
+  background: transparent;
 }
 
 .home-background-layer::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(156, 208, 255, 0.03),
-      rgba(156, 208, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 60px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(156, 208, 255, 0.03),
-      rgba(156, 208, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 60px
-    );
+  background: transparent;
   pointer-events: none;
-  animation: grid-glow 3s ease-in-out infinite;
 }
 
 @keyframes grid-glow {
@@ -46,6 +95,76 @@
   50% {
     opacity: 1;
   }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* 主通风机内容区域滚动条样式 */
+.fan-status-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 205, 255, 0.2) transparent;
+}
+
+.fan-status-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.fan-status-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fan-status-content::-webkit-scrollbar-thumb {
+  background: rgba(150, 205, 255, 0.2);
+  border-radius: 2px;
+}
+
+.fan-status-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 205, 255, 0.3);
+}
+
+/* 风险排行表格行动画 */
+@keyframes risk-row-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.home-transparent-card .ant-table-tbody > tr {
+  animation: risk-row-enter 0.3s ease-out;
+}
+
+.home-transparent-card .ant-table-tbody > tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.home-transparent-card .ant-table-tbody > tr:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.home-transparent-card .ant-table-tbody > tr:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.home-transparent-card .ant-table-tbody > tr:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.home-transparent-card .ant-table-tbody > tr:nth-child(5) {
+  animation-delay: 0.25s;
 }
 
 .home-background-placeholder {
@@ -91,8 +210,10 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  pointer-events: none; /* 容器本身不接收事件 */
+  gap: 14px;
+  pointer-events: none;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 卡片需要接收鼠标事件 */
@@ -103,11 +224,21 @@
 /* Keep side cards clickable while letting the center tunnel area pass events to WebGL canvas */
 .home-main-layout-row {
   pointer-events: none;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .home-main-layout-row .home-side-column,
 .home-main-layout-row .home-side-column * {
   pointer-events: auto;
+}
+
+.home-main-layout-row .home-side-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 .home-main-layout-row .home-model-column,
@@ -117,39 +248,99 @@
 
 /* 透明卡片样式 */
 .home-transparent-card.page-card {
-  background: rgba(16, 52, 90, 0.3) !important;
-  border-color: rgba(150, 205, 255, 0.4) !important;
+  background: transparent !important;
+  border: 2px solid rgba(150, 205, 255, 0.5) !important;
   box-shadow:
-    0 4px 20px rgba(11, 35, 62, 0.4),
-    inset 0 1px 0 rgba(196, 225, 255, 0.12) !important;
-  backdrop-filter: blur(12px) !important;
+    0 4px 20px rgba(11, 35, 62, 0.6),
+    0 0 30px rgba(74, 157, 232, 0.15),
+    inset 0 1px 0 rgba(196, 225, 255, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .home-transparent-card.page-card:hover {
-  background: rgba(16, 52, 90, 0.4) !important;
-  border-color: rgba(156, 208, 255, 0.6) !important;
+  background: rgba(17, 54, 94, 0.15) !important;
+  border-color: rgba(156, 208, 255, 0.7) !important;
   box-shadow:
-    0 6px 30px rgba(11, 35, 62, 0.5),
-    0 0 20px rgba(156, 208, 255, 0.2),
-    inset 0 1px 0 rgba(196, 225, 255, 0.18) !important;
+    0 6px 30px rgba(11, 35, 62, 0.7),
+    0 0 40px rgba(156, 208, 255, 0.3),
+    inset 0 1px 0 rgba(196, 225, 255, 0.25) !important;
   transform: translateY(-2px);
 }
 
 .home-transparent-card .ant-card-head {
-  background: rgba(89, 154, 221, 0.15) !important;
-  border-bottom-color: rgba(150, 205, 255, 0.3) !important;
+  background: linear-gradient(180deg, rgba(89, 154, 221, 0.2) 0%, rgba(89, 154, 221, 0.1) 100%) !important;
+  border-bottom: 2px solid rgba(150, 205, 255, 0.5) !important;
+  padding: 14px 16px !important;
+  min-height: auto;
+  overflow: hidden;
 }
 
 .home-transparent-card .ant-card-head-title {
-  color: #e8f2ff !important;
-  font-weight: 600;
-  text-shadow: 0 0 10px rgba(156, 208, 255, 0.3);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: var(--card-title-size);
+  text-shadow: 0 0 15px rgba(156, 208, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 卡片标题图标统一大小 */
+.home-transparent-card .ant-card-head-title .anticon {
+  font-size: var(--card-title-icon-size);
+  filter: drop-shadow(0 0 8px currentColor);
+  animation: icon-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .home-transparent-card .ant-card-body {
-  background: rgba(9, 37, 67, 0.25) !important;
-  color: #d4e8ff;
+  background: transparent !important;
+  color: #e8f4ff;
+  padding: 16px !important;
+  overflow: hidden;
+}
+
+/* 卡片内所有文字默认样式 */
+.home-transparent-card .ant-typography {
+  color: #e8f4ff !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.home-transparent-card .ant-typography-secondary {
+  color: #b8d9ff !important;
+}
+
+/* 确保所有卡片内的文字都有足够对比度 */
+.home-transparent-card .ant-card-body .ant-typography,
+.home-transparent-card .ant-card-body .ant-list-item,
+.home-transparent-card .ant-card-body .ant-space,
+.home-transparent-card .ant-card-body p,
+.home-transparent-card .ant-card-body span {
+  color: #e8f4ff;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.home-transparent-card .ant-card-body .ant-typography strong {
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 /* 高亮卡片 */
@@ -162,41 +353,163 @@
 }
 
 .home-highlight-card .ant-card-head {
-  background: rgba(89, 154, 221, 0.22) !important;
+  background: rgba(89, 154, 221, 0.15) !important;
 }
 
 /* KPI 卡片 */
+.home-kpi-row {
+  flex: 0 0 auto;
+}
+
 .home-kpi-row .ant-col {
   min-width: 0;
+  overflow: hidden;
 }
 
 .home-kpi-row .page-card {
-  background: rgba(16, 52, 90, 0.35) !important;
-  border-color: rgba(150, 205, 255, 0.45) !important;
-  backdrop-filter: blur(10px) !important;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.75) 0%, rgba(15, 47, 83, 0.85) 100%) !important;
+  border: 2px solid rgba(150, 205, 255, 0.65) !important;
+  backdrop-filter: blur(14px) !important;
   box-shadow:
-    0 2px 12px rgba(11, 35, 62, 0.3),
-    inset 0 1px 0 rgba(196, 225, 255, 0.1) !important;
+    0 4px 18px rgba(11, 35, 62, 0.55),
+    0 0 25px rgba(74, 157, 232, 0.25),
+    inset 0 1px 0 rgba(196, 225, 255, 0.18) !important;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.home-kpi-row .page-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(156, 208, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.home-kpi-row .page-card:hover::before {
+  left: 100%;
+}
+
+.home-kpi-row .page-card:hover {
+  border-color: rgba(156, 208, 255, 0.85) !important;
+  box-shadow:
+    0 6px 28px rgba(11, 35, 62, 0.65),
+    0 0 35px rgba(74, 157, 232, 0.4),
+    inset 0 1px 0 rgba(196, 225, 255, 0.25) !important;
+  transform: translateY(-4px) scale(1.03);
+}
+
+.home-kpi-row .ant-card-body {
+  padding: 16px !important;
+  overflow: hidden;
+}
+
+.home-kpi-row .ant-typography {
+  color: #e8f4ff;
+  font-weight: 500;
+  font-size: var(--card-label-size);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-kpi-row .ant-typography-secondary {
+  color: #b8d9ff !important;
+  font-size: var(--card-unit-size);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-kpi-row h4.ant-typography {
+  color: #ffffff !important;
+  font-size: var(--card-value-large-size) !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 12px rgba(156, 208, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0 !important;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-kpi-row .ant-space {
+  width: 100%;
+  overflow: hidden;
 }
 
 /* 列表样式 */
 .home-status-list .ant-list-item {
-  padding: 10px 0;
-  border-bottom-color: rgba(150, 205, 255, 0.18);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(150, 205, 255, 0.25);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.home-status-list .ant-list-item:hover {
+  background: rgba(89, 154, 221, 0.15);
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-left: -8px;
+  margin-right: -8px;
+  border-radius: 4px;
 }
 
 .home-status-list .ant-typography {
-  color: #d4e8ff;
+  color: #e8f4ff !important;
+  font-size: var(--card-description-size);
+  font-weight: 500;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
 }
 
 /* 日志卡片 */
 .home-log-card {
-  max-height: 380px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-log-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px !important;
+}
+
+/* 隐藏日志卡片滚动条但保留滚动功能 */
+.home-log-card .ant-card-body > div {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.home-log-card .ant-card-body > div::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .home-log-card .ant-timeline-item-content {
-  color: #d4e8ff;
+  color: #e8f4ff !important;
+  font-size: var(--card-description-size);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+}
+
+.home-log-card .ant-timeline-item-tail {
+  border-left-color: rgba(150, 205, 255, 0.3);
+}
+
+.home-log-card .ant-timeline-item-head {
+  background: rgba(9, 37, 67, 0.4);
+}
+
+.home-log-card .ant-typography {
+  color: #e8f4ff !important;
 }
 
 /* 表格样式 */
@@ -204,33 +517,93 @@
   background: transparent !important;
 }
 
+/* 隐藏表格滚动条但保留滚动功能 */
+.home-transparent-card .ant-table-body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.home-transparent-card .ant-table-body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 表格样式统一 */
 .home-transparent-card .ant-table-thead > tr > th {
-  background: rgba(89, 154, 221, 0.18) !important;
-  color: #e8f2ff !important;
-  border-bottom-color: rgba(150, 205, 255, 0.35) !important;
-  text-shadow: 0 0 8px rgba(156, 208, 255, 0.2);
+  background: linear-gradient(180deg, rgba(89, 154, 221, 0.25) 0%, rgba(89, 154, 221, 0.15) 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid rgba(150, 205, 255, 0.6) !important;
+  text-shadow: 0 0 12px rgba(156, 208, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+  font-size: var(--card-label-size);
+  padding: 14px 16px !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  position: relative;
+}
+
+.home-transparent-card .ant-table-thead > tr > th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(156, 208, 255, 0.6), transparent);
 }
 
 .home-transparent-card .ant-table-tbody > tr > td {
-  border-bottom-color: rgba(150, 205, 255, 0.12) !important;
-  color: #d4e8ff !important;
+  border-bottom: 1px solid rgba(150, 205, 255, 0.25) !important;
+  color: #e8f4ff !important;
+  font-size: var(--card-description-size);
+  padding: 14px 16px !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  background: transparent !important;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-transparent-card .ant-table-tbody > tr {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .home-transparent-card .ant-table-tbody > tr:hover > td {
-  background: rgba(89, 154, 221, 0.15) !important;
+  background: rgba(89, 154, 221, 0.2) !important;
+  box-shadow: inset 0 0 25px rgba(156, 208, 255, 0.15);
+}
+
+.home-transparent-card .ant-table-tbody > tr:hover {
+  transform: translateX(3px);
+}
+
+.home-transparent-card .ant-table .ant-typography {
+  color: #e8f4ff !important;
 }
 
 /* 图表面板 */
 .home-transparent-card.chart-panel {
-  background: rgba(17, 54, 94, 0.25) !important;
+  background: transparent !important;
+}
+
+.home-transparent-card.chart-panel .ant-card-body {
+  padding: 12px;
 }
 
 /* 标签样式 */
 .home-transparent-card .ant-tag {
-  background: rgba(89, 154, 221, 0.25);
-  border-color: rgba(150, 205, 255, 0.45);
-  color: #e8f2ff;
-  box-shadow: 0 0 8px rgba(156, 208, 255, 0.15);
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.4) 0%, rgba(89, 154, 221, 0.3) 100%);
+  border: 1px solid rgba(150, 205, 255, 0.6);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(156, 208, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  padding: 4px 12px;
+  font-size: 13px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  display: inline-block;
+  max-width: 100%;
 }
 
 /* 进度条 */
@@ -238,8 +611,154 @@
   background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
 }
 
-/* 响应式 */
+/* 主通风机标签页样式 */
+.home-transparent-card .ant-tabs {
+  color: #e8f4ff;
+}
+
+.home-transparent-card .ant-tabs-nav {
+  margin-bottom: 12px;
+}
+
+.home-transparent-card .ant-tabs-tab {
+  color: #b8d9ff !important;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+  flex: 1;
+}
+
+/* 主通风机卡片特殊优化 */
+.fan-status-card .ant-tabs-nav {
+  margin-bottom: 10px;
+}
+
+.fan-status-card .ant-tabs-tab {
+  padding: 5px 8px;
+  flex: 1;
+  justify-content: center;
+  max-width: 50%;
+}
+
+.fan-status-card .ant-tabs-nav-list {
+  width: 100%;
+  display: flex;
+  gap: 4px;
+}
+
+.fan-status-card .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 0;
+}
+
+.fan-status-card .ant-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fan-status-card .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fan-status-card .ant-tabs-content {
+  height: 100%;
+}
+
+/* 主通风机内容区域滚动条隐藏 */
+.fan-status-card .ant-tabs-content {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fan-status-card .ant-tabs-content::-webkit-scrollbar {
+  display: none;
+}
+
+.fan-status-card .ant-tabs-tabpane {
+  height: 100%;
+  overflow: hidden;
+}
+
+.fan-status-card .ant-tabs-tabpane > div {
+  height: 100%;
+  overflow: hidden;
+}
+
+.fan-status-card .ant-tabs-tabpane > div > div:last-child {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fan-status-card .ant-tabs-tabpane > div > div:last-child::-webkit-scrollbar {
+  display: none;
+}
+
+/* 设备运行状态卡片滚动条隐藏 */
+.home-transparent-card .ant-card-body > div {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.home-transparent-card .ant-card-body > div::-webkit-scrollbar {
+  display: none;
+}
+
+/* 设备运行状态卡片特殊优化 */
+.home-side-column > .ant-space > .page-card:first-child .ant-card-body > div {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.home-side-column > .ant-space > .page-card:first-child .ant-card-body > div::-webkit-scrollbar {
+  display: none;
+}
+
+.home-transparent-card .ant-tabs-tab:hover {
+  color: #ffffff !important;
+}
+
+.home-transparent-card .ant-tabs-tab-active {
+  background: rgba(89, 154, 221, 0.15);
+  border-radius: 6px 6px 0 0;
+}
+
+.fan-status-card .ant-tabs-tab-active {
+  background: rgba(89, 154, 221, 0.2);
+  border-radius: 6px 6px 0 0;
+}
+
+.home-transparent-card .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.6);
+}
+
+.home-transparent-card .ant-tabs-ink-bar {
+  background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+  height: 2px;
+  border-radius: 2px;
+}
+
+/* 响应式文字处理 */
 @media (max-width: 1600px) {
+  :root {
+    --card-title-size: 13px;
+    --card-title-icon-size: 14px;
+    --card-label-size: 11px;
+    --card-value-size: 13px;
+    --card-value-large-size: 15px;
+    --card-unit-size: 10px;
+    --card-status-size: 10px;
+    --card-description-size: 12px;
+  }
+
   .home-cockpit {
     padding: 16px 20px 20px;
   }
@@ -247,14 +766,51 @@
   .home-content-layer {
     gap: 14px;
   }
+
+  .home-transparent-card .ant-tabs-tab {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .fan-status-card .ant-tabs-tab {
+    padding: 4px 6px;
+  }
 }
 
 @media (max-width: 1200px) {
+  :root {
+    --card-title-size: 12px;
+    --card-title-icon-size: 13px;
+    --card-label-size: 10px;
+    --card-value-size: 12px;
+    --card-value-large-size: 14px;
+    --card-unit-size: 9px;
+    --card-status-size: 9px;
+    --card-description-size: 11px;
+  }
+
   .home-cockpit {
     padding: 14px 16px 16px;
   }
 
   .home-content-layer {
     gap: 12px;
+  }
+
+  .home-transparent-card .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .home-kpi-row .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .home-transparent-card .ant-tabs-tab {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .fan-status-card .ant-tabs-tab {
+    padding: 3px 5px;
   }
 }

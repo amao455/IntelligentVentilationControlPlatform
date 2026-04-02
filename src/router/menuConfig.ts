@@ -36,6 +36,9 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
   home: [{ key: 'home-dashboard', title: '综合驾驶舱', path: '/home', variant: 'home' }],
   monitor: [
     { key: 'monitor-realtime-overview', title: '通风参数实时监测', path: '/monitor/realtime-overview' },
+    { key: 'monitor-airflow-realtime', title: '风流实时监测', path: '/monitor/airflow-realtime' },
+    { key: 'monitor-gas-realtime', title: '气体实时监测', path: '/monitor/gas-realtime' },
+    { key: 'monitor-personnel-realtime', title: '人员实时监测', path: '/monitor/personnel-realtime' },
     { key: 'monitor-key-area', title: '重点区域实时监控', path: '/monitor/key-area' },
     { key: 'monitor-device-status', title: '关键设备工况监测', path: '/monitor/device-status' },
     { key: 'monitor-history-trend', title: '历史监测趋势分析', path: '/monitor/history-trend' },

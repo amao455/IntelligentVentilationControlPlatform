@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
 interface ChartPanelProps {
-  title: string;
+  title: React.ReactNode;
   option: EChartsOption;
   height?: number;
   extra?: React.ReactNode;
