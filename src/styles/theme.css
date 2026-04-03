@@ -518,6 +518,23 @@ body {
 
 .ant-layout-sider-children {
   background: var(--bg-sider);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 隐藏二级菜单的水平滚动条 */
+.ant-layout-sider .ant-menu {
+  overflow-x: hidden !important;
+}
+
+.ant-layout-sider .ant-menu::-webkit-scrollbar-x {
+  display: none;
+}
+
+.ant-layout-sider .ant-menu-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ant-card .ant-card-head {

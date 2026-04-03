@@ -17,7 +17,7 @@ function nowLabel() {
 
 export const useAppStore = create<AppState>((set) => ({
   selectedMine: 'east-mine',
-  rightPanelVisible: true,
+  rightPanelVisible: false,
   lastRefreshTime: nowLabel(),
   setSelectedMine: (mine) => set({ selectedMine: mine }),
   toggleRightPanel: () => set((state) => ({ rightPanelVisible: !state.rightPanelVisible })),

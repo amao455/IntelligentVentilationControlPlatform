@@ -45,13 +45,13 @@ function fitCameraToObject(
     radius * 0.45,
     Math.cos(azimuthRad) * distance,
   );
-  camera.near = Math.max(distance / 500, 1);
+  camera.near = Math.max(distance / 1000, 0.1); // 降低近裁剪面，允许更近距离观察
   camera.far = Math.max(distance * 20, 100000);
   camera.updateProjectionMatrix();
   camera.lookAt(0, 0, 0);
 
   controls.target.set(0, 0, 0);
-  controls.minDistance = Math.max(radius * 0.6, 5000);
+  controls.minDistance = Math.max(radius * 0.1, 500); // 大幅降低最小距离限制，允许更近距离观察
   controls.maxDistance = distance * 6;
   controls.update();
 }
@@ -162,20 +162,156 @@ export function HomeObjBackground3D({
       (object) => {
         modelRef.current = object;
 
+        // 创建程序化纹理 - 模拟混凝土表面
+        const createConcreteTexture = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return null;
+
+          // 基础灰色背景
+          ctx.fillStyle = '#8a9aa8';
+          ctx.fillRect(0, 0, 512, 512);
+
+          // 添加噪点模拟混凝土颗粒
+          for (let i = 0; i < 8000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 2 + 0.5;
+            const brightness = Math.random() * 60 - 30;
+            const gray = 138 + brightness;
+            ctx.fillStyle = `rgb(${gray}, ${gray + 10}, ${gray + 18})`;
+            ctx.fillRect(x, y, size, size);
+          }
+
+          // 添加裂纹效果
+          ctx.strokeStyle = 'rgba(70, 80, 90, 0.3)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 15; i++) {
+            ctx.beginPath();
+            const startX = Math.random() * 512;
+            const startY = Math.random() * 512;
+            ctx.moveTo(startX, startY);
+            let x = startX;
+            let y = startY;
+            for (let j = 0; j < 5; j++) {
+              x += (Math.random() - 0.5) * 80;
+              y += (Math.random() - 0.5) * 80;
+              ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(4, 4);
+          return texture;
+        };
+
+        // 创建法线贴图 - 增加表面凹凸感
+        const createNormalMap = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return null;
+
+          // 基础法线颜色 (128, 128, 255) 表示平面
+          ctx.fillStyle = 'rgb(128, 128, 255)';
+          ctx.fillRect(0, 0, 512, 512);
+
+          // 添加随机凹凸
+          for (let i = 0; i < 3000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 3 + 1;
+            const r = 128 + (Math.random() - 0.5) * 40;
+            const g = 128 + (Math.random() - 0.5) * 40;
+            const b = 255 - Math.random() * 30;
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(x, y, size, size);
+          }
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(4, 4);
+          return texture;
+        };
+
+        // 创建粗糙度贴图
+        const createRoughnessMap = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return null;
+
+          // 基础高粗糙度
+          ctx.fillStyle = 'rgb(220, 220, 220)';
+          ctx.fillRect(0, 0, 512, 512);
+
+          // 添加变化
+          for (let i = 0; i < 2000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 4 + 1;
+            const gray = 180 + Math.random() * 60;
+            ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
+            ctx.fillRect(x, y, size, size);
+          }
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(4, 4);
+          return texture;
+        };
+
+        const concreteTexture = createConcreteTexture();
+        const normalMap = createNormalMap();
+        const roughnessMap = createRoughnessMap();
+
+        // 创建增强的巷道材质
+        const tunnelMaterial = new THREE.MeshStandardMaterial({
+          map: concreteTexture,
+          normalMap: normalMap,
+          normalScale: new THREE.Vector2(0.5, 0.5), // 法线强度
+          roughnessMap: roughnessMap,
+          roughness: 0.9, // 基础粗糙度
+          metalness: 0.08, // 降低金属度，更像混凝土
+          color: 0xb0c0d0, // 稍微提亮基础色
+          transparent: true,
+          opacity,
+          side: THREE.DoubleSide,
+          emissive: 0x3a7db8, // 调整自发光颜色
+          emissiveIntensity: 0.15, // 进一步降低发光强度
+          envMapIntensity: 0.4, // 降低环境反射
+          aoMapIntensity: 0.5, // 环境光遮蔽强度
+        });
+
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
-            child.material = new THREE.MeshPhongMaterial({
-              color: 0x9cd0ff, // 亮蓝色，与导航栏发光线一致
-              transparent: true,
-              opacity,
-              shininess: 60, // 增加光泽度
-              specular: 0x6bb5f0, // 高光颜色
-              emissive: 0x4a9de8, // 自发光颜色
-              emissiveIntensity: 0.4, // 增强发光强度
-              side: THREE.DoubleSide,
-            });
+            const material = tunnelMaterial.clone();
+            child.material = material;
             child.castShadow = true;
             child.receiveShadow = true;
+
+            // 为不同部分添加更多变化
+            const randomVariation = Math.random();
+            if (material instanceof THREE.MeshStandardMaterial) {
+              // 粗糙度变化 (0.85 - 0.95)
+              material.roughness = 0.85 + randomVariation * 0.1;
+              // 金属度变化 (0.05 - 0.12)
+              material.metalness = 0.05 + randomVariation * 0.07;
+              // 颜色细微变化
+              const colorVariation = 1 - randomVariation * 0.08;
+              material.color.multiplyScalar(colorVariation);
+              // 自发光强度变化
+              material.emissiveIntensity = 0.12 + randomVariation * 0.08;
+            }
           }
         });
 
@@ -335,28 +471,6 @@ export function HomeObjBackground3D({
         >
           <div>模型加载失败</div>
           <div style={{ marginTop: '8px', fontSize: '12px' }}>{loadingError}</div>
-        </div>
-      )}
-
-      {modelLoaded && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            color: 'rgba(120, 180, 240, 0.72)',
-            fontSize: '12px',
-            textAlign: 'center',
-            pointerEvents: 'none',
-            zIndex: 1,
-            background: 'rgba(10, 25, 41, 0.6)',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          <div>{disableRotation ? '滚轮缩放 | 右键平移' : '左键拖拽旋转 | 滚轮缩放 | 右键平移'}</div>
         </div>
       )}
     </>

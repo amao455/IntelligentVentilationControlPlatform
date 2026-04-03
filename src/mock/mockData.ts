@@ -21,6 +21,7 @@ export interface TableRow {
   status: StatusLevel;
   value: string;
   updatedAt: string;
+  type?: string; // 传感器类型（仅用于气体监测）
 }
 
 export interface LogItem {
@@ -57,6 +58,32 @@ export const areaPool = [
   '西翼联络巷',
   '二水平皮带巷',
   '回风上山',
+];
+
+export const airflowMonitorPoints = [
+  '东翼回风巷测点',
+  '3105工作面进风口',
+  '3105工作面回风口',
+  '北二采区主巷',
+  '主运输大巷测点',
+  '西翼联络巷测点',
+  '二水平皮带巷',
+  '回风上山测点',
+  '主扇进风口',
+  '主扇出风口',
+];
+
+export const gasMonitorPoints = [
+  { name: '东翼回风巷甲烷传感器', type: '甲烷' },
+  { name: '3105工作面CO传感器', type: '一氧化碳' },
+  { name: '北二采区温湿度传感器', type: '温湿度' },
+  { name: '主运输大巷粉尘传感器', type: '粉尘' },
+  { name: '西翼联络巷甲烷传感器', type: '甲烷' },
+  { name: '二水平皮带巷CO传感器', type: '一氧化碳' },
+  { name: '回风上山温湿度传感器', type: '温湿度' },
+  { name: '主扇进风口粉尘传感器', type: '粉尘' },
+  { name: '3105回风巷甲烷传感器', type: '甲烷' },
+  { name: '北二采区CO传感器', type: '一氧化碳' },
 ];
 
 export const devicePool = [
@@ -186,9 +213,70 @@ export function createPageDataset(pageKey: string): PageDataset {
     { name: '离线', value: seeded(seed, 1, 9, 404) },
   ];
 
-  const tableRows: TableRow[] = new Array(8).fill(0).map((_, index) => {
+  const tableRows: TableRow[] = new Array(10).fill(0).map((_, index) => {
     const statusSeed = seeded(seed, 1, 100, index + 500);
     const status: StatusLevel = statusSeed > 88 ? 'critical' : statusSeed > 72 ? 'alert' : statusSeed > 55 ? 'warning' : 'normal';
+
+    // 为风流监测页面生成专门的数据
+    const isAirflowPage = pageKey.includes('airflow-realtime');
+    const isGasPage = pageKey.includes('gas-realtime');
+
+    if (isAirflowPage) {
+      const windSpeed = (seeded(seed, 15, 85, index + 610) / 10).toFixed(1);
+      const windPressure = seeded(seed, 800, 2500, index + 615);
+
+      return {
+        id: `AF-${String(index + 1).padStart(3, '0')}`,
+        name: airflowMonitorPoints[index % airflowMonitorPoints.length],
+        area: areaPool[index % areaPool.length],
+        status,
+        value: `${windSpeed} m/s / ${windPressure} Pa`,
+        updatedAt: `2026-04-03 ${String(seeded(seed, 8, 18, index + 620)).padStart(2, '0')}:${String(
+          seeded(seed, 0, 59, index + 630),
+        ).padStart(2, '0')}`,
+      };
+    }
+
+    if (isGasPage) {
+      const sensorInfo = gasMonitorPoints[index % gasMonitorPoints.length];
+      const sensorType = sensorInfo.type;
+      let value = '';
+
+      // 根据传感器类型生成不同的数值
+      switch (sensorType) {
+        case '甲烷':
+          const ch4 = (seeded(seed, 5, 95, index + 610) / 100).toFixed(2);
+          value = `CH₄: ${ch4}%`;
+          break;
+        case '一氧化碳':
+          const co = seeded(seed, 1, 24, index + 615);
+          value = `CO: ${co} ppm`;
+          break;
+        case '温湿度':
+          const temp = seeded(seed, 18, 32, index + 616);
+          const humidity = seeded(seed, 45, 85, index + 617);
+          value = `${temp}°C / ${humidity}%`;
+          break;
+        case '粉尘':
+          const dust = seeded(seed, 10, 150, index + 618);
+          value = `${dust} mg/m³`;
+          break;
+        default:
+          value = '未知';
+      }
+
+      return {
+        id: `GAS-${String(index + 1).padStart(3, '0')}`,
+        name: sensorInfo.name,
+        area: areaPool[index % areaPool.length],
+        status,
+        value,
+        type: sensorType,
+        updatedAt: `2026-04-03 ${String(seeded(seed, 8, 18, index + 620)).padStart(2, '0')}:${String(
+          seeded(seed, 0, 59, index + 630),
+        ).padStart(2, '0')}`,
+      };
+    }
 
     return {
       id: `R-${seeded(seed, 1000, 9999, index + 600)}`,

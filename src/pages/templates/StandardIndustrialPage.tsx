@@ -15,13 +15,19 @@ import {
   Statistic,
   Tag,
 } from 'antd';
+import {
+  LineChartOutlined,
+  BarChartOutlined,
+  PieChartOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons';
 import { KpiCard } from '../../components/cards/KpiCard';
 import { ChartPanel } from '../../components/charts/ChartPanel';
 import { StatusTag } from '../../components/common/StatusTag';
 import { IndustrialTable } from '../../components/tables/IndustrialTable';
 import { TopologyPlaceholder } from '../../components/topology/TopologyPlaceholder';
 import { createPageDataset } from '../../mock/mockData';
-import { buildBarOption, buildLineOption, buildPieOption } from './chartOptions';
+import { buildBarOption, buildLineOption, buildPieOption, buildGasBarOption, buildEnvironmentPieOption } from './chartOptions';
 import { PageToolbar } from './PageToolbar';
 
 interface StandardIndustrialPageProps {
@@ -44,133 +50,245 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
   const showPersonnelRealtime = pageKey.includes('personnel-realtime');
 
   return (
-    <div className="page-wrapper">
-      <PageToolbar moduleName={moduleName} title={title} actions={dataset.actions} />
+    <div className="page-wrapper" style={(showAirflowRealtime || showGasRealtime) ? { padding: 0, height: 'calc(100vh - 80px)', overflow: 'hidden' } : {}}>
+      {!showAirflowRealtime && !showGasRealtime && (
+        <PageToolbar moduleName={moduleName} title={title} actions={dataset.actions} />
+      )}
 
-      <Row gutter={[12, 12]}>
-        {dataset.kpis.slice(0, 6).map((item) => (
-          <Col key={item.key} xs={24} sm={12} md={8} lg={8} xl={4}>
-            <KpiCard item={item} />
-          </Col>
-        ))}
-      </Row>
+      {!showAirflowRealtime && !showGasRealtime && (
+        <Row gutter={[12, 12]}>
+          {dataset.kpis.slice(0, 6).map((item) => (
+            <Col key={item.key} xs={24} sm={12} md={8} lg={8} xl={4}>
+              <KpiCard item={item} />
+            </Col>
+          ))}
+        </Row>
+      )}
 
-      {showAirflowRealtime ? (
-        <Row gutter={[12, 12]}>
-          <Col xs={24} lg={12}>
-            <ChartPanel title="风流实时趋势" option={buildLineOption(dataset.lineLabels, dataset.lineSeries, '风量')} />
-          </Col>
-          <Col xs={24} lg={12}>
-            <ChartPanel title="各区域风速分布" option={buildBarOption(dataset.barCategories, dataset.barSeries, '风速')} />
-          </Col>
-          <Col xs={24} lg={12}>
-            <ChartPanel title="风压分布" option={buildPieOption(dataset.pieSeries)} height={260} />
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card className="page-card" size="small" title="风流监测统计">
-              <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>主风道风速</Typography.Text>
-                  <Typography.Text strong style={{ color: '#1890ff' }}>3.8 m/s</Typography.Text>
+      {showAirflowRealtime || showGasRealtime ? (
+        <div style={{
+          padding: '0',
+          height: 'calc(100vh - 80px)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          overflow: 'hidden',
+          boxSizing: 'border-box'
+        }}>
+          {/* 上栏 - 占 3/4 */}
+          <div style={{ flex: '3', minHeight: 0, display: 'flex', gap: '16px', overflow: 'hidden', padding: '12px' }}>
+            {/* 左侧空白区域 - 显示三维模型 */}
+            <div style={{ flex: '1', minWidth: 0 }}>
+              {/* 这里是三维模型背景显示区域 */}
+            </div>
+
+            {/* 右侧图表区域 */}
+            <div style={{
+              flex: '0 0 18.75%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              minHeight: 0,
+              overflow: 'hidden'
+            }}>
+              <Card
+                className="page-card home-transparent-card"
+                size="small"
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <LineChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#69c0ff' : '#ffc069' }} />
+                    <span>{showAirflowRealtime ? '风流实时趋势' : '瓦斯浓度趋势'}</span>
+                  </div>
+                }
+                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                styles={{
+                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                }}
+              >
+                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                  <ChartPanel
+                    option={buildLineOption(dataset.lineLabels, dataset.lineSeries, showAirflowRealtime ? '风量' : '瓦斯浓度')}
+                    height="100%"
+                    noCard
+                  />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>总风量</Typography.Text>
-                  <Typography.Text strong style={{ color: '#52c41a' }}>9250 m³/min</Typography.Text>
+              </Card>
+              <Card
+                className="page-card home-transparent-card"
+                size="small"
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <BarChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#95de64' : '#69c0ff' }} />
+                    <span>{showAirflowRealtime ? '各区域风速分布' : '各区域气体浓度'}</span>
+                  </div>
+                }
+                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                styles={{
+                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                }}
+              >
+                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                  <ChartPanel
+                    option={showGasRealtime ? buildGasBarOption() : buildBarOption(dataset.barCategories, dataset.barSeries, '风速')}
+                    height="100%"
+                    noCard
+                  />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>负压值</Typography.Text>
-                  <Typography.Text strong style={{ color: '#faad14' }}>2086 Pa</Typography.Text>
+              </Card>
+              <Card
+                className="page-card home-transparent-card"
+                size="small"
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <PieChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#ffc069' : '#95de64' }} />
+                    <span>{showAirflowRealtime ? '风压分布' : '环境参数达标率'}</span>
+                  </div>
+                }
+                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                styles={{
+                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                }}
+              >
+                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                  <ChartPanel
+                    option={showGasRealtime ? buildEnvironmentPieOption() : buildPieOption(dataset.pieSeries)}
+                    height="100%"
+                    noCard
+                  />
                 </div>
-                <Progress percent={92} size="small" showInfo={false} />
-                <Typography.Text type="secondary">风流稳定性: 92%</Typography.Text>
-              </Space>
+              </Card>
+            </div>
+          </div>
+
+          {/* 下栏 - 占 1/4 */}
+          <div style={{ flex: '1', minHeight: 0, overflow: 'hidden', padding: '0 12px 12px 12px' }}>
+            <Card
+              className="page-card home-transparent-card airflow-detail-card"
+              size="small"
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <UnorderedListOutlined style={{ fontSize: 15, color: '#9cd0ff' }} />
+                  <span>{showAirflowRealtime ? '风流监测点详情' : '气体监测点详情'}</span>
+                </div>
+              }
+              style={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                maxHeight: '100%'
+              }}
+              styles={{
+                header: {
+                  flexShrink: 0,
+                  minHeight: 0,
+                  padding: '8px 12px'
+                },
+                body: {
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  padding: '8px',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }
+              }}
+            >
+              <style>{`
+                .airflow-detail-card {
+                  overflow: hidden !important;
+                  max-height: 100% !important;
+                }
+                .airflow-detail-card .ant-card-head {
+                  flex-shrink: 0 !important;
+                  min-height: 0 !important;
+                  padding: 8px 12px !important;
+                }
+                .airflow-detail-card .ant-card-body {
+                  scrollbar-width: none;
+                  -ms-overflow-style: none;
+                  overflow: hidden !important;
+                  flex: 1 !important;
+                  min-height: 0 !important;
+                  padding: 8px !important;
+                  display: flex;
+                  flex-direction: column;
+                }
+                .airflow-detail-card .ant-card-body::-webkit-scrollbar {
+                  display: none;
+                }
+                .airflow-detail-card .ant-table-wrapper {
+                  flex: 1;
+                  min-height: 0;
+                  overflow: hidden;
+                  display: flex;
+                  flex-direction: column;
+                }
+                .airflow-detail-card .ant-table {
+                  flex: 1;
+                  min-height: 0;
+                  overflow: hidden;
+                  display: flex;
+                  flex-direction: column;
+                }
+                .airflow-detail-card .ant-table-container {
+                  flex: 1;
+                  min-height: 0;
+                  overflow: hidden;
+                  display: flex;
+                  flex-direction: column;
+                }
+                .airflow-detail-card .ant-table-header {
+                  flex-shrink: 0;
+                  overflow: hidden;
+                }
+                .airflow-detail-card .ant-table-body {
+                  flex: 1;
+                  min-height: 0;
+                  overflow-y: auto;
+                  overflow-x: hidden;
+                  scrollbar-width: none;
+                  -ms-overflow-style: none;
+                }
+                .airflow-detail-card .ant-table-body::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              <IndustrialTable rows={dataset.tableRows} title="" />
             </Card>
-          </Col>
-          <Col xs={24}>
-            <Card className="page-card" size="small" title="风流监测点详情">
-              <IndustrialTable rows={dataset.tableRows} title="风流监测数据" />
-            </Card>
-          </Col>
-        </Row>
-      ) : showGasRealtime ? (
-        <Row gutter={[12, 12]}>
-          <Col xs={24} lg={12}>
-            <ChartPanel title="瓦斯浓度趋势" option={buildLineOption(dataset.lineLabels, dataset.lineSeries, '瓦斯浓度')} />
-          </Col>
-          <Col xs={24} lg={12}>
-            <ChartPanel title="气体成分占比" option={buildPieOption(dataset.pieSeries)} height={260} />
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card className="page-card" size="small" title="气体监测统计">
-              <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>瓦斯浓度</Typography.Text>
-                  <Typography.Text strong style={{ color: '#52c41a' }}>0.42%</Typography.Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>二氧化碳</Typography.Text>
-                  <Typography.Text strong style={{ color: '#1890ff' }}>0.18%</Typography.Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>一氧化碳</Typography.Text>
-                  <Typography.Text strong style={{ color: '#52c41a' }}>0.00%</Typography.Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text>温度</Typography.Text>
-                  <Typography.Text strong style={{ color: '#faad14' }}>24.5°C</Typography.Text>
-                </div>
-                <Tag color="green">安全</Tag>
-              </Space>
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card className="page-card" size="small" title="告警历史">
-              <Timeline
-                items={[
-                  { children: <Typography.Text>2026-04-02 14:22 - 瓦斯浓度超限告警</Typography.Text> },
-                  { children: <Typography.Text>2026-04-02 13:15 - 二氧化碳浓度升高</Typography.Text> },
-                  { children: <Typography.Text>2026-04-02 12:08 - 温度异常</Typography.Text> },
-                ]}
-              />
-            </Card>
-          </Col>
-          <Col xs={24}>
-            <Card className="page-card" size="small" title="气体监测点详情">
-              <IndustrialTable rows={dataset.tableRows} title="气体监测数据" />
-            </Card>
-          </Col>
-        </Row>
+          </div>
+        </div>
       ) : showPersonnelRealtime ? (
-        <Row gutter={[12, 12]}>
-          <Col xs={24} lg={8}>
-            <Card className="page-card" size="small" title="人员分布统计">
-              <Space direction="vertical" style={{ width: '100%' }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} xl={8}>
+            <Card className="page-card" size="small" title="人员分布统计" style={{ height: '100%' }}>
+              <Space direction="vertical" style={{ width: '100%' }} size={16}>
                 <Statistic title="总人数" value={24} suffix="人" />
                 <Statistic title="在线率" value={95.8} suffix="%" />
                 <Statistic title="异常人数" value={0} suffix="人" />
               </Space>
             </Card>
           </Col>
-          <Col xs={24} lg={8}>
-            <Card className="page-card" size="small" title="设备状态">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Col xs={24} xl={8}>
+            <Card className="page-card" size="small" title="设备状态" style={{ height: '100%' }}>
+              <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography.Text>在线</Typography.Text>
                   <Tag color="green">23</Tag>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography.Text>离线</Typography.Text>
                   <Tag color="red">1</Tag>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography.Text>异常</Typography.Text>
                   <Tag color="orange">0</Tag>
                 </div>
               </Space>
             </Card>
           </Col>
-          <Col xs={24} lg={8}>
-            <Card className="page-card" size="small" title="最近告警">
+          <Col xs={24} xl={8}>
+            <Card className="page-card" size="small" title="最近告警" style={{ height: '100%' }}>
               <Timeline
                 items={[
                   { children: <Typography.Text>2026-04-02 14:22 - 人员 P-012 离线</Typography.Text> },

@@ -77,10 +77,13 @@ export function SideMenu() {
           paddingTop: 16,
           paddingBottom: 16,
           flex: 1,
-          overflow: 'auto',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           background: 'transparent',
           position: 'relative',
           zIndex: 1,
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(150, 205, 255, 0.3) transparent',
         }}
         items={menus.map((item, index) => ({
           key: item.path,
@@ -97,6 +100,9 @@ export function SideMenu() {
             background: 'linear-gradient(180deg, rgba(89, 154, 221, 0.15) 0%, rgba(49, 108, 168, 0.1) 100%)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: 'inset 0 1px 0 rgba(161, 211, 255, 0.1), 0 2px 6px rgba(11, 35, 62, 0.15)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           },
         }))}
         onClick={({ key }) => navigate(key)}
