@@ -1,0 +1,80 @@
+import { lazy, Suspense, useEffect, useState } from "react";
+import {
+  Button,
+  Card,
+  Col,
+  List,
+  Popconfirm,
+  Row,
+  Space,
+  Tag,
+  Typography,
+  message,
+} from "antd";
+import {
+  DashboardOutlined,
+  ThunderboltOutlined,
+  SafetyOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  PlayCircleOutlined,
+  PoweroffOutlined,
+  SwapOutlined,
+  ReloadOutlined,
+  ControlOutlined,
+  ApiOutlined,
+  FileTextOutlined,
+  BellOutlined,
+  ThunderboltFilled,
+  ExperimentOutlined,
+  FireOutlined,
+  CloudOutlined,
+  SyncOutlined,
+  SettingOutlined,
+  EyeOutlined,
+  HistoryOutlined,
+  UserOutlined,
+  ToolOutlined,
+  AlertOutlined,
+  InfoCircleOutlined,
+  RocketOutlined,
+  LineChartOutlined,
+} from "@ant-design/icons";
+
+interface BackgroundSettings {
+  paused: boolean;
+  rotationSpeed: number;
+  opacity: number;
+  brightness: number;
+}
+
+const DEFAULT_BG_SETTINGS: BackgroundSettings = {
+  paused: false,
+  rotationSpeed: 0.0,
+  opacity: 0.55,
+  brightness: 1.4,
+};
+
+const LazyHomeObjBackground = lazy(async () => {
+  const module = await import("../../components/topology/HomeObjBackground3D");
+  return { default: module.HomeObjBackground3D };
+});
+
+export default function MainFanControlPage() {
+  const [api, contextHolder] = message.useMessage();
+  const [bgSettings] = useState<BackgroundSettings>(DEFAULT_BG_SETTINGS);
+  const [backgroundReady, setBackgroundReady] = useState(false);
+  const [selectedFan, setSelectedFan] = useState<string>('MF1-1');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setBackgroundReady(true);
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  const onControlAction = (action: string) => {
+    api.success(`${action} 鎸囦护宸蹭笅鍙戯紝绛夊緟鐘舵

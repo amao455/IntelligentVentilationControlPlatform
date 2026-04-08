@@ -15,6 +15,8 @@ import TwinOverviewPage from '../pages/Twin/OverviewPage';
 import TwinRealtimeMappingPage from '../pages/Twin/RealtimeMappingPage';
 import TwinAirflowSimulationPage from '../pages/Twin/AirflowSimulationPage';
 import TwinDisasterEvolutionPage from '../pages/Twin/DisasterEvolutionPage';
+import NaturalAirDistributionPage from '../pages/Analysis/NaturalAirDistributionPage';
+import DemandAirDistributionPage from '../pages/Analysis/DemandAirDistributionPage';
 import NetworkSolvingPage from '../pages/Analysis/NetworkSolvingPage';
 import ParameterCorrectionPage from '../pages/Analysis/ParameterCorrectionPage';
 import QualityEvaluationPage from '../pages/Analysis/QualityEvaluationPage';
@@ -29,6 +31,10 @@ import StrategyRecommendPage from '../pages/Decision/StrategyRecommendPage';
 import EffectEvaluationPage from '../pages/Decision/EffectEvaluationPage';
 import SchemeExecutionPage from '../pages/Remote/SchemeExecutionPage';
 import DeviceControlPage from '../pages/Remote/DeviceControlPage';
+import MainFanControlPage from '../pages/Remote/MainFanControlPage';
+import LocalFanControlPage from '../pages/Remote/LocalFanControlPage';
+import DoorControlPage from '../pages/Remote/DoorControlPage';
+import WindowControlPage from '../pages/Remote/WindowControlPage';
 import EmergencyExecutionPage from '../pages/Remote/EmergencyExecutionPage';
 import ExecutionMonitorPage from '../pages/Remote/ExecutionMonitorPage';
 import EmergencyOverviewPage from '../pages/Emergency/OverviewPage';
@@ -62,6 +68,8 @@ export function AppRouter() {
         <Route path="/twin/airflow-simulation" element={<TwinAirflowSimulationPage />} />
         <Route path="/twin/disaster-evolution" element={<TwinDisasterEvolutionPage />} />
 
+        <Route path="/analysis/natural-air-distribution" element={<NaturalAirDistributionPage />} />
+        <Route path="/analysis/demand-air-distribution" element={<DemandAirDistributionPage />} />
         <Route path="/analysis/network-solving" element={<NetworkSolvingPage />} />
         <Route path="/analysis/parameter-correction" element={<ParameterCorrectionPage />} />
         <Route path="/analysis/quality-evaluation" element={<QualityEvaluationPage />} />
@@ -78,6 +86,10 @@ export function AppRouter() {
 
         <Route path="/remote/scheme-execution" element={<SchemeExecutionPage />} />
         <Route path="/remote/device-control" element={<DeviceControlPage />} />
+        <Route path="/remote/main-fan-control" element={<MainFanControlPage />} />
+        <Route path="/remote/local-fan-control" element={<LocalFanControlPage />} />
+        <Route path="/remote/door-control" element={<DoorControlPage />} />
+        <Route path="/remote/window-control" element={<WindowControlPage />} />
         <Route path="/remote/emergency-execution" element={<EmergencyExecutionPage />} />
         <Route path="/remote/execution-monitor" element={<ExecutionMonitorPage />} />
 

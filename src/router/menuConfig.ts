@@ -70,6 +70,10 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
   remote: [
     { key: 'remote-scheme-execution', title: '调控方案执行', path: '/remote/scheme-execution', variant: 'remote' },
     { key: 'remote-device-control', title: '设备远程集控', path: '/remote/device-control', variant: 'remote' },
+    { key: 'remote-main-fan-control', title: '主通风机控制', path: '/remote/main-fan-control', variant: 'remote' },
+    { key: 'remote-local-fan-control', title: '局部风机控制', path: '/remote/local-fan-control', variant: 'remote' },
+    { key: 'remote-door-control', title: '风门控制', path: '/remote/door-control', variant: 'remote' },
+    { key: 'remote-window-control', title: '风窗控制', path: '/remote/window-control', variant: 'remote' },
     { key: 'remote-emergency-execution', title: '应急控风执行', path: '/remote/emergency-execution', variant: 'remote' },
     { key: 'remote-execution-monitor', title: '执行状态监控', path: '/remote/execution-monitor', variant: 'remote' },
   ],

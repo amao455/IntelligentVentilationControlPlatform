@@ -2,13 +2,11 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import {
   Card,
   Col,
-  List,
   Progress,
   Row,
   Space,
   Table,
   Tabs,
-  Tag,
   Timeline,
   Typography,
 } from "antd";
@@ -927,7 +925,6 @@ export default function HomePage() {
                 option={buildPieOption(dataset.pieSeries)}
                 height={280}
                 className="home-transparent-card"
-                style={{ flex: "0 0 auto" }}
               />
 
               {/* 区域风险排行与处置建议 */}
@@ -1436,7 +1433,6 @@ export default function HomePage() {
                 )}
                 height={280}
                 className="home-transparent-card"
-                style={{ flex: "0 0 auto" }}
               />
 
               {/* 调控执行动态 */}

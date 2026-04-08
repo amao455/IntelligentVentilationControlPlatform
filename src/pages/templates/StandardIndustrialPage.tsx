@@ -27,7 +27,7 @@ import { StatusTag } from '../../components/common/StatusTag';
 import { IndustrialTable } from '../../components/tables/IndustrialTable';
 import { TopologyPlaceholder } from '../../components/topology/TopologyPlaceholder';
 import { createPageDataset } from '../../mock/mockData';
-import { buildBarOption, buildLineOption, buildPieOption, buildGasBarOption, buildEnvironmentPieOption } from './chartOptions';
+import { buildBarOption, buildLineOption, buildPieOption, buildGasBarOption, buildPersonnelBarOption, buildPersonnelOverviewOption } from './chartOptions';
 import { PageToolbar } from './PageToolbar';
 
 interface StandardIndustrialPageProps {
@@ -50,12 +50,12 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
   const showPersonnelRealtime = pageKey.includes('personnel-realtime');
 
   return (
-    <div className="page-wrapper" style={(showAirflowRealtime || showGasRealtime) ? { padding: 0, height: 'calc(100vh - 80px)', overflow: 'hidden' } : {}}>
-      {!showAirflowRealtime && !showGasRealtime && (
+    <div className="page-wrapper" style={(showAirflowRealtime || showGasRealtime || showPersonnelRealtime) ? { padding: 0, height: 'calc(100vh - 80px)', overflow: 'hidden' } : {}}>
+      {!showAirflowRealtime && !showGasRealtime && !showPersonnelRealtime && (
         <PageToolbar moduleName={moduleName} title={title} actions={dataset.actions} />
       )}
 
-      {!showAirflowRealtime && !showGasRealtime && (
+      {!showAirflowRealtime && !showGasRealtime && !showPersonnelRealtime && (
         <Row gutter={[12, 12]}>
           {dataset.kpis.slice(0, 6).map((item) => (
             <Col key={item.key} xs={24} sm={12} md={8} lg={8} xl={4}>
@@ -65,7 +65,7 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
         </Row>
       )}
 
-      {showAirflowRealtime || showGasRealtime ? (
+      {showAirflowRealtime || showGasRealtime || showPersonnelRealtime ? (
         <div style={{
           padding: '0',
           height: 'calc(100vh - 80px)',
@@ -75,6 +75,130 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           overflow: 'hidden',
           boxSizing: 'border-box'
         }}>
+          {showPersonnelRealtime && (
+            <style>{`
+              @keyframes border-glow {
+                0%, 100% {
+                  box-shadow:
+                    0 0 10px rgba(105, 192, 255, 0.3),
+                    0 0 20px rgba(105, 192, 255, 0.2),
+                    inset 0 0 10px rgba(105, 192, 255, 0.1);
+                }
+                50% {
+                  box-shadow:
+                    0 0 15px rgba(105, 192, 255, 0.5),
+                    0 0 30px rgba(105, 192, 255, 0.3),
+                    inset 0 0 15px rgba(105, 192, 255, 0.15);
+                }
+              }
+
+              @keyframes corner-pulse {
+                0%, 100% {
+                  opacity: 0.6;
+                }
+                50% {
+                  opacity: 1;
+                }
+              }
+
+              .personnel-card {
+                position: relative;
+                border: 1px solid rgba(105, 192, 255, 0.3) !important;
+                animation: border-glow 3s ease-in-out infinite;
+                overflow: visible !important;
+              }
+
+              .personnel-card::before,
+              .personnel-card::after {
+                content: '';
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                border: 2px solid #69c0ff;
+                animation: corner-pulse 2s ease-in-out infinite;
+              }
+
+              .personnel-card::before {
+                top: -1px;
+                left: -1px;
+                border-right: none;
+                border-bottom: none;
+                box-shadow: -2px -2px 8px rgba(105, 192, 255, 0.4);
+              }
+
+              .personnel-card::after {
+                bottom: -1px;
+                right: -1px;
+                border-left: none;
+                border-top: none;
+                box-shadow: 2px 2px 8px rgba(105, 192, 255, 0.4);
+              }
+
+              .personnel-card .ant-card-head {
+                position: relative;
+                border-bottom: 1px solid rgba(105, 192, 255, 0.2) !important;
+                background: linear-gradient(90deg,
+                  rgba(105, 192, 255, 0.05) 0%,
+                  rgba(105, 192, 255, 0.1) 50%,
+                  rgba(105, 192, 255, 0.05) 100%) !important;
+              }
+
+              .personnel-card .ant-card-head::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg,
+                  transparent 0%,
+                  #69c0ff 50%,
+                  transparent 100%);
+                opacity: 0.6;
+              }
+
+              .personnel-detail-card {
+                position: relative;
+                border: 1px solid rgba(105, 192, 255, 0.25) !important;
+                box-shadow:
+                  0 0 8px rgba(105, 192, 255, 0.2),
+                  inset 0 0 8px rgba(105, 192, 255, 0.08);
+              }
+
+              .personnel-detail-card::before {
+                content: '';
+                position: absolute;
+                top: -1px;
+                right: -1px;
+                width: 20px;
+                height: 20px;
+                border-top: 2px solid #69c0ff;
+                border-right: 2px solid #69c0ff;
+                box-shadow: 2px -2px 8px rgba(105, 192, 255, 0.4);
+                animation: corner-pulse 2s ease-in-out infinite 0.5s;
+              }
+
+              .personnel-detail-card::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: -1px;
+                width: 20px;
+                height: 20px;
+                border-bottom: 2px solid #69c0ff;
+                border-left: 2px solid #69c0ff;
+                box-shadow: -2px 2px 8px rgba(105, 192, 255, 0.4);
+                animation: corner-pulse 2s ease-in-out infinite 0.5s;
+              }
+
+              .personnel-detail-card .ant-card-head {
+                border-bottom: 1px solid rgba(105, 192, 255, 0.2) !important;
+                background: linear-gradient(90deg,
+                  rgba(105, 192, 255, 0.05) 0%,
+                  rgba(105, 192, 255, 0.08) 100%) !important;
+              }
+            `}</style>
+          )}
           {/* 上栏 - 占 3/4 */}
           <div style={{ flex: '3', minHeight: 0, display: 'flex', gap: '16px', overflow: 'hidden', padding: '12px' }}>
             {/* 左侧空白区域 - 显示三维模型 */}
@@ -92,12 +216,14 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
               overflow: 'hidden'
             }}>
               <Card
-                className="page-card home-transparent-card"
+                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
                 size="small"
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <LineChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#69c0ff' : '#ffc069' }} />
-                    <span>{showAirflowRealtime ? '风流实时趋势' : '瓦斯浓度趋势'}</span>
+                    <LineChartOutlined style={{ fontSize: 15, color: '#69c0ff' }} />
+                    <span>
+                      {showAirflowRealtime ? '风流实时趋势' : showGasRealtime ? '瓦斯浓度趋势' : '人员总览'}
+                    </span>
                   </div>
                 }
                 style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
@@ -107,19 +233,21 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
               >
                 <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   <ChartPanel
-                    option={buildLineOption(dataset.lineLabels, dataset.lineSeries, showAirflowRealtime ? '风量' : '瓦斯浓度')}
+                    option={showPersonnelRealtime ? buildPersonnelOverviewOption() : buildLineOption(dataset.lineLabels, dataset.lineSeries, showAirflowRealtime ? '风量' : '瓦斯浓度')}
                     height="100%"
                     noCard
                   />
                 </div>
               </Card>
               <Card
-                className="page-card home-transparent-card"
+                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
                 size="small"
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <BarChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#95de64' : '#69c0ff' }} />
-                    <span>{showAirflowRealtime ? '各区域风速分布' : '各区域气体浓度'}</span>
+                    <BarChartOutlined style={{ fontSize: 15, color: '#95de64' }} />
+                    <span>
+                      {showAirflowRealtime ? '各区域风速分布' : showGasRealtime ? '各区域气体浓度' : '区域人员分布'}
+                    </span>
                   </div>
                 }
                 style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
@@ -129,33 +257,196 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
               >
                 <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   <ChartPanel
-                    option={showGasRealtime ? buildGasBarOption() : buildBarOption(dataset.barCategories, dataset.barSeries, '风速')}
+                    option={showGasRealtime ? buildGasBarOption() : showPersonnelRealtime ? buildPersonnelBarOption() : buildBarOption(dataset.barCategories, dataset.barSeries, '风速')}
                     height="100%"
                     noCard
                   />
                 </div>
               </Card>
               <Card
-                className="page-card home-transparent-card"
+                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
                 size="small"
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <PieChartOutlined style={{ fontSize: 15, color: showAirflowRealtime ? '#ffc069' : '#95de64' }} />
-                    <span>{showAirflowRealtime ? '风压分布' : '环境参数达标率'}</span>
+                    <PieChartOutlined style={{ fontSize: 15, color: '#ffc069' }} />
+                    <span>
+                      {showAirflowRealtime ? '风压分布' : showGasRealtime ? '环境参数达标率' : '最近告警'}
+                    </span>
                   </div>
                 }
                 style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 styles={{
-                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                  body: { flex: 1, minHeight: 0, overflow: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', scrollbarWidth: 'none', msOverflowStyle: 'none' }
                 }}
               >
-                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-                  <ChartPanel
-                    option={showGasRealtime ? buildEnvironmentPieOption() : buildPieOption(dataset.pieSeries)}
-                    height="100%"
-                    noCard
-                  />
-                </div>
+                <style>{`
+                  .alert-timeline .ant-timeline-item-tail {
+                    border-left-width: 2px;
+                  }
+                  .alert-timeline .ant-timeline-item-head {
+                    width: 10px;
+                    height: 10px;
+                  }
+                  .page-card.home-transparent-card .ant-card-body::-webkit-scrollbar {
+                    display: none;
+                  }
+                  .alert-card-item {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+                    border-radius: 8px;
+                    padding: 10px 12px;
+                    border: 1px solid rgba(140, 164, 190, 0.15);
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  .alert-card-item::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 3px;
+                    transition: all 0.3s ease;
+                  }
+                  .alert-card-item.critical::before {
+                    background: linear-gradient(180deg, #ff4d4f 0%, #ff7875 100%);
+                    box-shadow: 0 0 8px rgba(255, 77, 79, 0.6);
+                  }
+                  .alert-card-item.warning::before {
+                    background: linear-gradient(180deg, #fa8c16 0%, #ffc069 100%);
+                    box-shadow: 0 0 8px rgba(250, 140, 22, 0.6);
+                  }
+                  .alert-card-item:hover {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+                    border-color: rgba(140, 164, 190, 0.25);
+                    transform: translateX(2px);
+                  }
+                  .alert-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    margin-left: 8px;
+                  }
+                  .alert-badge.critical {
+                    background: linear-gradient(135deg, rgba(255, 77, 79, 0.25) 0%, rgba(255, 77, 79, 0.15) 100%);
+                    border: 1px solid rgba(255, 77, 79, 0.5);
+                    color: #ff7875;
+                    box-shadow: 0 0 6px rgba(255, 77, 79, 0.3);
+                  }
+                  .alert-badge.warning {
+                    background: linear-gradient(135deg, rgba(250, 140, 22, 0.2) 0%, rgba(250, 140, 22, 0.12) 100%);
+                    border: 1px solid rgba(250, 140, 22, 0.5);
+                    color: #ffc069;
+                    box-shadow: 0 0 6px rgba(250, 140, 22, 0.3);
+                  }
+                `}</style>
+                <Timeline
+                  className="alert-timeline"
+                  style={{ padding: '12px 0' }}
+                  items={[
+                    {
+                      color: 'red',
+                      dot: (
+                        <div style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          background: '#ff4d4f',
+                          boxShadow: '0 0 0 3px rgba(255, 77, 79, 0.2), 0 0 8px rgba(255, 77, 79, 0.6)',
+                        }} />
+                      ),
+                      children: (
+                        <div className="alert-card-item critical">
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                              2026-04-07 14:22
+                            </Typography.Text>
+                            <span className="alert-badge critical">危急</span>
+                          </div>
+                          <Typography.Text strong style={{ fontSize: 14, color: '#ff7875', display: 'block', marginBottom: 6 }}>
+                            人员 P-012 离线超时
+                          </Typography.Text>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              📍 3105工作面
+                            </Typography.Text>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              ⏱ 离线 15 分钟
+                            </Typography.Text>
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      color: 'orange',
+                      dot: (
+                        <div style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          background: '#fa8c16',
+                          boxShadow: '0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)',
+                        }} />
+                      ),
+                      children: (
+                        <div className="alert-card-item warning">
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                              2026-04-07 13:15
+                            </Typography.Text>
+                            <span className="alert-badge warning">警告</span>
+                          </div>
+                          <Typography.Text strong style={{ fontSize: 14, color: '#ffc069', display: 'block', marginBottom: 6 }}>
+                            人员 P-008 进入禁区
+                          </Typography.Text>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              📍 西翼联络巷
+                            </Typography.Text>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              🚫 未授权区域
+                            </Typography.Text>
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      color: 'orange',
+                      dot: (
+                        <div style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          background: '#fa8c16',
+                          boxShadow: '0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)',
+                        }} />
+                      ),
+                      children: (
+                        <div className="alert-card-item warning">
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                              2026-04-07 12:08
+                            </Typography.Text>
+                            <span className="alert-badge warning">警告</span>
+                          </div>
+                          <Typography.Text strong style={{ fontSize: 14, color: '#ffc069', display: 'block', marginBottom: 6 }}>
+                            人员 P-015 心率异常
+                          </Typography.Text>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              💓 心率 128 bpm
+                            </Typography.Text>
+                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                              📈 超出正常范围
+                            </Typography.Text>
+                          </div>
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
               </Card>
             </div>
           </div>
@@ -163,12 +454,14 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           {/* 下栏 - 占 1/4 */}
           <div style={{ flex: '1', minHeight: 0, overflow: 'hidden', padding: '0 12px 12px 12px' }}>
             <Card
-              className="page-card home-transparent-card airflow-detail-card"
+              className={`page-card home-transparent-card airflow-detail-card${showPersonnelRealtime ? ' personnel-detail-card' : ''}`}
               size="small"
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <UnorderedListOutlined style={{ fontSize: 15, color: '#9cd0ff' }} />
-                  <span>{showAirflowRealtime ? '风流监测点详情' : '气体监测点详情'}</span>
+                  <span>
+                    {showAirflowRealtime ? '风流监测点详情' : showGasRealtime ? '气体监测点详情' : '人员位置与状态'}
+                  </span>
                 </div>
               }
               style={{

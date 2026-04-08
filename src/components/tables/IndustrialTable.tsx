@@ -10,9 +10,11 @@ interface IndustrialTableProps {
 }
 
 export function IndustrialTable({ title = '监测明细', rows, maxHeight = 300 }: IndustrialTableProps) {
-  // 根据数据判断是风流监测还是气体监测
+  // 根据数据判断是风流监测、气体监测还是人员监测
   const isGasMonitoring = rows.length > 0 && rows[0].id.startsWith('GAS-');
-  const valueColumnTitle = isGasMonitoring ? '监测数值' : '风速 / 风压';
+  const isPersonnelMonitoring = rows.length > 0 && rows[0].id.startsWith('P-');
+  const nameColumnTitle = isPersonnelMonitoring ? '人员姓名' : isGasMonitoring ? '传感器名称' : '监测点名称';
+  const valueColumnTitle = isPersonnelMonitoring ? '生理数据 / 设备状态' : isGasMonitoring ? '监测数值' : '风速 / 风压';
 
   const columns: ColumnsType<TableRow> = [
     {
@@ -23,7 +25,7 @@ export function IndustrialTable({ title = '监测明细', rows, maxHeight = 300 
       fixed: 'left',
     },
     {
-      title: '传感器名称',
+      title: nameColumnTitle,
       dataIndex: 'name',
       key: 'name',
       width: 160,

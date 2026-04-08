@@ -1,15 +1,6 @@
 ﻿import { Tag } from 'antd';
 import type { StatusLevel } from '../../mock/mockData';
 
-const colorMap: Record<StatusLevel, string> = {
-  normal: 'success',
-  warning: 'warning',
-  alert: 'orange',
-  critical: 'error',
-  offline: 'default',
-  running: 'processing',
-};
-
 const textMap: Record<StatusLevel, string> = {
   normal: '正常',
   warning: '预警',

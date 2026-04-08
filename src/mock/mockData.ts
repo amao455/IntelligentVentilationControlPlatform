@@ -86,6 +86,19 @@ export const gasMonitorPoints = [
   { name: '北二采区CO传感器', type: '一氧化碳' },
 ];
 
+export const personnelList = [
+  '张三',
+  '李四',
+  '王五',
+  '赵六',
+  '钱七',
+  '孙八',
+  '周九',
+  '吴十',
+  '郑十一',
+  '陈十二',
+];
+
 export const devicePool = [
   '主扇 F1',
   '主扇 F2',
@@ -220,6 +233,7 @@ export function createPageDataset(pageKey: string): PageDataset {
     // 为风流监测页面生成专门的数据
     const isAirflowPage = pageKey.includes('airflow-realtime');
     const isGasPage = pageKey.includes('gas-realtime');
+    const isPersonnelPage = pageKey.includes('personnel-realtime');
 
     if (isAirflowPage) {
       const windSpeed = (seeded(seed, 15, 85, index + 610) / 10).toFixed(1);
@@ -272,6 +286,23 @@ export function createPageDataset(pageKey: string): PageDataset {
         status,
         value,
         type: sensorType,
+        updatedAt: `2026-04-03 ${String(seeded(seed, 8, 18, index + 620)).padStart(2, '0')}:${String(
+          seeded(seed, 0, 59, index + 630),
+        ).padStart(2, '0')}`,
+      };
+    }
+
+    if (isPersonnelPage) {
+      const personnelName = personnelList[index % personnelList.length];
+      const heartRate = seeded(seed, 60, 100, index + 625);
+      const batteryLevel = seeded(seed, 20, 100, index + 626);
+
+      return {
+        id: `P-${String(index + 1).padStart(3, '0')}`,
+        name: personnelName,
+        area: areaPool[index % areaPool.length],
+        status,
+        value: `心率: ${heartRate} bpm / 电量: ${batteryLevel}%`,
         updatedAt: `2026-04-03 ${String(seeded(seed, 8, 18, index + 620)).padStart(2, '0')}:${String(
           seeded(seed, 0, 59, index + 630),
         ).padStart(2, '0')}`,
