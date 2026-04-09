@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   InputNumber,
   List,
   Modal,
@@ -327,7 +326,18 @@ const hiddenScrollbarStyle = `
     -ms-overflow-style: none;
   }
 
+  .page-card .ant-card-body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
   .main-fan-scroll::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .page-card .ant-card-body::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
@@ -474,6 +484,48 @@ function renderMetricBox(
       </Typography.Text>
     </div>
   );
+}
+
+function renderSectionLabel(icon: ReactNode, title: string, color: string) {
+  return (
+    <Typography.Text
+      style={{
+        fontSize: 13,
+        color: "#ffffff",
+        fontWeight: 700,
+        display: "block",
+        marginBottom: 10,
+        textShadow: `0 0 10px ${color}`,
+      }}
+    >
+      <span style={{ color, marginRight: 6 }}>{icon}</span>
+      {title}
+    </Typography.Text>
+  );
+}
+
+function getFeedbackItemStyle(status: FeedbackStatus) {
+  if (status === "success") {
+    return {
+      background: "linear-gradient(135deg, rgba(82, 196, 26, 0.14) 0%, rgba(82, 196, 26, 0.06) 100%)",
+      border: "1px solid rgba(82, 196, 26, 0.28)",
+      boxShadow: "0 2px 8px rgba(82, 196, 26, 0.12)",
+    } as CSSProperties;
+  }
+
+  if (status === "warning") {
+    return {
+      background: "linear-gradient(135deg, rgba(250, 173, 20, 0.16) 0%, rgba(250, 173, 20, 0.06) 100%)",
+      border: "1px solid rgba(250, 173, 20, 0.3)",
+      boxShadow: "0 2px 8px rgba(250, 173, 20, 0.12)",
+    } as CSSProperties;
+  }
+
+  return {
+    background: "linear-gradient(135deg, rgba(24, 144, 255, 0.12) 0%, rgba(24, 144, 255, 0.06) 100%)",
+    border: "1px solid rgba(145, 213, 255, 0.28)",
+    boxShadow: "0 2px 8px rgba(24, 144, 255, 0.12)",
+  } as CSSProperties;
 }
 
 function getInterlockConditions(
@@ -1058,229 +1110,143 @@ export default function MainFanControlPage() {
               )}
               style={{
                 ...overviewCardChrome.style,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
+                flex: "0 0 auto",
               }}
               headStyle={overviewCardChrome.headStyle}
               bodyStyle={{
                 padding: "10px 12px",
                 background: "transparent",
-                flex: 1,
-                minHeight: 0,
-                display: "flex",
-                flexDirection: "column",
               }}
             >
-              <Space direction="vertical" size={10} style={{ width: "100%" }}>
-                <Row gutter={8}>
-                  <Col span={8}>
-                    {renderMetricBox(
-                      "运行台数",
-                      `${runningFans}`,
-                      <PlayCircleOutlined />,
-                      "rgba(82, 196, 26, 0.15)",
-                      "rgba(82, 196, 26, 0.4)",
-                      "#73d13d",
-                    )}
-                  </Col>
-                  <Col span={8}>
-                    {renderMetricBox(
-                      "待机台数",
-                      `${standbyFans}`,
-                      <ClockCircleOutlined />,
-                      "rgba(24, 144, 255, 0.15)",
-                      "rgba(24, 144, 255, 0.4)",
-                      "#69c0ff",
-                    )}
-                  </Col>
-                  <Col span={8}>
-                    {renderMetricBox(
-                      "检修台数",
-                      `${maintenanceFans}`,
-                      <ToolOutlined />,
-                      "rgba(255, 193, 7, 0.15)",
-                      "rgba(255, 193, 7, 0.45)",
-                      "#ffd666",
-                    )}
-                  </Col>
-                </Row>
+              <Row gutter={[8, 8]}>
+                {flatFans.map((fan) => {
+                  const selected = fan.id === currentFan.id;
+                  const unit = fanUnits.find((u) =>
+                    u.fans.some((f) => f.id === fan.id)
+                  );
+                  const active = unit?.activeFanId === fan.id;
 
-                <div
-                  className="main-fan-scroll"
-                  style={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflowY: "auto",
-                    paddingRight: 2,
-                  }}
-                >
-                  <Space
-                    direction="vertical"
-                    size={10}
-                    style={{ width: "100%" }}
-                  >
-                    {fanUnits.map((unit) => (
+                  return (
+                    <Col span={6} key={fan.id}>
                       <div
-                        key={unit.id}
+                        onClick={() => onFanSelect(fan.id)}
                         style={{
-                          padding: 12,
-                          borderRadius: 10,
-                          background:
-                            "linear-gradient(135deg, rgba(13, 40, 71, 0.82) 0%, rgba(17, 54, 94, 0.58) 100%)",
-                          border: "1px solid rgba(150, 205, 255, 0.35)",
-                          boxShadow: "0 4px 14px rgba(11, 35, 62, 0.35)",
+                          padding: "8px 10px",
+                          background: selected
+                            ? "linear-gradient(90deg, rgba(24, 144, 255, 0.35) 0%, rgba(24, 144, 255, 0.2) 100%)"
+                            : "rgba(89, 154, 221, 0.1)",
+                          borderRadius: 6,
+                          border: selected
+                            ? "2px solid rgba(24, 144, 255, 0.8)"
+                            : "1px solid rgba(150, 205, 255, 0.3)",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          boxShadow: selected
+                            ? "0 0 12px rgba(24, 144, 255, 0.4), inset 0 0 6px rgba(24, 144, 255, 0.2)"
+                            : "none",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selected) {
+                            e.currentTarget.style.background =
+                              "rgba(89, 154, 221, 0.2)";
+                            e.currentTarget.style.borderColor =
+                              "rgba(150, 205, 255, 0.5)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selected) {
+                            e.currentTarget.style.background =
+                              "rgba(89, 154, 221, 0.1)";
+                            e.currentTarget.style.borderColor =
+                              "rgba(150, 205, 255, 0.3)";
+                          }
                         }}
                       >
                         <div
                           style={{
                             display: "flex",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            marginBottom: 10,
+                            gap: 6,
+                            marginBottom: 6,
                           }}
                         >
-                          <div>
-                            <Typography.Text
-                              style={{
-                                display: "block",
-                                fontSize: 13,
-                                fontWeight: 700,
-                                ...textGlow,
-                              }}
-                            >
-                              {unit.name}
-                            </Typography.Text>
-                            <Typography.Text
-                              style={{ fontSize: 11, color: "#b8d9ff" }}
-                            >
-                              <ApiOutlined style={{ marginRight: 4 }} />
-                              {unit.area} · {unit.controlMode}
-                            </Typography.Text>
-                          </div>
-                          <Tag
-                            color={unit.activeFanId ? "success" : "default"}
-                            style={{ margin: 0 }}
+                          <RocketOutlined
+                            style={{
+                              fontSize: 16,
+                              color: selected ? "#1890ff" : "#69c0ff",
+                              filter: selected
+                                ? "drop-shadow(0 0 4px rgba(24, 144, 255, 0.8))"
+                                : "none",
+                            }}
+                          />
+                          <Typography.Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: selected ? "#ffffff" : "#e8f4ff",
+                              textShadow: selected
+                                ? "0 0 6px rgba(24, 144, 255, 0.6)"
+                                : "none",
+                            }}
                           >
-                            {unit.activeFanId
-                              ? `投运 ${unit.activeFanId}`
-                              : "未投运"}
+                            {fan.id}
+                          </Typography.Text>
+                        </div>
+                        <Typography.Text
+                          style={{
+                            fontSize: 10,
+                            color: "#b8d9ff",
+                            display: "block",
+                            marginBottom: 6,
+                          }}
+                        >
+                          {fan.role} · {fan.station}
+                        </Typography.Text>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography.Text
+                            style={{
+                              fontSize: 10,
+                              color: "#91caff",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fan.power}kW
+                          </Typography.Text>
+                          <Tag
+                            color={
+                              selected
+                                ? "processing"
+                                : active
+                                  ? "success"
+                                  : getFanStatusTagColor(fan.status)
+                            }
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              padding: "0px 6px",
+                              margin: 0,
+                              lineHeight: "18px",
+                            }}
+                          >
+                            {selected ? "已选" : active ? "投运" : fan.status}
                           </Tag>
                         </div>
-
-                        <Space
-                          direction="vertical"
-                          size={8}
-                          style={{ width: "100%" }}
-                        >
-                          {unit.fans.map((fan) => {
-                            const selected = fan.id === currentFan.id;
-                            const active = unit.activeFanId === fan.id;
-
-                            return (
-                              <div
-                                key={fan.id}
-                                onClick={() => onFanSelect(fan.id)}
-                                style={{
-                                  padding: "10px 12px",
-                                  borderRadius: 8,
-                                  cursor: "pointer",
-                                  background: selected
-                                    ? "linear-gradient(135deg, rgba(24, 144, 255, 0.32) 0%, rgba(24, 144, 255, 0.15) 100%)"
-                                    : "linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)",
-                                  border: selected
-                                    ? "1px solid rgba(105, 192, 255, 0.8)"
-                                    : "1px solid rgba(150, 205, 255, 0.22)",
-                                  boxShadow: selected
-                                    ? "0 0 18px rgba(24, 144, 255, 0.22)"
-                                    : "0 2px 8px rgba(11, 35, 62, 0.2)",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginBottom: 6,
-                                  }}
-                                >
-                                  <Space size={6}>
-                                    <Typography.Text
-                                      style={{
-                                        fontSize: 13,
-                                        fontWeight: 700,
-                                        color: "#ffffff",
-                                      }}
-                                    >
-                                      {fan.id}
-                                    </Typography.Text>
-                                    <Tag color="blue" style={{ margin: 0 }}>
-                                      {fan.role}
-                                    </Tag>
-                                    {active ? (
-                                      <Tag
-                                        color="success"
-                                        style={{ margin: 0 }}
-                                      >
-                                        当前投运
-                                      </Tag>
-                                    ) : null}
-                                  </Space>
-                                  <Tag
-                                    color={getFanStatusTagColor(fan.status)}
-                                    style={{ margin: 0 }}
-                                  >
-                                    {fan.status}
-                                  </Tag>
-                                </div>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    gap: 12,
-                                  }}
-                                >
-                                  <Typography.Text
-                                    style={{ fontSize: 11, color: "#b8d9ff" }}
-                                  >
-                                    功率 {fan.power} kW
-                                  </Typography.Text>
-                                  <Typography.Text
-                                    style={{ fontSize: 11, color: "#b8d9ff" }}
-                                  >
-                                    转速 {fan.speed || 0} rpm
-                                  </Typography.Text>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </Space>
                       </div>
-                    ))}
-                  </Space>
-                </div>
-
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: "rgba(24, 144, 255, 0.1)",
-                    border: "1px solid rgba(105, 192, 255, 0.3)",
-                  }}
-                >
-                  <Typography.Text
-                    style={{ fontSize: 11, color: "#dcecff", lineHeight: 1.7 }}
-                  >
-                    站点状态每 2
-                    秒同步一次，主机与备机可分别查看当前工况、远控条件与最近操作反馈。
-                  </Typography.Text>
-                </div>
-              </Space>
+                    </Col>
+                  );
+                })}
+              </Row>
             </Card>
           </Col>
 
           <Col
-            span={7}
+            span={6}
             style={{
               height: "100%",
               display: "flex",
@@ -1302,190 +1268,284 @@ export default function MainFanControlPage() {
               )}
               style={{
                 ...overviewCardChrome.style,
-                flex: "0 0 34%",
+                flex: "0 0 auto",
               }}
               headStyle={overviewCardChrome.headStyle}
               bodyStyle={{ padding: "10px 12px", background: "transparent" }}
             >
-              <Space direction="vertical" size={10} style={{ width: "100%" }}>
+              <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                {/* 设备名称与状态 */}
                 <div
                   style={{
-                    padding: "10px 12px",
-                    borderRadius: 8,
+                    padding: "8px 10px",
                     background:
-                      "linear-gradient(135deg, rgba(24, 144, 255, 0.22) 0%, rgba(24, 144, 255, 0.12) 100%)",
+                      "linear-gradient(135deg, rgba(24, 144, 255, 0.2) 0%, rgba(24, 144, 255, 0.1) 100%)",
+                    borderRadius: 6,
                     border: "1px solid rgba(24, 144, 255, 0.5)",
-                    boxShadow: "0 2px 10px rgba(24, 144, 255, 0.18)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <div>
-                      <Typography.Text
-                        style={{
-                          display: "block",
-                          fontSize: 15,
-                          fontWeight: 700,
-                          color: "#ffffff",
-                        }}
-                      >
-                        {currentFan.id}
-                      </Typography.Text>
-                      <Typography.Text
-                        style={{ fontSize: 11, color: "#b8d9ff" }}
-                      >
-                        {currentUnit.name} · {currentFan.station} ·{" "}
-                        {currentFan.driveMode}
-                      </Typography.Text>
-                    </div>
-                    <Space size={6}>
-                      <Tag color="blue" style={{ margin: 0 }}>
-                        {currentFan.role}
-                      </Tag>
-                      <Tag
-                        color={getFanStatusTagColor(currentFan.status)}
-                        style={{ margin: 0 }}
-                      >
-                        {currentFan.status}
-                      </Tag>
-                    </Space>
-                  </div>
-                </div>
-
-                <Row gutter={[8, 8]}>
-                  <Col span={12}>
-                    {renderMetricBox(
-                      "转速",
-                      `${currentFan.speed} rpm`,
-                      <ThunderboltOutlined />,
-                      "rgba(82, 196, 26, 0.15)",
-                      "rgba(82, 196, 26, 0.42)",
-                      "#73d13d",
-                    )}
-                  </Col>
-                  <Col span={12}>
-                    {renderMetricBox(
-                      "风量",
-                      `${currentFan.airflow} m³/min`,
-                      <CloudOutlined />,
-                      "rgba(24, 144, 255, 0.15)",
-                      "rgba(24, 144, 255, 0.4)",
-                      "#91d5ff",
-                    )}
-                  </Col>
-                  <Col span={12}>
-                    {renderMetricBox(
-                      "静压",
-                      `${currentFan.pressure} Pa`,
-                      <DashboardOutlined />,
-                      "rgba(250, 173, 20, 0.15)",
-                      "rgba(250, 173, 20, 0.45)",
-                      "#ffd666",
-                    )}
-                  </Col>
-                  <Col span={12}>
-                    {renderMetricBox(
-                      "轴承温度",
-                      `${currentFan.bearingTemp} ℃`,
-                      <ExperimentOutlined />,
-                      "rgba(255, 77, 79, 0.15)",
-                      "rgba(255, 77, 79, 0.35)",
-                      "#ff7875",
-                    )}
-                  </Col>
-                </Row>
-
-                <div style={{ display: "grid", gap: 10 }}>
-                  <div
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 6,
-                      background: "rgba(145, 213, 255, 0.09)",
-                      border: "1px solid rgba(145, 213, 255, 0.25)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 6,
-                      }}
-                    >
-                      <Typography.Text
-                        style={{ fontSize: 11, color: "#b8d9ff" }}
-                      >
-                        负载率
-                      </Typography.Text>
-                      <Typography.Text
-                        style={{ fontSize: 11, color: "#e8f4ff" }}
-                      >
-                        {currentFan.load}%
-                      </Typography.Text>
-                    </div>
-                    <Progress
-                      percent={currentFan.load}
-                      showInfo={false}
-                      strokeColor="#69c0ff"
-                      trailColor="rgba(255,255,255,0.08)"
-                      size="small"
-                    />
-                  </div>
-                  <div
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 6,
-                      background: "rgba(145, 213, 255, 0.09)",
-                      border: "1px solid rgba(145, 213, 255, 0.25)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 6,
-                      }}
-                    >
-                      <Typography.Text
-                        style={{ fontSize: 11, color: "#b8d9ff" }}
-                      >
-                        变频频率
-                      </Typography.Text>
-                      <Typography.Text
-                        style={{ fontSize: 11, color: "#e8f4ff" }}
-                      >
-                        {currentFan.frequency} Hz
-                      </Typography.Text>
-                    </div>
-                    <Progress
-                      percent={Math.round((currentFan.frequency / 50) * 100)}
-                      showInfo={false}
-                      strokeColor="#73d13d"
-                      trailColor="rgba(255,255,255,0.08)"
-                      size="small"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  style={{
+                    boxShadow: "0 2px 8px rgba(24, 144, 255, 0.2)",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
                 >
+                  <div>
+                    <Typography.Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        display: "block",
+                      }}
+                    >
+                      {currentFan.id}
+                    </Typography.Text>
+                    <Typography.Text style={{ fontSize: 11, color: "#b8d9ff" }}>
+                      <ApiOutlined style={{ fontSize: 11, marginRight: 4 }} />
+                      {currentFan.station}
+                    </Typography.Text>
+                  </div>
+                  <Space size={6}>
+                    <Tag color="blue" style={{ margin: 0, fontSize: 11, padding: "2px 8px" }}>
+                      {currentFan.role}
+                    </Tag>
+                    <Tag
+                      color={
+                        currentFan.status === "运行"
+                          ? "success"
+                          : currentFan.status === "停止"
+                            ? "default"
+                            : currentFan.status === "待机"
+                              ? "processing"
+                              : "warning"
+                      }
+                      style={{ fontSize: 11, padding: "2px 8px", margin: 0 }}
+                    >
+                      <PlayCircleOutlined style={{ marginRight: 4 }} />
+                      {currentFan.status === "运行"
+                        ? "运行中"
+                        : currentFan.status === "停止"
+                          ? "已停止"
+                          : currentFan.status === "待机"
+                            ? "待机中"
+                            : "检修中"}
+                    </Tag>
+                  </Space>
+                </div>
+
+                {/* 关键运行参数 */}
+                <Row gutter={8}>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(82, 196, 26, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(82, 196, 26, 0.4)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        <ThunderboltFilled
+                          style={{ fontSize: 10, marginRight: 2 }}
+                        />
+                        功率
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#52c41a",
+                        }}
+                      >
+                        {currentFan.power}kW
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(24, 144, 255, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(24, 144, 255, 0.4)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        <DashboardOutlined
+                          style={{ fontSize: 10, marginRight: 2 }}
+                        />
+                        负载
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#69c0ff",
+                        }}
+                      >
+                        {currentFan.load}%
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(135, 208, 104, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(135, 208, 104, 0.4)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        <CloudOutlined
+                          style={{ fontSize: 10, marginRight: 2 }}
+                        />
+                        风量
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#95de64",
+                        }}
+                      >
+                        {currentFan.airflow}
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                </Row>
+
+                {/* 次要参数 */}
+                <Row gutter={8}>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(250, 173, 20, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(250, 173, 20, 0.4)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        转速
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#ffd666",
+                        }}
+                      >
+                        {currentFan.speed}rpm
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(255, 77, 79, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(255, 77, 79, 0.35)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        轴温
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#ff7875",
+                        }}
+                      >
+                        {currentFan.bearingTemp}℃
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div
+                      style={{
+                        padding: "6px 8px",
+                        background: "rgba(135, 208, 104, 0.15)",
+                        borderRadius: 4,
+                        border: "1px solid rgba(135, 208, 104, 0.4)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography.Text
+                        style={{
+                          fontSize: 10,
+                          color: "#b8d9ff",
+                          display: "block",
+                        }}
+                      >
+                        静压
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#95de64",
+                        }}
+                      >
+                        {currentFan.pressure}Pa
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                </Row>
+
+                {/* 运行时长与更新时间 */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingTop: 4,
+                  }}
+                >
                   <Typography.Text style={{ fontSize: 11, color: "#b8d9ff" }}>
-                    <LineChartOutlined style={{ marginRight: 4 }} />
-                    电流 {currentFan.current} A · 振动 {currentFan.vibration}{" "}
-                    mm/s
+                    <ClockCircleOutlined
+                      style={{ fontSize: 11, marginRight: 4 }}
+                    />
+                    运行时长：{currentFan.runtime}
                   </Typography.Text>
                   <Typography.Text style={{ fontSize: 11, color: "#b8d9ff" }}>
-                    <ReloadOutlined style={{ marginRight: 4 }} />
+                    <ReloadOutlined style={{ fontSize: 11, marginRight: 4 }} />
                     {currentFan.lastUpdate}
                   </Typography.Text>
                 </div>
@@ -1497,11 +1557,11 @@ export default function MainFanControlPage() {
               size="small"
               title={renderCardTitle(
                 <ControlOutlined style={{ fontSize: 15, color: "#ffd666" }} />,
-                "主风机控制操作",
+                "设备控制操作",
               )}
               style={{
                 ...controlCardChrome.style,
-                flex: "0 0 38%",
+                flex: "0 0 auto",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -1509,201 +1569,243 @@ export default function MainFanControlPage() {
               bodyStyle={{
                 padding: "10px 12px",
                 background: "transparent",
-                flex: 1,
-                minHeight: 0,
-                display: "flex",
-                flexDirection: "column",
               }}
             >
-              <Space direction="vertical" size={10} style={{ width: "100%" }}>
+              <Space direction="vertical" size={12} style={{ width: "100%" }}>
                 <div
                   style={{
                     padding: "10px 12px",
-                    borderRadius: 8,
                     background:
-                      "linear-gradient(135deg, rgba(255, 193, 7, 0.22) 0%, rgba(255, 193, 7, 0.1) 100%)",
-                    border: "1px solid rgba(255, 193, 7, 0.42)",
+                      "linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.1) 100%)",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255, 193, 7, 0.5)",
+                    boxShadow: "0 2px 8px rgba(255, 193, 7, 0.2)",
                   }}
                 >
-                  <Typography.Text
-                    style={{
-                      display: "block",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#ffffff",
-                      marginBottom: 6,
-                    }}
-                  >
-                    当前控制目标：{currentFan.id}
-                  </Typography.Text>
-                  <Typography.Text
-                    style={{ fontSize: 11, color: "#fef3c7", lineHeight: 1.7 }}
-                  >
-                    远程控制状态 {hasLockCondition ? "受限" : "可用"}，当前机组{" "}
-                    {currentUnit.name}
-                    {hasWarningCondition
-                      ? " 存在预警项，请确认后操作。"
-                      : " 满足常规控制条件。"}
-                  </Typography.Text>
+                  <Row gutter={[8, 8]}>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          padding: "6px 8px",
+                          background: "rgba(24, 144, 255, 0.15)",
+                          borderRadius: 4,
+                          border: "1px solid rgba(24, 144, 255, 0.3)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography.Text style={{ fontSize: 11, color: "#e8f4ff" }}>
+                          <ApiOutlined style={{ marginRight: 4 }} />
+                          控制模式
+                        </Typography.Text>
+                        <Tag color="blue" style={{ fontSize: 11, margin: 0 }}>
+                          远程
+                        </Tag>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          padding: "6px 8px",
+                          background: hasLockCondition ? "rgba(255, 77, 79, 0.14)" : "rgba(82, 196, 26, 0.15)",
+                          borderRadius: 4,
+                          border: hasLockCondition ? "1px solid rgba(255, 77, 79, 0.3)" : "1px solid rgba(82, 196, 26, 0.3)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography.Text style={{ fontSize: 11, color: "#e8f4ff" }}>
+                          <SafetyOutlined style={{ marginRight: 4 }} />
+                          安全联锁
+                        </Typography.Text>
+                        <Tag color={hasLockCondition ? "error" : "success"} style={{ fontSize: 11, margin: 0 }}>
+                          {hasLockCondition ? "闭锁" : "启用"}
+                        </Tag>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          padding: "6px 8px",
+                          background: "rgba(145, 213, 255, 0.12)",
+                          borderRadius: 4,
+                          border: "1px solid rgba(145, 213, 255, 0.3)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography.Text style={{ fontSize: 11, color: "#e8f4ff" }}>
+                          <PlayCircleOutlined style={{ marginRight: 4 }} />
+                          当前设备
+                        </Typography.Text>
+                        <Typography.Text style={{ fontSize: 11, fontWeight: 700, color: "#ffffff" }}>
+                          {currentFan.id}
+                        </Typography.Text>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          padding: "6px 8px",
+                          background: "rgba(250, 173, 20, 0.12)",
+                          borderRadius: 4,
+                          border: "1px solid rgba(250, 173, 20, 0.3)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography.Text style={{ fontSize: 11, color: "#e8f4ff" }}>
+                          <ClockCircleOutlined style={{ marginRight: 4 }} />
+                          切换窗口
+                        </Typography.Text>
+                        <Tag color={switchDisabled ? "warning" : "success"} style={{ fontSize: 11, margin: 0 }}>
+                          {switchDisabled ? "受限" : "可切换"}
+                        </Tag>
+                      </div>
+                    </Col>
+                  </Row>
                 </div>
 
-                <Row gutter={[8, 8]}>
-                  <Col span={12}>
-                    <Popconfirm
-                      title={`确认启动 ${currentFan.id} ?`}
-                      onConfirm={onStart}
-                      okText="确认"
-                      cancelText="取消"
-                      disabled={startDisabled}
-                    >
-                      <Button
-                        block
-                        icon={<PlayCircleOutlined />}
+                <div>
+                  {renderSectionLabel(<ThunderboltFilled />, "基础控制", "rgba(255, 193, 7, 0.45)")}
+                  <Row gutter={[10, 10]}>
+                    <Col span={12}>
+                      <Popconfirm
+                        title={`确认启动 ${currentFan.id} ?`}
+                        description={
+                          <div style={{ fontSize: 12 }}>
+                            <div>• 所属机组：{currentUnit.name}</div>
+                            <div>• 预计启动耗时：25-40 秒</div>
+                            <div>• 请确认现场风门与高压柜状态正常</div>
+                          </div>
+                        }
+                        onConfirm={onStart}
+                        okText="确认启动"
+                        cancelText="取消"
                         disabled={startDisabled}
-                        style={getActionButtonStyle(
-                          "linear-gradient(135deg, rgba(82, 196, 26, 0.95) 0%, rgba(115, 209, 61, 0.95) 100%)",
-                          "rgba(82, 196, 26, 0.55)",
-                          "rgba(82, 196, 26, 0.28)",
-                        )}
                       >
-                        启动风机
-                      </Button>
-                    </Popconfirm>
-                  </Col>
-                  <Col span={12}>
-                    <Popconfirm
-                      title={`确认停止 ${currentFan.id} ?`}
-                      onConfirm={onStop}
-                      okText="确认"
-                      cancelText="取消"
-                      disabled={stopDisabled}
-                    >
-                      <Button
-                        block
-                        icon={<PoweroffOutlined />}
+                        <Button
+                          block
+                          icon={<PlayCircleOutlined />}
+                          disabled={startDisabled}
+                          style={{
+                            ...getActionButtonStyle(
+                              "linear-gradient(135deg, rgba(82, 196, 26, 0.95) 0%, rgba(115, 209, 61, 0.95) 100%)",
+                              "rgba(82, 196, 26, 0.55)",
+                              "rgba(82, 196, 26, 0.28)",
+                            ),
+                            height: 46,
+                            fontSize: 14,
+                          }}
+                        >
+                          启动风机
+                        </Button>
+                      </Popconfirm>
+                    </Col>
+                    <Col span={12}>
+                      <Popconfirm
+                        title={`确认停止 ${currentFan.id} ?`}
+                        description={
+                          <div style={{ fontSize: 12, color: "#ffccc7" }}>
+                            <div>• 停机将解除当前运行回路</div>
+                            <div>• 若未完成切换，请确认备用机状态</div>
+                            <div>• 停机过程约需 15-20 秒</div>
+                          </div>
+                        }
+                        onConfirm={onStop}
+                        okText="确认停机"
+                        cancelText="取消"
                         disabled={stopDisabled}
-                        style={getActionButtonStyle(
-                          "linear-gradient(135deg, rgba(255, 77, 79, 0.95) 0%, rgba(255, 120, 117, 0.95) 100%)",
-                          "rgba(255, 77, 79, 0.5)",
-                          "rgba(255, 77, 79, 0.28)",
-                        )}
                       >
-                        停止风机
-                      </Button>
-                    </Popconfirm>
-                  </Col>
-                  <Col span={12}>
-                    <Popconfirm
-                      title={`确认执行 ${currentUnit.name} 主备切换?`}
-                      onConfirm={onSwitch}
-                      okText="确认"
-                      cancelText="取消"
-                      disabled={switchDisabled}
-                    >
+                        <Button
+                          block
+                          icon={<PoweroffOutlined />}
+                          disabled={stopDisabled}
+                          style={{
+                            ...getActionButtonStyle(
+                              "linear-gradient(135deg, rgba(255, 77, 79, 0.95) 0%, rgba(255, 120, 117, 0.95) 100%)",
+                              "rgba(255, 77, 79, 0.5)",
+                              "rgba(255, 77, 79, 0.28)",
+                            ),
+                            height: 46,
+                            fontSize: 14,
+                          }}
+                        >
+                          停止风机
+                        </Button>
+                      </Popconfirm>
+                    </Col>
+                    <Col span={24}>
+                      <Popconfirm
+                        title={`确认执行 ${currentUnit.name} 主备切换?`}
+                        description={
+                          <div style={{ fontSize: 12 }}>
+                            <div>• 当前运行设备：{currentUnit.activeFanId || "无"}</div>
+                            <div>• 目标切换设备：{pairedFan?.id || "无可用备机"}</div>
+                            <div>• 切换前将再次校验备机状态与联锁条件</div>
+                          </div>
+                        }
+                        onConfirm={onSwitch}
+                        okText="确认切换"
+                        cancelText="取消"
+                        disabled={switchDisabled}
+                      >
+                        <Button
+                          block
+                          icon={<SwapOutlined />}
+                          disabled={switchDisabled}
+                          style={getActionButtonStyle(
+                            "linear-gradient(135deg, rgba(24, 144, 255, 0.95) 0%, rgba(105, 192, 255, 0.95) 100%)",
+                            "rgba(24, 144, 255, 0.55)",
+                            "rgba(24, 144, 255, 0.28)",
+                          )}
+                        >
+                          主备切换
+                        </Button>
+                      </Popconfirm>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div>
+                  {renderSectionLabel(<SettingOutlined />, "调节设定", "rgba(255, 193, 7, 0.45)")}
+                  <Row gutter={[10, 10]}>
+                    <Col span={12}>
                       <Button
                         block
-                        icon={<SwapOutlined />}
-                        disabled={switchDisabled}
+                        icon={<SettingOutlined />}
+                        disabled={speedDisabled}
+                        onClick={() => setSpeedModalOpen(true)}
                         style={getActionButtonStyle(
-                          "linear-gradient(135deg, rgba(24, 144, 255, 0.95) 0%, rgba(105, 192, 255, 0.95) 100%)",
-                          "rgba(24, 144, 255, 0.55)",
-                          "rgba(24, 144, 255, 0.28)",
+                          "linear-gradient(135deg, rgba(250, 173, 20, 0.95) 0%, rgba(255, 214, 102, 0.95) 100%)",
+                          "rgba(250, 173, 20, 0.45)",
+                          "rgba(250, 173, 20, 0.26)",
                         )}
                       >
-                        主备切换
+                        转速调节
                       </Button>
-                    </Popconfirm>
-                  </Col>
-                  <Col span={12}>
-                    <Button
-                      block
-                      icon={<SettingOutlined />}
-                      disabled={speedDisabled}
-                      onClick={() => setSpeedModalOpen(true)}
-                      style={getActionButtonStyle(
-                        "linear-gradient(135deg, rgba(250, 173, 20, 0.95) 0%, rgba(255, 214, 102, 0.95) 100%)",
-                        "rgba(250, 173, 20, 0.45)",
-                        "rgba(250, 173, 20, 0.26)",
-                      )}
-                    >
-                      转速调节
-                    </Button>
-                  </Col>
-                  <Col span={24}>
-                    <Button
-                      block
-                      icon={<ReloadOutlined />}
-                      onClick={onRefresh}
-                      style={getActionButtonStyle(
-                        "rgba(89, 154, 221, 0.18)",
-                        "rgba(150, 205, 255, 0.4)",
-                        "rgba(74, 157, 232, 0.18)",
-                      )}
-                    >
-                      刷新状态
-                    </Button>
-                  </Col>
-                </Row>
-
-                <Divider
-                  style={{
-                    margin: "2px 0 0",
-                    borderColor: "rgba(255, 255, 255, 0.12)",
-                  }}
-                />
-
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: "rgba(12, 31, 52, 0.62)",
-                    border: "1px solid rgba(255, 193, 7, 0.22)",
-                  }}
-                >
-                  <Typography.Text
-                    style={{
-                      display: "block",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "#ffffff",
-                      marginBottom: 8,
-                    }}
-                  >
-                    控制说明
-                  </Typography.Text>
-                  <Typography.Text
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      color: "#e8f4ff",
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    1.
-                    启停与切换指令均会先校验联锁条件，并在反馈卡片中展示回执。
-                  </Typography.Text>
-                  <Typography.Text
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      color: "#e8f4ff",
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    2.
-                    转速调节仅对运行中的主风机开放，设定值将同步到变频器控制逻辑。
-                  </Typography.Text>
-                  <Typography.Text
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      color: "#e8f4ff",
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    3. 若备机检修闭锁生效，主备切换将自动拦截并记录操作痕迹。
-                  </Typography.Text>
+                    </Col>
+                    <Col span={12}>
+                      <Button
+                        block
+                        icon={<ReloadOutlined />}
+                        onClick={onRefresh}
+                        style={getActionButtonStyle(
+                          "rgba(89, 154, 221, 0.18)",
+                          "rgba(150, 205, 255, 0.4)",
+                          "rgba(74, 157, 232, 0.18)",
+                        )}
+                      >
+                        刷新状态
+                      </Button>
+                    </Col>
+                  </Row>
                 </div>
+
               </Space>
             </Card>
 
@@ -1719,6 +1821,7 @@ export default function MainFanControlPage() {
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
+                minHeight: 0,
               }}
               headStyle={safetyCardChrome.headStyle}
               bodyStyle={{
@@ -1726,15 +1829,23 @@ export default function MainFanControlPage() {
                 background: "transparent",
                 flex: 1,
                 minHeight: 0,
-                display: "flex",
-                flexDirection: "column",
+                overflowY: "auto",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
               }}
             >
-              <Space direction="vertical" size={10} style={{ width: "100%" }}>
+              <style>
+                {`
+                  .page-card .ant-card-body::-webkit-scrollbar {
+                    display: none !important;
+                  }
+                `}
+              </style>
+              <Space direction="vertical" size={8} style={{ width: "100%" }}>
                 <div
                   style={{
-                    padding: "10px 12px",
-                    borderRadius: 8,
+                    padding: "8px 10px",
+                    borderRadius: 6,
                     background: hasLockCondition
                       ? "linear-gradient(135deg, rgba(255, 77, 79, 0.18) 0%, rgba(255, 77, 79, 0.08) 100%)"
                       : hasWarningCondition
@@ -1750,82 +1861,60 @@ export default function MainFanControlPage() {
                   <Typography.Text
                     style={{
                       display: "block",
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: 700,
                       color: "#ffffff",
-                      marginBottom: 6,
                     }}
                   >
                     {hasLockCondition
-                      ? "当前存在闭锁条件，禁止远程控制"
+                      ? "存在闭锁条件，禁止远程控制"
                       : hasWarningCondition
                         ? "具备远控条件，请关注预警项"
                         : "联锁条件满足，可执行远程控制"}
                   </Typography.Text>
-                  <Typography.Text
-                    style={{ fontSize: 11, color: "#e8f4ff", lineHeight: 1.7 }}
-                  >
-                    当前所选设备 {currentFan.id}
-                    ，运行许可由高压柜、风门、油站、瓦斯浓度与检修状态联合判定。
-                  </Typography.Text>
                 </div>
 
-                <div
-                  className="main-fan-scroll"
-                  style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
+                <Space
+                  direction="vertical"
+                  size={6}
+                  style={{ width: "100%" }}
                 >
-                  <Space
-                    direction="vertical"
-                    size={8}
-                    style={{ width: "100%" }}
-                  >
-                    {interlockConditions.map((item) => (
+                  {interlockConditions.map((item) => (
+                    <div
+                      key={item.name}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        background: "rgba(12, 31, 52, 0.62)",
+                        border: "1px solid rgba(145, 213, 255, 0.16)",
+                      }}
+                    >
                       <div
-                        key={item.name}
                         style={{
-                          padding: "10px 12px",
-                          borderRadius: 8,
-                          background: "rgba(12, 31, 52, 0.62)",
-                          border: "1px solid rgba(145, 213, 255, 0.16)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 6,
-                          }}
-                        >
-                          <Typography.Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: "#ffffff",
-                            }}
-                          >
-                            {item.name}
-                          </Typography.Text>
-                          <Tag
-                            color={getInterlockTagColor(item.status)}
-                            style={{ margin: 0 }}
-                          >
-                            {item.value}
-                          </Tag>
-                        </div>
                         <Typography.Text
                           style={{
                             fontSize: 11,
-                            color: "#b8d9ff",
-                            lineHeight: 1.7,
+                            fontWeight: 600,
+                            color: "#e8f4ff",
                           }}
                         >
-                          {item.detail}
+                          {item.name}
                         </Typography.Text>
+                        <Tag
+                          color={getInterlockTagColor(item.status)}
+                          style={{ margin: 0, fontSize: 10 }}
+                        >
+                          {item.value}
+                        </Tag>
                       </div>
-                    ))}
-                  </Space>
-                </div>
+                    </div>
+                  ))}
+                </Space>
               </Space>
             </Card>
           </Col>
@@ -1834,7 +1923,7 @@ export default function MainFanControlPage() {
         <Row
           gutter={[12, 12]}
           style={{
-            flex: 2,
+            flex: 1,
             minHeight: 0,
             pointerEvents: "none",
           }}
@@ -1868,10 +1957,18 @@ export default function MainFanControlPage() {
                 background: "transparent",
                 flex: 1,
                 minHeight: 0,
-                display: "flex",
-                flexDirection: "column",
+                overflowY: "auto",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
               }}
             >
+              <style>
+                {`
+                  .page-card .ant-card-body::-webkit-scrollbar {
+                    display: none !important;
+                  }
+                `}
+              </style>
               <Space
                 direction="vertical"
                 size={10}
@@ -1911,6 +2008,26 @@ export default function MainFanControlPage() {
                 </Row>
 
                 <div
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "linear-gradient(135deg, rgba(145, 213, 255, 0.16) 0%, rgba(145, 213, 255, 0.08) 100%)",
+                    border: "1px solid rgba(145, 213, 255, 0.32)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <Typography.Text style={{ fontSize: 11, color: "#e8f4ff", lineHeight: 1.7 }}>
+                    最近 6 条控制结果集中展示，成功、执行中与预警状态会实时分色回显。
+                  </Typography.Text>
+                  <Tag color="processing" style={{ margin: 0, whiteSpace: "nowrap" }}>
+                    实时更新
+                  </Tag>
+                </div>
+
+                <div
                   className="main-fan-scroll"
                   style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
                 >
@@ -1922,11 +2039,8 @@ export default function MainFanControlPage() {
                         style={{
                           padding: "10px 12px",
                           marginBottom: 8,
-                          background:
-                            "linear-gradient(135deg, rgba(24, 144, 255, 0.12) 0%, rgba(24, 144, 255, 0.06) 100%)",
                           borderRadius: 8,
-                          border: "1px solid rgba(145, 213, 255, 0.28)",
-                          boxShadow: "0 2px 8px rgba(24, 144, 255, 0.12)",
+                          ...getFeedbackItemStyle(item.status),
                         }}
                       >
                         <div style={{ width: "100%" }}>
@@ -2052,22 +2166,23 @@ export default function MainFanControlPage() {
                 >
                   <div
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
+                      padding: "8px 10px",
                       marginBottom: 8,
+                      borderRadius: 8,
+                      background: "rgba(255, 163, 77, 0.12)",
+                      border: "1px solid rgba(255, 163, 77, 0.24)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                     }}
                   >
-                    <AlertOutlined style={{ color: "#ffd666" }} />
-                    <Typography.Text
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "#ffffff",
-                      }}
-                    >
+                    <Typography.Text style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>
+                      <AlertOutlined style={{ color: "#ffd666", marginRight: 6 }} />
                       运行告警
                     </Typography.Text>
+                    <Tag color="warning" style={{ margin: 0 }}>
+                      {alertItems.length} 条
+                    </Tag>
                   </div>
                   <div
                     className="main-fan-scroll"
@@ -2166,22 +2281,23 @@ export default function MainFanControlPage() {
                 >
                   <div
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
+                      padding: "8px 10px",
                       marginBottom: 8,
+                      borderRadius: 8,
+                      background: "rgba(145, 213, 255, 0.12)",
+                      border: "1px solid rgba(145, 213, 255, 0.24)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                     }}
                   >
-                    <HistoryOutlined style={{ color: "#91d5ff" }} />
-                    <Typography.Text
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "#ffffff",
-                      }}
-                    >
+                    <Typography.Text style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>
+                      <HistoryOutlined style={{ color: "#91d5ff", marginRight: 6 }} />
                       操作记录
                     </Typography.Text>
+                    <Tag color="blue" style={{ margin: 0 }}>
+                      {operationRecords.length} 条
+                    </Tag>
                   </div>
                   <div
                     className="main-fan-scroll"
