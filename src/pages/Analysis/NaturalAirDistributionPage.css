@@ -446,136 +446,95 @@
   box-shadow: 0 0 12px rgba(156, 208, 255, 0.25);
 }
 
-/* 预警信息卡片 */
-.warning-card .ant-card-head {
-  background: linear-gradient(180deg, rgba(255, 77, 79, 0.3) 0%, rgba(255, 77, 79, 0.2) 100%) !important;
+.result-card--focused .result-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.warning-card .ant-table {
-  border-radius: 8px;
-  overflow: hidden;
-  background: transparent !important;
+.result-card--focused .result-focus-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.24);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.28) 0%, rgba(8, 27, 47, 0.18) 100%);
 }
 
-.warning-card .ant-table-thead > tr > th {
-  background: linear-gradient(180deg, rgba(255, 77, 79, 0.3) 0%, rgba(255, 77, 79, 0.2) 100%) !important;
-  color: #ffffff !important;
+.result-card--focused .result-focus-item span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #9bc7ea;
+}
+
+.result-card--focused .result-focus-item strong {
+  display: block;
+  font-size: 15px;
+  color: #edf8ff;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.result-focus-table .ant-table-tbody > tr > td {
+  vertical-align: middle;
+}
+
+.result-focus-table .result-row--estimated > td {
+  background: rgba(28, 74, 112, 0.16) !important;
+}
+
+.result-focus-table .result-row--measured > td {
+  background: rgba(12, 36, 57, 0.08) !important;
+}
+
+.result-source-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.result-source-tag--measured {
+  color: #8ff0c4;
+  background: rgba(53, 165, 118, 0.18);
+  border-color: rgba(111, 229, 177, 0.32);
+}
+
+.result-source-tag--estimated {
+  color: #9ad8ff;
+  background: rgba(45, 124, 185, 0.2);
+  border-color: rgba(120, 190, 255, 0.32);
+}
+
+.result-airflow-value {
+  color: #dff3ff;
   font-weight: 600;
-  border-bottom: 2px solid rgba(255, 120, 117, 0.7) !important;
-  border-right: 1px solid rgba(255, 120, 117, 0.3) !important;
-  padding: 12px 16px;
-  text-shadow: 0 0 12px rgba(255, 120, 117, 0.6);
 }
 
-.warning-card .ant-table-tbody > tr {
-  transition: all 0.3s ease;
+.result-airflow-empty {
+  color: #8fb0cc;
 }
 
-.warning-card .ant-table-tbody > tr:hover > td {
-  background: rgba(255, 77, 79, 0.15) !important;
-  box-shadow: inset 0 0 30px rgba(255, 120, 117, 0.2);
+.result-airflow-value--strong {
+  color: #8fddff;
+  font-size: 14px;
 }
 
-.warning-card .ant-table-tbody > tr > td {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(150, 205, 255, 0.2) !important;
-  border-right: 1px solid rgba(150, 205, 255, 0.15) !important;
-  color: #e8f4ff !important;
-  background: transparent !important;
+.result-airflow-delta {
+  font-weight: 700;
 }
 
-.warning-card .ant-alert {
-  border-radius: 8px;
-  border: 1px solid rgba(82, 196, 26, 0.6);
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.15) 0%, rgba(82, 196, 26, 0.1) 100%);
-  color: #e8f4ff;
+.result-airflow-delta--ok {
+  color: #78ebb9;
 }
 
-.warning-card .ant-tag {
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 120, 117, 0.6);
-  box-shadow: 0 0 12px rgba(255, 120, 117, 0.25);
-}
-
-/* 调风方案卡片 */
-.adjustment-card .ant-card-head {
-  background: linear-gradient(180deg, rgba(82, 196, 26, 0.3) 0%, rgba(82, 196, 26, 0.2) 100%) !important;
-}
-
-.adjustment-card .ant-table {
-  border-radius: 8px;
-  overflow: hidden;
-  background: transparent !important;
-}
-
-.adjustment-card .ant-table-thead > tr > th {
-  background: linear-gradient(180deg, rgba(82, 196, 26, 0.3) 0%, rgba(82, 196, 26, 0.2) 100%) !important;
-  color: #ffffff !important;
-  font-weight: 600;
-  border-bottom: 2px solid rgba(115, 209, 61, 0.7) !important;
-  border-right: 1px solid rgba(115, 209, 61, 0.3) !important;
-  padding: 12px 16px;
-  text-shadow: 0 0 12px rgba(115, 209, 61, 0.6);
-}
-
-.adjustment-card .ant-table-tbody > tr {
-  transition: all 0.3s ease;
-}
-
-.adjustment-card .ant-table-tbody > tr:hover > td {
-  background: rgba(82, 196, 26, 0.15) !important;
-  box-shadow: inset 0 0 30px rgba(115, 209, 61, 0.2);
-}
-
-.adjustment-card .ant-table-tbody > tr > td {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(150, 205, 255, 0.2) !important;
-  border-right: 1px solid rgba(150, 205, 255, 0.15) !important;
-  color: #e8f4ff !important;
-  background: transparent !important;
-}
-
-.adjustment-card .ant-btn-link {
-  font-weight: 600;
-  transition: all 0.3s ease;
-  color: #ffffff;
-}
-
-.adjustment-card .ant-btn-link:hover {
-  transform: scale(1.1);
-  text-shadow: 0 0 10px currentColor;
-}
-
-.adjustment-card .ant-card-extra .ant-btn {
-  border-radius: 6px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.adjustment-card .ant-card-extra .ant-btn-primary {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.adjustment-card .ant-card-extra .ant-btn-primary:hover {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.adjustment-card .ant-card-extra .ant-btn:not(.ant-btn-primary) {
-  background: transparent;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.adjustment-card .ant-card-extra .ant-btn:not(.ant-btn-primary):hover {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+.result-airflow-delta--warn {
+  color: #ffc070;
 }
 
 /* 响应式布局 */
@@ -592,6 +551,10 @@
 
   .status-card .ant-descriptions {
     font-size: 14px;
+  }
+
+  .result-card--focused .result-focus-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -619,6 +582,10 @@
 
   .status-card .status-value {
     font-size: 16px;
+  }
+
+  .result-card--focused .result-focus-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .natural-air-distribution-page .ant-table {
@@ -786,4 +753,2168 @@
   .fan-metric-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* 通风状态卡片整合优化 */
+.status-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.status-summary-item {
+  padding: 18px 14px;
+  border: 1px solid rgba(150, 205, 255, 0.26);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(14, 46, 78, 0.36) 0%, rgba(9, 28, 48, 0.18) 100%);
+  box-shadow: inset 0 0 20px rgba(156, 208, 255, 0.08);
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.status-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.status-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.status-section-subtitle {
+  max-width: 820px;
+  color: #9fc9f5;
+  line-height: 1.7;
+  font-size: 13px;
+}
+
+.status-section-actions {
+  align-items: center;
+}
+
+.status-table-shell {
+  padding: 10px 12px 2px;
+  border-radius: 12px;
+  border: 1px solid rgba(150, 205, 255, 0.18);
+  background: linear-gradient(180deg, rgba(8, 27, 47, 0.26) 0%, rgba(15, 42, 72, 0.14) 100%);
+}
+
+.status-divider {
+  margin: 22px 0 !important;
+  border-color: rgba(150, 205, 255, 0.2) !important;
+}
+
+.roadway-highlight {
+  color: #69c0ff;
+  font-weight: 700;
+}
+
+.roadway-muted {
+  color: #8ca4be;
+}
+
+.status-fan-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-fan-kpi-item {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(150, 205, 255, 0.2);
+  background: linear-gradient(135deg, rgba(77, 163, 255, 0.12) 0%, rgba(123, 97, 255, 0.08) 100%);
+}
+
+.status-fan-kpi-item span {
+  display: block;
+  margin-bottom: 6px;
+  color: #9fc9f5;
+  font-size: 12px;
+}
+
+.status-fan-kpi-item strong {
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.status-fan-grid > .ant-col {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.status-fan-grid > .ant-col:hover {
+  transform: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.status-curve-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.status-curve-panel-header span {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.curve-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.curve-summary-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.18);
+  background: rgba(8, 28, 48, 0.26);
+}
+
+.curve-summary-name {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.curve-summary-item strong {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.curve-summary-item span {
+  color: #9fc9f5;
+  font-size: 12px;
+}
+
+.fan-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.fan-parameter-meta {
+  min-width: 0;
+}
+
+.fan-parameter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.fan-load-block {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.16);
+  background: rgba(8, 28, 48, 0.24);
+}
+
+.fan-load-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #9fc9f5;
+  font-size: 12px;
+}
+
+.fan-load-header strong {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.fan-note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.fan-note-item {
+  padding-top: 10px;
+  border-top: 1px solid rgba(150, 205, 255, 0.12);
+}
+
+.fan-note-item span {
+  display: block;
+  margin-bottom: 4px;
+  color: #9fc9f5;
+  font-size: 12px;
+}
+
+.fan-note-item strong {
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.status-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-insight-item {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(150, 205, 255, 0.18);
+  background: linear-gradient(180deg, rgba(15, 42, 72, 0.24) 0%, rgba(8, 27, 47, 0.16) 100%);
+}
+
+.status-insight-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #69c0ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-insight-value {
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.status-note {
+  border: 1px solid rgba(150, 205, 255, 0.22) !important;
+  background: linear-gradient(180deg, rgba(14, 46, 78, 0.28) 0%, rgba(8, 27, 47, 0.2) 100%) !important;
+}
+
+.status-note .ant-alert-message {
+  color: #ffffff !important;
+}
+
+.status-note .ant-alert-description {
+  color: #9fc9f5 !important;
+}
+
+.control-divider {
+  margin: 24px 0 !important;
+  border-color: rgba(150, 205, 255, 0.2) !important;
+}
+
+.section-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.control-card .control-content--compact {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.control-card .control-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.control-card .control-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(145, 196, 236, 0.22);
+  background: rgba(9, 33, 54, 0.22);
+}
+
+.control-card .control-flow-step--done {
+  border-color: rgba(110, 230, 178, 0.38);
+  background: linear-gradient(180deg, rgba(27, 83, 59, 0.3) 0%, rgba(11, 46, 34, 0.24) 100%);
+}
+
+.control-card .control-flow-step--current {
+  border-color: rgba(145, 205, 255, 0.45);
+  background: linear-gradient(180deg, rgba(26, 80, 122, 0.42) 0%, rgba(10, 38, 62, 0.28) 100%);
+  box-shadow: inset 0 0 0 1px rgba(145, 205, 255, 0.12);
+}
+
+.control-card .control-flow-step--pending {
+  opacity: 0.86;
+}
+
+.control-card .control-flow-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(157, 207, 246, 0.34);
+  color: #e3f3ff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.control-card .control-flow-step--done .control-flow-index {
+  color: #88f0c1;
+  border-color: rgba(110, 230, 178, 0.46);
+}
+
+.control-card .control-flow-text {
+  color: #d5edff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.control-card .control-brief-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.control-card .control-brief-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(145, 196, 236, 0.18);
+  background: rgba(8, 28, 48, 0.22);
+}
+
+.control-card .control-brief-item span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #9cc7eb;
+}
+
+.control-card .control-brief-item strong {
+  display: block;
+  color: #eef8ff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.control-card .control-brief-item--ok {
+  border-color: rgba(111, 229, 177, 0.28);
+  background: linear-gradient(180deg, rgba(22, 77, 54, 0.26) 0%, rgba(8, 37, 27, 0.18) 100%);
+}
+
+.control-card .control-brief-item--warn {
+  border-color: rgba(255, 193, 107, 0.28);
+  background: linear-gradient(180deg, rgba(101, 69, 19, 0.26) 0%, rgba(47, 31, 7, 0.18) 100%);
+}
+
+.control-card .control-brief-item--accent {
+  border-color: rgba(120, 190, 255, 0.32);
+  background: linear-gradient(180deg, rgba(26, 80, 122, 0.34) 0%, rgba(10, 38, 62, 0.2) 100%);
+}
+
+.control-card .control-panel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.control-card .control-panel {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(150, 205, 255, 0.24);
+  background: linear-gradient(180deg, rgba(14, 46, 78, 0.28) 0%, rgba(8, 27, 47, 0.18) 100%);
+  box-shadow: inset 0 0 0 1px rgba(160, 218, 255, 0.05);
+}
+
+.control-card .control-panel .section-subtitle {
+  margin-bottom: 12px;
+  color: #e8f5ff;
+  font-size: 13px;
+}
+
+.control-card .control-import-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.control-card .control-check-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.control-card .control-check-item {
+  padding: 10px 10px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(145, 196, 236, 0.2);
+  background: rgba(8, 28, 48, 0.28);
+}
+
+.control-card .control-check-item span {
+  display: block;
+  margin-bottom: 6px;
+  color: #96c5ed;
+  font-size: 12px;
+}
+
+.control-card .control-check-item strong {
+  color: #eef8ff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.control-card .control-inline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.control-card .control-inline-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(145, 196, 236, 0.22);
+  background: rgba(12, 41, 66, 0.32);
+  color: #d5edff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.control-card .control-params {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.control-card .param-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(145, 196, 236, 0.18);
+  background: rgba(9, 32, 52, 0.24);
+}
+
+.control-card .param-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #bdddff;
+  text-shadow: none;
+}
+
+.control-card .control-setting-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.control-card .control-setting-pill {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(145, 196, 236, 0.18);
+  background: rgba(9, 32, 52, 0.24);
+}
+
+.control-card .control-setting-pill span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #97c4e6;
+}
+
+.control-card .control-setting-pill strong {
+  color: #eef8ff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.control-card .control-actions--compact {
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(145, 196, 236, 0.24);
+}
+
+.control-card .control-actions--compact .ant-btn {
+  min-width: 132px;
+  border-radius: 10px;
+}
+
+@media (max-width: 1200px) {
+  .status-summary-grid,
+  .status-fan-kpi-grid,
+  .status-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .control-card .control-brief-grid,
+  .control-card .control-panel-grid,
+  .control-card .control-check-grid,
+  .control-card .control-params,
+  .control-card .control-setting-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .status-summary-grid,
+  .status-fan-kpi-grid,
+  .status-insight-grid,
+  .curve-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-section-header,
+  .status-curve-panel-header,
+  .fan-parameter-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-section-actions {
+    width: 100%;
+  }
+
+  .control-card .control-brief-grid,
+  .control-card .control-flow,
+  .control-card .control-panel-grid,
+  .control-card .control-check-grid,
+  .control-card .control-params,
+  .control-card .control-setting-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .control-card .control-actions--compact {
+    justify-content: stretch;
+  }
+}
+
+/* 简化版通风状态卡片 */
+.status-card--compact .ant-card-body {
+  padding: 16px !important;
+}
+
+.status-card--compact .ant-card-head {
+  border-bottom: 1px solid rgba(145, 205, 255, 0.22);
+  min-height: 50px;
+}
+
+.status-card--compact .ant-card-head-title {
+  color: #e8f5ff;
+  font-weight: 700;
+}
+
+.status-card--compact .ant-card-extra {
+  display: flex;
+  align-items: center;
+}
+
+.status-summary-grid--compact {
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.status-summary-grid--compact .status-summary-item {
+  padding: 12px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.22);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.34) 0%, rgba(8, 27, 47, 0.16) 100%);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.status-summary-grid--compact .status-summary-item:hover {
+  border-color: rgba(150, 205, 255, 0.36);
+  transform: translateY(-1px);
+}
+
+.status-summary-grid--compact .ant-statistic-content {
+  font-size: 20px;
+}
+
+.status-section--compact {
+  gap: 10px;
+}
+
+.fan-curve-panel--compact {
+  min-height: 340px;
+  padding: 10px;
+}
+
+.status-card--compact .status-section-header {
+  margin-bottom: 4px;
+}
+
+.status-card--compact .status-section--compact + .status-section--compact {
+  margin-top: 2px;
+}
+
+.status-export-btn {
+  color: #eff8ff;
+  border-color: rgba(141, 198, 255, 0.55);
+  background: linear-gradient(180deg, rgba(33, 100, 157, 0.62) 0%, rgba(22, 73, 118, 0.6) 100%);
+}
+
+.status-export-btn:hover,
+.status-export-btn:focus {
+  color: #ffffff !important;
+  border-color: rgba(165, 214, 255, 0.9) !important;
+  background: linear-gradient(180deg, rgba(45, 126, 194, 0.8) 0%, rgba(26, 88, 142, 0.8) 100%) !important;
+}
+
+.status-roadway-table-shell {
+  margin-top: 2px;
+  padding: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.22);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(13, 40, 68, 0.34) 0%, rgba(8, 27, 47, 0.2) 100%);
+  box-shadow: inset 0 0 0 1px rgba(160, 218, 255, 0.06);
+}
+
+.status-roadway-table .ant-table {
+  margin-top: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.status-roadway-table .ant-table-container {
+  border-inline-start: 1px solid rgba(150, 205, 255, 0.16);
+  border-top: 1px solid rgba(150, 205, 255, 0.16);
+}
+
+.status-roadway-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cfe8ff;
+  background: linear-gradient(180deg, rgba(30, 75, 114, 0.72) 0%, rgba(18, 54, 86, 0.72) 100%);
+}
+
+.status-roadway-table .ant-table-tbody > tr > td {
+  transition: background-color 0.2s ease;
+}
+
+.status-roadway-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(18, 50, 78, 0.22);
+}
+
+.status-roadway-table .ant-table-tbody > tr:hover > td {
+  background: rgba(57, 122, 175, 0.16) !important;
+}
+
+.status-roadway-value {
+  color: #dff1ff;
+  font-weight: 600;
+}
+
+.status-roadway-empty {
+  color: #8ea7c2;
+}
+
+.status-roadway-measure {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.status-roadway-measure--on {
+  color: #78ebbb;
+  background: rgba(55, 182, 122, 0.16);
+  border-color: rgba(97, 227, 161, 0.38);
+}
+
+.status-roadway-measure--off {
+  color: #b7c9db;
+  background: rgba(122, 143, 165, 0.16);
+  border-color: rgba(143, 165, 186, 0.32);
+}
+
+.status-roadway-table .status-roadway-row--insufficient > td {
+  background: rgba(180, 57, 77, 0.12) !important;
+}
+
+.status-roadway-table .status-roadway-row--unknown > td {
+  background: rgba(120, 138, 160, 0.12) !important;
+}
+
+.status-fan-curve-shell {
+  position: relative;
+  overflow: hidden;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(150, 205, 255, 0.28);
+  background:
+    radial-gradient(130% 90% at 100% 0%, rgba(92, 141, 255, 0.14) 0%, rgba(92, 141, 255, 0) 55%),
+    linear-gradient(180deg, rgba(14, 46, 78, 0.42) 0%, rgba(8, 27, 47, 0.22) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(159, 216, 255, 0.08),
+    0 12px 24px rgba(4, 18, 34, 0.24);
+}
+
+.status-fan-curve-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(77, 163, 255, 0.9) 0%, rgba(123, 97, 255, 0.9) 100%);
+}
+
+.status-curve-panel-header {
+  padding: 4px 2px;
+  margin-bottom: 10px;
+}
+
+.status-curve-panel-header span {
+  letter-spacing: 0.4px;
+  color: #e6f4ff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.status-curve-panel-header .ant-tag {
+  margin-inline-end: 0;
+  border: 1px solid rgba(139, 197, 255, 0.42);
+  background: rgba(23, 92, 145, 0.3);
+  color: #d7ecff;
+}
+
+.status-curve-chart {
+  padding: 6px 8px 0;
+  border: 1px solid rgba(150, 205, 255, 0.2);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(5, 23, 39, 0.24) 0%, rgba(11, 35, 58, 0.14) 100%);
+}
+
+.status-curve-brief {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.status-curve-brief-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.2);
+  background: linear-gradient(180deg, rgba(11, 35, 58, 0.38) 0%, rgba(8, 28, 48, 0.24) 100%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+  color: #c9e6ff;
+  font-size: 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-curve-brief-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(136, 202, 255, 0.35);
+  box-shadow: 0 8px 16px rgba(2, 14, 27, 0.22);
+}
+
+.status-curve-brief-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.status-curve-brief-name::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.status-curve-brief-item > span:not(.status-curve-brief-name) {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 198, 239, 0.26);
+  background: rgba(17, 53, 83, 0.24);
+  color: #d2eaff;
+}
+
+.status-curve-brief-note {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .status-roadway-table-shell,
+  .status-fan-curve-shell {
+    padding: 8px;
+  }
+
+  .status-curve-panel-header {
+    padding: 8px 10px;
+  }
+
+  .status-curve-chart {
+    padding: 4px;
+  }
+
+  .status-curve-brief {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 三栏 + 上下分区布局（上2/3，下1/3） */
+.natural-air-content-shell--tri {
+  display: block;
+  padding: 12px 14px 16px;
+  overflow: hidden;
+}
+
+.natural-air-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas:
+    "left center right"
+    "bottom bottom bottom";
+  gap: 14px;
+  width: 100%;
+  height: calc(100vh - 122px);
+  min-height: 0;
+}
+
+.natural-air-top-row > .status-card--side {
+  grid-area: left;
+}
+
+.natural-air-top-row > .center-status-card {
+  grid-area: center;
+}
+
+.natural-air-top-row > .control-card--side {
+  grid-area: right;
+}
+
+.natural-air-top-row > .result-card--bottom {
+  grid-area: bottom;
+}
+
+.natural-panel-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.natural-panel-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.status-card--side .status-roadway-table-shell--side {
+  height: 100%;
+  margin-top: 0;
+}
+
+.status-card--side .status-roadway-table--side .ant-table {
+  margin-top: 0;
+}
+
+.center-status-card .status-summary-grid--compact {
+  margin-bottom: 12px;
+}
+
+.center-status-card .status-summary-item {
+  min-width: 0;
+}
+
+.control-card--side .control-side-shell {
+  margin-bottom: 10px;
+}
+
+.control-card--side .control-side-table .ant-table {
+  margin-top: 0;
+}
+
+.control-card--side .control-side-value {
+  color: #d9efff;
+  font-weight: 600;
+}
+
+.control-card--side .control-flow,
+.control-card--side .control-brief-grid,
+.control-card--side .control-panel-grid {
+  display: none;
+}
+
+.control-card--side .control-actions--compact {
+  padding-top: 8px;
+  border-top: 1px dashed rgba(145, 196, 236, 0.24);
+}
+
+.result-card--bottom .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.result-card--bottom .result-focus-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.result-card--bottom .ant-table-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1500px) {
+  .natural-air-top-row {
+    gap: 12px;
+  }
+
+  .result-card--bottom .result-focus-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .natural-air-top-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "left"
+      "center"
+      "right"
+      "bottom";
+    height: auto;
+    min-height: calc(100vh - 122px);
+  }
+}
+
+/* 实时分风解算页面整体布局优化（可交互三维模型背景 + 防溢出） */
+.natural-air-layout {
+  position: relative;
+  height: calc(100vh - 80px);
+  min-height: calc(100vh - 80px);
+  padding: 0;
+  overflow: hidden;
+}
+
+.natural-air-layout::before {
+  display: none;
+}
+
+.natural-air-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, rgba(55, 124, 192, 0.28) 0%, rgba(10, 27, 45, 0.94) 56%, #091b2f 100%);
+}
+
+.natural-air-bg-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 14%, rgba(156, 208, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 86% 18%, rgba(125, 177, 255, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(6, 18, 30, 0.28) 0%, rgba(6, 18, 30, 0.52) 100%);
+}
+
+.natural-air-bg-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(150, 205, 255, 0.2);
+  background: rgba(9, 29, 50, 0.66);
+  color: #cae6ff;
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.natural-air-content-shell {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  overflow: auto;
+  padding: 16px 18px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-auto-rows: min-content;
+  gap: 16px;
+  align-items: start;
+  pointer-events: none;
+}
+
+.natural-air-content-shell > * {
+  pointer-events: auto;
+  min-width: 0;
+  margin-bottom: 0 !important;
+}
+
+.natural-air-content-shell > .status-card {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.natural-air-content-shell > .control-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.natural-air-content-shell > .result-card {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.natural-air-content-shell .ant-card {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.natural-air-content-shell .ant-card-head-wrapper {
+  gap: 10px;
+}
+
+.natural-air-content-shell .ant-card-head-title {
+  min-width: 0;
+}
+
+.natural-air-content-shell .ant-card-extra {
+  min-width: 0;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.natural-air-content-shell .ant-space {
+  flex-wrap: wrap;
+}
+
+.natural-air-content-shell .status-roadway-table-shell,
+.natural-air-content-shell .status-fan-curve-shell,
+.natural-air-content-shell .control-panel,
+.natural-air-content-shell .result-focus-table {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.natural-air-content-shell .ant-table-wrapper {
+  width: 100%;
+}
+
+.natural-air-content-shell .ant-table-content,
+.natural-air-content-shell .ant-table-body {
+  overflow: auto !important;
+}
+
+.natural-air-content-shell .fan-curve-panel--compact {
+  min-height: 320px;
+}
+
+.natural-air-content-shell .status-curve-chart {
+  overflow: hidden;
+}
+
+.natural-air-content-shell .status-curve-chart > div {
+  max-width: 100%;
+}
+
+@media (max-width: 1366px) {
+  .natural-air-content-shell {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px 14px 16px;
+  }
+
+  .natural-air-content-shell > .status-card,
+  .natural-air-content-shell > .control-card,
+  .natural-air-content-shell > .result-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .natural-air-layout {
+    min-height: calc(100vh - 80px);
+  }
+
+  .natural-air-content-shell {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .natural-air-content-shell .ant-card-head {
+    padding: 10px 12px !important;
+  }
+
+  .natural-air-content-shell .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .natural-air-content-shell .status-curve-brief-item {
+    gap: 6px;
+  }
+}
+
+/* Final layout override: top(2/3) + bottom(1/3), top as 1:3:1 */
+.natural-air-content-shell.natural-air-content-shell--tri {
+  display: block !important;
+  padding: 12px 14px 16px !important;
+  overflow: hidden !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 2fr) minmax(0, 1fr) !important;
+  grid-template-areas:
+    "left center right"
+    "bottom bottom bottom" !important;
+  gap: 14px;
+  width: 100%;
+  height: calc(100vh - 122px);
+  min-height: 0;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-card--side {
+  grid-area: left;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .center-status-card {
+  grid-area: center;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-card--side {
+  grid-area: right;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .result-card--bottom {
+  grid-area: bottom;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .natural-panel-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .natural-panel-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .status-roadway-table-shell--side {
+  height: 100%;
+  margin-top: 0;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-side-table .ant-table {
+  margin-top: 0;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-side-value {
+  color: #d9efff;
+  font-weight: 600;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-flow,
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-brief-grid,
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-panel-grid {
+  display: none;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .control-card--side .control-actions--compact {
+  padding-top: 8px;
+  border-top: 1px dashed rgba(145, 196, 236, 0.24);
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .result-card--bottom .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .result-card--bottom .result-focus-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri .result-card--bottom .ant-table-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1500px) {
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+    gap: 12px;
+  }
+
+  .natural-air-content-shell.natural-air-content-shell--tri .result-card--bottom .result-focus-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-areas:
+      "left"
+      "center"
+      "right"
+      "bottom" !important;
+    height: auto;
+    min-height: calc(100vh - 122px);
+  }
+}
+
+.center-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.center-summary-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.22);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.34) 0%, rgba(8, 27, 47, 0.16) 100%);
+}
+
+.center-summary-item span {
+  display: block;
+  margin-bottom: 6px;
+  color: #9bc7ea;
+  font-size: 12px;
+}
+
+.center-summary-item strong {
+  color: #eef8ff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.control-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 1500px) {
+  .center-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .center-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 通风状态卡整合解算态势与主扇曲线 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-card--integrated {
+  grid-column: 1 / span 2 !important;
+  grid-row: 1 !important;
+}
+
+.center-summary-grid--inside {
+  margin-bottom: 12px;
+}
+
+.status-integrated-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+
+.status-roadway-table-shell--integrated {
+  border-color: rgba(128, 196, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(146, 207, 255, 0.08);
+}
+
+.status-roadway-table--integrated .ant-table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.status-roadway-table--integrated .ant-table-thead > tr > th {
+  background: linear-gradient(180deg, rgba(36, 97, 148, 0.82) 0%, rgba(23, 70, 111, 0.82) 100%) !important;
+  color: #e6f4ff !important;
+  font-size: 12px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(152, 206, 255, 0.38) !important;
+}
+
+.status-roadway-table--integrated .ant-table-tbody > tr > td {
+  color: #ddf1ff !important;
+  border-bottom: 1px solid rgba(150, 205, 255, 0.16) !important;
+  background: rgba(12, 39, 64, 0.22) !important;
+}
+
+.status-roadway-table--integrated .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(12, 39, 64, 0.33) !important;
+}
+
+.status-roadway-table--integrated .ant-table-tbody > tr:hover > td {
+  background: rgba(53, 126, 183, 0.26) !important;
+}
+
+.status-fan-curve-shell--integrated {
+  padding: 10px;
+}
+
+@media (max-width: 1400px) {
+  .status-integrated-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 通风状态表格卡片仅占上栏 1/5 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-card--integrated {
+  grid-column: 1 / span 1 !important;
+  grid-row: 1 !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-card--side {
+  grid-column: 2 / span 2 !important;
+  grid-row: 1 !important;
+}
+
+.status-card--integrated .center-summary-grid--inside {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.status-card--integrated .center-summary-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.status-card--integrated .status-integrated-body {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.status-card--integrated .status-roadway-table-shell--integrated {
+  padding: 8px;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-thead > tr > th {
+  padding: 8px 8px;
+  font-size: 11px;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr > td {
+  padding: 8px 8px;
+  font-size: 12px;
+}
+
+.status-card--integrated .status-fan-curve-shell--integrated {
+  padding: 8px;
+}
+
+.status-card--integrated .status-curve-chart {
+  padding: 4px;
+}
+
+.status-card--integrated .status-curve-brief {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.status-card--integrated .status-curve-brief-item {
+  padding: 8px 10px;
+}
+
+.status-card--integrated .status-curve-brief-item > span:not(.status-curve-brief-name) {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+/* Latest override: top area split to 5 parts, left/right side cards each occupy 1/5 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-rows: minmax(0, 2fr) minmax(0, 1fr) !important;
+  grid-template-areas: none !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-card--integrated {
+  grid-column: 1 / 2 !important;
+  grid-row: 1 !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-card--side {
+  grid-column: 5 / 6 !important;
+  grid-row: 1 !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .result-card--bottom {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+}
+
+.status-card--integrated .ant-card-head,
+.control-card--side .ant-card-head {
+  min-height: 46px;
+}
+
+.status-card--integrated .status-integrated-body {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.status-card--integrated .status-roadway-table-shell--integrated,
+.status-card--integrated .status-fan-curve-shell--integrated {
+  padding: 8px;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-thead > tr > th {
+  padding: 7px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr > td {
+  padding: 7px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.status-card--integrated .status-curve-brief {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.status-card--integrated .status-curve-brief-item {
+  padding: 8px 10px;
+}
+
+.control-card--side .control-side-shell {
+  padding-top: 2px;
+}
+
+.control-card--side .control-side-table .ant-table-thead > tr > th {
+  padding: 7px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr > td {
+  padding: 7px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+    height: auto;
+  }
+
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-card--integrated,
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-card--side,
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .result-card--bottom {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+}
+
+/* 3D 交互修复：中间空白区域事件穿透到巷道模型，仅卡片区域可交互 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+  pointer-events: none !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .natural-panel-card {
+  pointer-events: auto !important;
+}
+
+/* 解算控制卡片：按真实分风解算流程重组 */
+.control-card--side .control-side-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.control-card--side .control-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.control-card--side .control-toolbar > * {
+  min-width: 0;
+}
+
+.control-card--side .control-toolbar .ant-upload {
+  display: block;
+  width: 100%;
+}
+
+.control-card--side .control-toolbar-btn {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(135, 199, 255, 0.3);
+  background: linear-gradient(180deg, rgba(16, 49, 79, 0.88) 0%, rgba(10, 31, 50, 0.82) 100%);
+  color: #dff2ff;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(198, 231, 255, 0.08);
+}
+
+.control-card--side .control-toolbar-btn:hover {
+  color: #fff;
+  border-color: rgba(141, 207, 255, 0.52);
+  background: linear-gradient(180deg, rgba(28, 79, 124, 0.92) 0%, rgba(13, 43, 70, 0.9) 100%);
+}
+
+.control-card--side .control-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.control-card--side .control-kpi-item {
+  min-width: 0;
+  padding: 8px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(135, 199, 255, 0.2);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.36) 0%, rgba(8, 28, 47, 0.26) 100%);
+}
+
+.control-card--side .control-kpi-item > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8fb8d9;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.control-card--side .control-kpi-item > strong {
+  display: block;
+  color: #eff8ff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.control-card--side .control-kpi-item--ready {
+  border-color: rgba(110, 226, 175, 0.34);
+  background: linear-gradient(180deg, rgba(12, 57, 48, 0.38) 0%, rgba(8, 30, 26, 0.26) 100%);
+}
+
+.control-card--side .control-kpi-item--warn {
+  border-color: rgba(255, 192, 112, 0.34);
+  background: linear-gradient(180deg, rgba(73, 47, 16, 0.4) 0%, rgba(35, 23, 8, 0.26) 100%);
+}
+
+.control-card--side .control-section-title {
+  position: relative;
+  padding-left: 10px;
+  color: #c9e7ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.control-card--side .control-section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #7cc8ff 0%, #56a4e8 100%);
+  box-shadow: 0 0 8px rgba(124, 200, 255, 0.45);
+}
+
+.control-card--side .control-process-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.control-card--side .control-process-item {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(135, 199, 255, 0.18);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.42) 0%, rgba(7, 24, 40, 0.3) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(198, 231, 255, 0.06),
+    0 10px 24px rgba(4, 15, 28, 0.16);
+}
+
+.control-card--side .control-process-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.control-card--side .control-process-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(108, 176, 237, 0.12);
+  color: #8fcfff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.control-card--side .control-process-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(135, 199, 255, 0.4);
+  box-shadow: 0 0 10px rgba(135, 199, 255, 0.35);
+}
+
+.control-card--side .control-process-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #8fb8d9;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.control-card--side .control-process-value {
+  display: block;
+  color: #eef8ff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.control-card--side .control-process-item--done {
+  border-color: rgba(110, 226, 175, 0.24);
+  background: linear-gradient(180deg, rgba(12, 57, 48, 0.42) 0%, rgba(8, 30, 26, 0.3) 100%);
+}
+
+.control-card--side .control-process-item--done .control-process-dot,
+.control-card--side .control-process-item--ready .control-process-dot {
+  background: #6de3aa;
+  box-shadow: 0 0 12px rgba(109, 227, 170, 0.48);
+}
+
+.control-card--side .control-process-item--warn {
+  border-color: rgba(255, 192, 112, 0.28);
+  background: linear-gradient(180deg, rgba(73, 47, 16, 0.42) 0%, rgba(35, 23, 8, 0.3) 100%);
+}
+
+.control-card--side .control-process-item--warn .control-process-dot {
+  background: #ffc070;
+  box-shadow: 0 0 12px rgba(255, 192, 112, 0.48);
+}
+
+.control-card--side .control-process-item--active {
+  border-color: rgba(130, 182, 255, 0.32);
+  background: linear-gradient(180deg, rgba(19, 53, 94, 0.48) 0%, rgba(9, 28, 49, 0.34) 100%);
+}
+
+.control-card--side .control-process-item--active .control-process-dot {
+  background: #8bb9ff;
+  box-shadow: 0 0 14px rgba(139, 185, 255, 0.56);
+}
+
+.control-card--side .control-side-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.control-card--side .control-side-table .ant-table {
+  margin-top: 0;
+  background: transparent !important;
+}
+
+.control-card--side .control-side-table .ant-table-container {
+  border: 1px solid rgba(135, 199, 255, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(11, 35, 58, 0.38) 0%, rgba(8, 25, 43, 0.26) 100%);
+}
+
+.control-card--side .control-side-table .ant-table-thead > tr > th {
+  background: linear-gradient(180deg, rgba(33, 87, 134, 0.9) 0%, rgba(19, 60, 97, 0.88) 100%) !important;
+  color: #ebf7ff !important;
+  font-size: 11px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(146, 205, 255, 0.28) !important;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr > td {
+  background: rgba(9, 29, 50, 0.34) !important;
+  border-bottom: 1px solid rgba(135, 199, 255, 0.12) !important;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(12, 36, 60, 0.42) !important;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr:hover > td {
+  background: rgba(33, 87, 134, 0.26) !important;
+}
+
+.control-card--side .control-side-value {
+  display: block;
+  color: #eef7ff;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.control-card--side .control-form-grid--side {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.control-card--side .control-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(135, 199, 255, 0.16);
+  background: linear-gradient(180deg, rgba(11, 35, 58, 0.34) 0%, rgba(7, 23, 39, 0.22) 100%);
+}
+
+.control-card--side .control-field-label {
+  color: #94c6ea;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.control-card--side .control-field .ant-select,
+.control-card--side .control-field .ant-input-number {
+  width: 100%;
+}
+
+.control-card--side .control-actions--solver {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(145, 196, 236, 0.24);
+}
+
+.control-card--side .control-actions--solver .ant-btn {
+  height: 40px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.control-card--side .control-action-tip {
+  display: block;
+  margin-top: 6px;
+  text-align: center;
+  color: #8fb1cd;
+  font-size: 11px;
+}
+
+/* 边界关键量表：提升文字与背景对比度 */
+.control-card--side .control-side-table .ant-table-tbody > tr > td {
+  background: rgba(7, 24, 40, 0.58) !important;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(10, 31, 52, 0.68) !important;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr > td:first-child {
+  color: #b9dcf8 !important;
+  font-weight: 600;
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr > td:last-child .control-side-value {
+  color: #f4fbff !important;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.22);
+}
+
+.control-card--side .control-side-table .ant-table-tbody > tr:hover > td:first-child {
+  color: #d8ecff !important;
+}
+
+@media (max-width: 768px) {
+  .control-card--side .control-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-card--side .control-process-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 通风状态卡片表格整洁化 */
+.status-card--integrated .ant-card-head {
+  padding-right: 12px !important;
+}
+
+.status-card--integrated .status-roadway-table-shell--integrated {
+  padding: 6px 8px;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-container {
+  border: 1px solid rgba(140, 200, 255, 0.18);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-thead > tr > th {
+  padding: 8px 8px !important;
+  font-size: 11px !important;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr > td {
+  padding: 7px 8px !important;
+  font-size: 12px !important;
+  line-height: 1.25;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr:nth-child(odd) > td {
+  background: rgba(10, 32, 52, 0.28) !important;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(13, 40, 64, 0.38) !important;
+}
+
+.status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr:hover > td {
+  background: rgba(48, 119, 173, 0.24) !important;
+}
+
+.status-card--integrated .status-roadway-value,
+.status-card--integrated .status-roadway-empty {
+  display: inline-block;
+  min-width: 54px;
+  text-align: right;
+}
+
+.status-card--integrated .ant-tag {
+  margin-inline-end: 0;
+}
+
+/* 通风状态卡片：三项指标同一行 */
+.status-card--integrated .center-summary-grid--inside {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.status-card--integrated .center-summary-grid--inside .center-summary-item {
+  padding: 7px 8px;
+  min-height: 54px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.status-card--integrated .center-summary-grid--inside .center-summary-item > span {
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: #90bddf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-card--integrated .center-summary-grid--inside .center-summary-item > strong {
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 左侧状态区：通风状态 + 通风机性能曲线（上下堆叠） */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-stack-column {
+  grid-column: 1 / 2 !important;
+  grid-row: 1 !important;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 10px;
+  pointer-events: auto !important;
+}
+
+.status-stack-column > .natural-panel-card {
+  min-height: 0;
+}
+
+.fan-curve-card--side .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  padding: 10px !important;
+}
+
+.fan-curve-card--side .fan-curve-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.fan-curve-card--side .status-curve-chart {
+  flex: 1;
+  min-height: 145px;
+  padding: 2px;
+}
+
+.fan-curve-card--side .status-curve-brief {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.fan-curve-card--side .status-curve-brief-item {
+  padding: 7px 9px;
+}
+
+@media (max-width: 1200px) {
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-stack-column {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    grid-template-rows: auto auto;
+  }
+}
+
+/* 实时分风解算上下栏占比对齐风流实时监测：上 3/4，下 1/4 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+  grid-template-rows: minmax(0, 3fr) minmax(0, 1fr) !important;
+}
+
+/* 通风状态卡片 + 通风机性能曲线卡片：样式与纵向占比最终优化 */
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-stack-column {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px;
+}
+
+.status-stack-column > .status-card--integrated,
+.status-stack-column > .fan-curve-card--side {
+  border-radius: 12px !important;
+  border: 1px solid rgba(143, 203, 255, 0.28) !important;
+  box-shadow:
+    0 8px 28px rgba(7, 24, 40, 0.34),
+    inset 0 1px 0 rgba(198, 231, 255, 0.12) !important;
+}
+
+.status-stack-column > .status-card--integrated .ant-card-head,
+.status-stack-column > .fan-curve-card--side .ant-card-head {
+  border-bottom: 1px solid rgba(143, 203, 255, 0.24) !important;
+  background: linear-gradient(180deg, rgba(33, 92, 143, 0.34) 0%, rgba(16, 49, 79, 0.22) 100%) !important;
+  min-height: 42px;
+}
+
+.status-stack-column > .status-card--integrated .ant-card-head-title,
+.status-stack-column > .fan-curve-card--side .ant-card-head-title {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.status-stack-column > .status-card--integrated .ant-card-body,
+.status-stack-column > .fan-curve-card--side .ant-card-body {
+  padding: 9px !important;
+}
+
+.status-stack-column > .status-card--integrated {
+  background: linear-gradient(180deg, rgba(12, 39, 63, 0.36) 0%, rgba(8, 24, 40, 0.26) 100%) !important;
+}
+
+.status-stack-column > .fan-curve-card--side {
+  background: linear-gradient(180deg, rgba(14, 43, 68, 0.34) 0%, rgba(8, 25, 43, 0.24) 100%) !important;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table-shell--integrated {
+  border-radius: 10px;
+  padding: 5px 6px;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-thead > tr > th {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-tbody > tr > td {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.status-stack-column > .status-card--integrated .center-summary-grid--inside .center-summary-item {
+  min-height: 48px;
+  padding: 6px 7px;
+}
+
+.fan-curve-card--side .status-curve-chart {
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  border: 1px solid rgba(140, 200, 255, 0.18);
+  background: linear-gradient(180deg, rgba(11, 35, 58, 0.3) 0%, rgba(7, 23, 39, 0.2) 100%);
+  padding: 3px;
+}
+
+.fan-curve-card--side .status-curve-chart > div {
+  width: 100%;
+  height: 100% !important;
+  min-height: 0;
+}
+
+.fan-curve-card--side .status-curve-brief {
+  margin-top: 2px;
+}
+
+.fan-curve-card--side .status-curve-brief-item {
+  border: 1px solid rgba(135, 199, 255, 0.2);
+  background: linear-gradient(180deg, rgba(13, 40, 64, 0.36) 0%, rgba(8, 25, 43, 0.25) 100%);
+  padding: 6px 8px;
+}
+
+/* 通风状态卡片：消除大块留白，表格区填满剩余高度 */
+.status-stack-column > .status-card--integrated .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden !important;
+}
+
+.status-stack-column > .status-card--integrated .center-summary-grid--inside {
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+}
+
+.status-stack-column > .status-card--integrated .center-summary-grid--inside .center-summary-item {
+  min-height: 44px;
+  padding: 6px 7px;
+}
+
+.status-stack-column > .status-card--integrated .status-integrated-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table-shell--integrated {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 7px;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(138, 199, 255, 0.22);
+  background: linear-gradient(180deg, rgba(21, 61, 95, 0.38) 0%, rgba(11, 34, 56, 0.28) 100%);
+  color: #dff2ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-wrapper,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-nested-loading,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-container,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table {
+  height: 100%;
+  min-height: 0;
 }
