@@ -14,7 +14,6 @@ import {
   List,
   Modal,
   Popconfirm,
-  Progress,
   Row,
   Slider,
   Space,
@@ -32,11 +31,9 @@ import {
   CloudOutlined,
   ControlOutlined,
   DashboardOutlined,
-  ExperimentOutlined,
   FileTextOutlined,
   HistoryOutlined,
   InfoCircleOutlined,
-  LineChartOutlined,
   PlayCircleOutlined,
   PoweroffOutlined,
   ReloadOutlined,
@@ -45,8 +42,6 @@ import {
   SettingOutlined,
   SwapOutlined,
   ThunderboltFilled,
-  ThunderboltOutlined,
-  ToolOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
 
@@ -626,11 +621,6 @@ export default function MainFanControlPage() {
     (item) => item.status === "warning",
   );
   const flatFans = fanUnits.flatMap((unit) => unit.fans);
-  const runningFans = flatFans.filter((fan) => fan.status === "运行").length;
-  const standbyFans = flatFans.filter((fan) => fan.status === "待机").length;
-  const maintenanceFans = flatFans.filter(
-    (fan) => fan.status === "检修",
-  ).length;
 
   useEffect(() => {
     setSpeedValue(currentFan.speed > 0 ? currentFan.speed : 900);

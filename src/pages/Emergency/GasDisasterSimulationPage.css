@@ -1,0 +1,677 @@
+.gas-disaster-page {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  max-height: calc(100vh - 80px);
+  padding: 16px 20px 20px;
+  background: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 上栏布局 */
+.gas-disaster-page .gas-top-row {
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 0 !important;
+}
+
+.gas-disaster-page .gas-left-column,
+.gas-disaster-page .gas-center-column,
+.gas-disaster-page .gas-right-column {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 左侧列样式 */
+.gas-disaster-page .gas-left-column .ant-space {
+  height: 100%;
+}
+
+.gas-disaster-page .gas-left-column .page-card:first-child {
+  flex: 0 0 auto;
+}
+
+.gas-disaster-page .gas-left-column .page-card:last-child {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 筛选条件纵向布局 */
+.gas-disaster-page .gas-filter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gas-disaster-page .gas-filter-item--vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gas-disaster-page .gas-filter-item--vertical .gas-field-inline-label {
+  white-space: normal;
+}
+
+/* 灾害总览紧凑布局 */
+.gas-disaster-page .gas-overview-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.gas-disaster-page .gas-overview-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.gas-disaster-page .gas-overview-grid-compact .ant-statistic {
+  padding: 8px;
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.3) 0%, rgba(15, 47, 83, 0.4) 100%);
+  backdrop-filter: blur(8px);
+}
+
+.gas-disaster-page .gas-overview-grid-compact .ant-statistic-title {
+  color: #b8d9ff;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 中间占位区域 */
+.gas-disaster-page .gas-center-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  border: 2px dashed rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.1) 0%, rgba(15, 47, 83, 0.15) 100%);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 右侧列样式 */
+.gas-disaster-page .gas-right-column .page-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gas-disaster-page .gas-right-column .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 下栏人员卡片 */
+.gas-disaster-page > .page-card:last-of-type {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+/* 隐藏滚动条但保留滚动功能 */
+.gas-disaster-page {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 205, 255, 0.3) transparent;
+}
+
+.gas-disaster-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gas-disaster-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gas-disaster-page::-webkit-scrollbar-thumb {
+  background: rgba(150, 205, 255, 0.3);
+  border-radius: 3px;
+}
+
+.gas-disaster-page::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 205, 255, 0.5);
+}
+
+/* 背景层 */
+.gas-disaster-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(156, 208, 255, 0.12), transparent 60%),
+    radial-gradient(circle at 15% 20%, rgba(107, 181, 240, 0.1), transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(74, 157, 232, 0.08), transparent 38%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(156, 208, 255, 0.04),
+      rgba(156, 208, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(156, 208, 255, 0.04),
+      rgba(156, 208, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 60px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 3D背景层 */
+.gas-disaster-page .gas-background-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.gas-disaster-page .gas-background-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.gas-disaster-page .gas-background-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(156, 208, 255, 0.7);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.4);
+}
+
+/* 内容层 */
+.gas-disaster-page .gas-content-layer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  height: 100%;
+}
+
+.gas-disaster-page .gas-content-layer > * {
+  pointer-events: auto;
+}
+
+/* 透明卡片样式 */
+.gas-disaster-page .page-card {
+  background: transparent !important;
+  border: 2px solid rgba(150, 205, 255, 0.5) !important;
+  box-shadow:
+    0 4px 20px rgba(11, 35, 62, 0.6),
+    0 0 30px rgba(74, 157, 232, 0.15),
+    inset 0 1px 0 rgba(196, 225, 255, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.gas-disaster-page .page-card:last-child {
+  margin-bottom: 0;
+}
+
+.gas-disaster-page .page-card:hover {
+  background: rgba(17, 54, 94, 0.15) !important;
+  border-color: rgba(156, 208, 255, 0.7) !important;
+  box-shadow:
+    0 6px 30px rgba(11, 35, 62, 0.7),
+    0 0 40px rgba(156, 208, 255, 0.3),
+    inset 0 1px 0 rgba(196, 225, 255, 0.25) !important;
+  transform: translateY(-2px);
+}
+
+.gas-disaster-page .ant-card-head {
+  background: linear-gradient(180deg, rgba(89, 154, 221, 0.2) 0%, rgba(89, 154, 221, 0.1) 100%) !important;
+  border-bottom: 2px solid rgba(150, 205, 255, 0.5) !important;
+  padding: 12px 16px !important;
+  min-height: auto;
+}
+
+.gas-disaster-page .ant-card-head-title {
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 14px;
+  text-shadow: 0 0 15px rgba(156, 208, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .ant-card-extra {
+  overflow: hidden;
+}
+
+.gas-disaster-page .ant-card-body {
+  background: transparent !important;
+  color: #e8f4ff;
+  padding: 14px !important;
+  overflow: hidden;
+}
+
+/* 筛选条件区域 */
+.gas-disaster-page .gas-filter-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-filter-item {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-filter-item--type {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(89, 154, 221, 0.15) 0%, rgba(89, 154, 221, 0.08) 100%);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-field-inline-label {
+  color: #e8f4ff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 总览区域 */
+.gas-disaster-page .gas-overview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-overview-head > div {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-overview-head .ant-typography {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .gas-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-overview-grid .ant-statistic {
+  padding: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.4) 0%, rgba(15, 47, 83, 0.5) 100%);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(11, 35, 62, 0.4);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.gas-disaster-page .gas-overview-grid .ant-statistic:hover {
+  border-color: rgba(156, 208, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(74, 157, 232, 0.3);
+  transform: translateY(-2px);
+}
+
+.gas-disaster-page .gas-overview-grid .ant-statistic-title {
+  color: #b8d9ff;
+  font-size: 11px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .gas-overview-grid .ant-statistic-content {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 应急处置建议卡片 */
+.gas-disaster-page .gas-suggestion-card {
+  background: transparent !important;
+}
+
+.gas-disaster-page .gas-suggestion-summary {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.3) 0%, rgba(15, 47, 83, 0.4) 100%);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-suggestion-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-suggestion-row span {
+  color: #b8d9ff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gas-disaster-page .gas-suggestion-row strong {
+  color: #ffffff;
+  font-size: 12px;
+  text-align: right;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  word-break: break-word;
+  flex: 1;
+  min-width: 0;
+}
+
+.gas-disaster-page .gas-suggestion-row .ant-space {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-suggestion-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-suggestion-item {
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.15) 0%, rgba(89, 154, 221, 0.08) 100%);
+  backdrop-filter: blur(8px);
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+}
+
+.gas-disaster-page .gas-suggestion-item:hover {
+  border-color: rgba(156, 208, 255, 0.6);
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.25) 0%, rgba(89, 154, 221, 0.15) 100%);
+  box-shadow: 0 4px 15px rgba(74, 157, 232, 0.3);
+  transform: translateY(-2px);
+}
+
+.gas-disaster-page .gas-suggestion-item-title {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 4px;
+  color: #ffffff;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-suggestion-item-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .gas-suggestion-item .ant-typography {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .gas-suggestion-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 人员影响统计 */
+.gas-disaster-page .gas-person-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.gas-disaster-page .gas-person-stats .ant-statistic {
+  padding: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(17, 54, 94, 0.3) 0%, rgba(15, 47, 83, 0.4) 100%);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.gas-disaster-page .gas-person-stats .ant-statistic-title {
+  color: #b8d9ff;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .gas-person-stats .ant-statistic-content {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(156, 208, 255, 0.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 表格样式 */
+.gas-disaster-page .ant-table {
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.gas-disaster-page .ant-table-wrapper {
+  overflow: hidden;
+}
+
+.gas-disaster-page .ant-table-container {
+  overflow-x: auto;
+}
+
+.gas-disaster-page .ant-table-thead > tr > th {
+  background: linear-gradient(180deg, rgba(89, 154, 221, 0.3) 0%, rgba(89, 154, 221, 0.2) 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid rgba(150, 205, 255, 0.5) !important;
+  text-shadow: 0 0 10px rgba(156, 208, 255, 0.5);
+  font-weight: 700;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gas-disaster-page .ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(150, 205, 255, 0.2) !important;
+  color: #e8f4ff !important;
+  font-size: 12px;
+  background: transparent !important;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gas-disaster-page .ant-table-tbody > tr:hover > td {
+  background: rgba(89, 154, 221, 0.2) !important;
+  box-shadow: inset 0 0 20px rgba(156, 208, 255, 0.15);
+}
+
+.gas-disaster-page .gas-person-row-active td {
+  background: rgba(89, 154, 221, 0.3) !important;
+}
+
+/* 标签样式 */
+.gas-disaster-page .ant-tag {
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.4) 0%, rgba(89, 154, 221, 0.3) 100%);
+  border: 1px solid rgba(150, 205, 255, 0.5);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(156, 208, 255, 0.2);
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Typography */
+.gas-disaster-page .ant-typography {
+  color: #e8f4ff !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gas-disaster-page .ant-typography-secondary {
+  color: #b8d9ff !important;
+}
+
+/* 按钮样式 */
+.gas-disaster-page .ant-btn-primary {
+  background: linear-gradient(135deg, rgba(74, 157, 232, 0.8) 0%, rgba(52, 127, 202, 0.9) 100%);
+  border: 1px solid rgba(150, 205, 255, 0.6);
+  box-shadow: 0 2px 10px rgba(74, 157, 232, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.gas-disaster-page .ant-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(74, 157, 232, 0.9) 0%, rgba(52, 127, 202, 1) 100%);
+  border-color: rgba(156, 208, 255, 0.8);
+  box-shadow: 0 4px 15px rgba(74, 157, 232, 0.5);
+}
+
+.gas-disaster-page .ant-btn-default {
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.2) 0%, rgba(89, 154, 221, 0.15) 100%);
+  border: 1px solid rgba(150, 205, 255, 0.4);
+  color: #e8f4ff;
+  backdrop-filter: blur(4px);
+}
+
+.gas-disaster-page .ant-btn-default:hover {
+  background: linear-gradient(135deg, rgba(89, 154, 221, 0.3) 0%, rgba(89, 154, 221, 0.2) 100%);
+  border-color: rgba(156, 208, 255, 0.6);
+  color: #ffffff;
+}
+
+/* 输入框样式 */
+.gas-disaster-page .ant-select-selector,
+.gas-disaster-page .ant-input-number {
+  background: rgba(17, 54, 94, 0.3) !important;
+  border: 1px solid rgba(150, 205, 255, 0.3) !important;
+  color: #e8f4ff !important;
+  backdrop-filter: blur(4px);
+}
+
+.gas-disaster-page .ant-select-selector:hover,
+.gas-disaster-page .ant-input-number:hover {
+  border-color: rgba(156, 208, 255, 0.5) !important;
+}
+
+.gas-disaster-page .ant-select-selection-item {
+  color: #e8f4ff !important;
+}
+
+/* 响应式 */
+@media (max-width: 1400px) {
+  .gas-disaster-page .gas-filter-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gas-disaster-page .gas-overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gas-disaster-page .gas-person-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .gas-disaster-page .gas-filter-row,
+  .gas-disaster-page .gas-overview-grid,
+  .gas-disaster-page .gas-person-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .gas-disaster-page .gas-filter-row,
+  .gas-disaster-page .gas-overview-grid,
+  .gas-disaster-page .gas-person-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .gas-disaster-page .gas-suggestion-actions {
+    justify-content: stretch;
+  }
+
+  .gas-disaster-page .gas-suggestion-actions .ant-btn {
+    flex: 1;
+  }
+}

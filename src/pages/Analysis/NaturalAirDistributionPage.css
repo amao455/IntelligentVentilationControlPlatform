@@ -2084,6 +2084,110 @@
   margin-bottom: 12px;
 }
 
+/* 边界状态指标卡片 */
+.boundary-metrics-card {
+  margin-bottom: 16px;
+}
+
+.boundary-metrics-card .ant-card-body {
+  padding: 10px !important;
+}
+
+.boundary-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.boundary-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 84px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 205, 255, 0.35);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.45) 0%, rgba(8, 27, 47, 0.25) 100%);
+  transition: all 0.3s ease;
+}
+
+.boundary-metric-item:hover {
+  border-color: rgba(156, 208, 255, 0.6);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.55) 0%, rgba(8, 27, 47, 0.35) 100%);
+  box-shadow: 0 0 20px rgba(156, 208, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.boundary-metric-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #9bc7ea;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.boundary-metric-value {
+  display: block;
+  color: #eef8ff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  text-shadow: 0 0 15px rgba(156, 208, 255, 0.4);
+}
+
+.boundary-metric-desc {
+  display: block;
+  color: #7db3e0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.boundary-metric-item--coverage {
+  border-color: rgba(120, 190, 255, 0.38);
+}
+
+.boundary-metric-item--missing {
+  border-color: rgba(255, 195, 120, 0.34);
+}
+
+.boundary-metric-item--pressure {
+  border-color: rgba(117, 223, 255, 0.34);
+}
+
+.boundary-metric-item--healthy {
+  border-color: rgba(109, 227, 170, 0.34);
+}
+
+.boundary-metric-item--warn {
+  border-color: rgba(255, 170, 120, 0.34);
+}
+
+@media (max-width: 1500px) {
+  .boundary-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .boundary-metric-item {
+    min-height: 78px;
+    padding: 9px 10px;
+  }
+
+  .boundary-metric-value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .boundary-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .status-integrated-body {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
@@ -2300,12 +2404,27 @@
   flex-direction: column;
   gap: 10px;
   height: 100%;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+}
+
+.control-card--side .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  width: 100%;
 }
 
 .control-card--side .control-toolbar {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(135, 199, 255, 0.18);
+  background: linear-gradient(180deg, rgba(10, 33, 55, 0.45) 0%, rgba(7, 23, 39, 0.3) 100%);
 }
 
 .control-card--side .control-toolbar > * {
@@ -2336,34 +2455,36 @@
   background: linear-gradient(180deg, rgba(28, 79, 124, 0.92) 0%, rgba(13, 43, 70, 0.9) 100%);
 }
 
-.control-card--side .control-kpi-grid {
+.control-card--side .control-ready-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  margin-top: 2px;
 }
 
-.control-card--side .control-kpi-item {
+.control-card--side .control-ready-item {
   min-width: 0;
-  padding: 8px 9px;
+  padding: 9px 10px;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border-radius: 10px;
   border: 1px solid rgba(135, 199, 255, 0.2);
-  background: linear-gradient(180deg, rgba(12, 42, 70, 0.36) 0%, rgba(8, 28, 47, 0.26) 100%);
+  background: linear-gradient(180deg, rgba(12, 42, 70, 0.36) 0%, rgba(8, 28, 47, 0.24) 100%);
 }
 
-.control-card--side .control-kpi-item > span {
+.control-card--side .control-ready-item > span {
   display: block;
   margin-bottom: 4px;
-  color: #8fb8d9;
+  color: #91c2e8;
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.control-card--side .control-kpi-item > strong {
+.control-card--side .control-ready-item > strong {
   display: block;
-  color: #eff8ff;
+  color: #eef8ff;
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
@@ -2371,19 +2492,29 @@
   text-overflow: ellipsis;
 }
 
-.control-card--side .control-kpi-item--ready {
-  border-color: rgba(110, 226, 175, 0.34);
-  background: linear-gradient(180deg, rgba(12, 57, 48, 0.38) 0%, rgba(8, 30, 26, 0.26) 100%);
+.control-card--side .control-ready-item--ok {
+  border-color: rgba(110, 226, 175, 0.32);
+  background: linear-gradient(180deg, rgba(12, 57, 48, 0.38) 0%, rgba(8, 30, 26, 0.24) 100%);
 }
 
-.control-card--side .control-kpi-item--warn {
-  border-color: rgba(255, 192, 112, 0.34);
-  background: linear-gradient(180deg, rgba(73, 47, 16, 0.4) 0%, rgba(35, 23, 8, 0.26) 100%);
+.control-card--side .control-ready-item--pending {
+  border-color: rgba(255, 192, 112, 0.32);
+  background: linear-gradient(180deg, rgba(73, 47, 16, 0.38) 0%, rgba(35, 23, 8, 0.24) 100%);
+}
+
+.control-card--side .control-ready-item--model {
+  border-color: rgba(138, 206, 255, 0.3);
+  background: linear-gradient(180deg, rgba(15, 50, 82, 0.4) 0%, rgba(8, 29, 48, 0.24) 100%);
+}
+
+.control-card--side .control-ready-item--model > strong {
+  letter-spacing: 0.03em;
 }
 
 .control-card--side .control-section-title {
   position: relative;
   padding-left: 10px;
+  margin-top: 2px;
   color: #c9e7ff;
   font-size: 12px;
   font-weight: 700;
@@ -2400,103 +2531,6 @@
   border-radius: 2px;
   background: linear-gradient(180deg, #7cc8ff 0%, #56a4e8 100%);
   box-shadow: 0 0 8px rgba(124, 200, 255, 0.45);
-}
-
-.control-card--side .control-process-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.control-card--side .control-process-item {
-  min-width: 0;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(135, 199, 255, 0.18);
-  background: linear-gradient(180deg, rgba(12, 42, 70, 0.42) 0%, rgba(7, 24, 40, 0.3) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(198, 231, 255, 0.06),
-    0 10px 24px rgba(4, 15, 28, 0.16);
-}
-
-.control-card--side .control-process-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.control-card--side .control-process-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgba(108, 176, 237, 0.12);
-  color: #8fcfff;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.control-card--side .control-process-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(135, 199, 255, 0.4);
-  box-shadow: 0 0 10px rgba(135, 199, 255, 0.35);
-}
-
-.control-card--side .control-process-label {
-  display: block;
-  margin-bottom: 4px;
-  color: #8fb8d9;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.control-card--side .control-process-value {
-  display: block;
-  color: #eef8ff;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.control-card--side .control-process-item--done {
-  border-color: rgba(110, 226, 175, 0.24);
-  background: linear-gradient(180deg, rgba(12, 57, 48, 0.42) 0%, rgba(8, 30, 26, 0.3) 100%);
-}
-
-.control-card--side .control-process-item--done .control-process-dot,
-.control-card--side .control-process-item--ready .control-process-dot {
-  background: #6de3aa;
-  box-shadow: 0 0 12px rgba(109, 227, 170, 0.48);
-}
-
-.control-card--side .control-process-item--warn {
-  border-color: rgba(255, 192, 112, 0.28);
-  background: linear-gradient(180deg, rgba(73, 47, 16, 0.42) 0%, rgba(35, 23, 8, 0.3) 100%);
-}
-
-.control-card--side .control-process-item--warn .control-process-dot {
-  background: #ffc070;
-  box-shadow: 0 0 12px rgba(255, 192, 112, 0.48);
-}
-
-.control-card--side .control-process-item--active {
-  border-color: rgba(130, 182, 255, 0.32);
-  background: linear-gradient(180deg, rgba(19, 53, 94, 0.48) 0%, rgba(9, 28, 49, 0.34) 100%);
-}
-
-.control-card--side .control-process-item--active .control-process-dot {
-  background: #8bb9ff;
-  box-shadow: 0 0 14px rgba(139, 185, 255, 0.56);
 }
 
 .control-card--side .control-side-table {
@@ -2549,17 +2583,22 @@
 
 .control-card--side .control-form-grid--side {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.control-card--side .control-form-grid--side .control-field:first-child {
+  grid-column: 1 / -1;
 }
 
 .control-card--side .control-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 9px 10px;
+  padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(135, 199, 255, 0.16);
+  border: 1px solid rgba(135, 199, 255, 0.22);
   background: linear-gradient(180deg, rgba(11, 35, 58, 0.34) 0%, rgba(7, 23, 39, 0.22) 100%);
 }
 
@@ -2576,56 +2615,35 @@
 }
 
 .control-card--side .control-actions--solver {
-  margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(145, 196, 236, 0.24);
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(145, 196, 236, 0.28);
 }
 
 .control-card--side .control-actions--solver .ant-btn {
-  height: 40px;
+  height: 42px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  box-shadow: 0 8px 20px rgba(15, 90, 156, 0.24);
 }
 
-.control-card--side .control-action-tip {
-  display: block;
-  margin-top: 6px;
-  text-align: center;
-  color: #8fb1cd;
-  font-size: 11px;
+.control-card--side .control-actions--solver .ant-btn:disabled {
+  box-shadow: none;
 }
 
 /* 边界关键量表：提升文字与背景对比度 */
-.control-card--side .control-side-table .ant-table-tbody > tr > td {
-  background: rgba(7, 24, 40, 0.58) !important;
-}
-
-.control-card--side .control-side-table .ant-table-tbody > tr:nth-child(even) > td {
-  background: rgba(10, 31, 52, 0.68) !important;
-}
-
-.control-card--side .control-side-table .ant-table-tbody > tr > td:first-child {
-  color: #b9dcf8 !important;
-  font-weight: 600;
-}
-
-.control-card--side .control-side-table .ant-table-tbody > tr > td:last-child .control-side-value {
-  color: #f4fbff !important;
-  text-shadow: 0 0 10px rgba(156, 208, 255, 0.22);
-}
-
-.control-card--side .control-side-table .ant-table-tbody > tr:hover > td:first-child {
-  color: #d8ecff !important;
-}
-
 @media (max-width: 768px) {
-  .control-card--side .control-kpi-grid {
+  .control-card--side .control-toolbar {
     grid-template-columns: 1fr;
   }
 
-  .control-card--side .control-process-grid {
+  .control-card--side .control-ready-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .control-card--side .control-form-grid--side {
     grid-template-columns: 1fr;
   }
 }
@@ -2720,12 +2738,26 @@
   grid-row: 1 !important;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1.8fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
   pointer-events: auto !important;
 }
 
 .status-stack-column > .natural-panel-card {
+  min-height: 0;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-stack-column {
+  grid-column: 5 / 6 !important;
+  grid-row: 1 !important;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  pointer-events: auto !important;
+}
+
+.control-stack-column > .natural-panel-card {
   min-height: 0;
 }
 
@@ -2765,6 +2797,12 @@
     grid-row: auto !important;
     grid-template-rows: auto auto;
   }
+
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .control-stack-column {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    grid-template-rows: auto auto;
+  }
 }
 
 /* 实时分风解算上下栏占比对齐风流实时监测：上 3/4，下 1/4 */
@@ -2774,12 +2812,14 @@
 
 /* 通风状态卡片 + 通风机性能曲线卡片：样式与纵向占比最终优化 */
 .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row > .status-stack-column {
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
   gap: 10px;
 }
 
+.status-stack-column > .boundary-metrics-card,
 .status-stack-column > .status-card--integrated,
-.status-stack-column > .fan-curve-card--side {
+.control-stack-column > .fan-curve-card--side,
+.control-stack-column > .control-card--side {
   border-radius: 12px !important;
   border: 1px solid rgba(143, 203, 255, 0.28) !important;
   box-shadow:
@@ -2787,30 +2827,45 @@
     inset 0 1px 0 rgba(198, 231, 255, 0.12) !important;
 }
 
+.status-stack-column > .boundary-metrics-card .ant-card-head,
 .status-stack-column > .status-card--integrated .ant-card-head,
-.status-stack-column > .fan-curve-card--side .ant-card-head {
+.control-stack-column > .fan-curve-card--side .ant-card-head,
+.control-stack-column > .control-card--side .ant-card-head {
   border-bottom: 1px solid rgba(143, 203, 255, 0.24) !important;
   background: linear-gradient(180deg, rgba(33, 92, 143, 0.34) 0%, rgba(16, 49, 79, 0.22) 100%) !important;
   min-height: 42px;
 }
 
+.status-stack-column > .boundary-metrics-card .ant-card-head-title,
 .status-stack-column > .status-card--integrated .ant-card-head-title,
-.status-stack-column > .fan-curve-card--side .ant-card-head-title {
+.control-stack-column > .fan-curve-card--side .ant-card-head-title,
+.control-stack-column > .control-card--side .ant-card-head-title {
   font-size: 14px;
   letter-spacing: 0.02em;
 }
 
+.status-stack-column > .boundary-metrics-card .ant-card-body,
 .status-stack-column > .status-card--integrated .ant-card-body,
-.status-stack-column > .fan-curve-card--side .ant-card-body {
+.control-stack-column > .fan-curve-card--side .ant-card-body,
+.control-stack-column > .control-card--side .ant-card-body {
   padding: 9px !important;
+}
+
+.status-stack-column > .boundary-metrics-card {
+  background: linear-gradient(180deg, rgba(15, 45, 72, 0.34) 0%, rgba(8, 24, 40, 0.24) 100%) !important;
 }
 
 .status-stack-column > .status-card--integrated {
   background: linear-gradient(180deg, rgba(12, 39, 63, 0.36) 0%, rgba(8, 24, 40, 0.26) 100%) !important;
 }
 
-.status-stack-column > .fan-curve-card--side {
+.control-stack-column > .fan-curve-card--side,
+.control-stack-column > .control-card--side {
   background: linear-gradient(180deg, rgba(14, 43, 68, 0.34) 0%, rgba(8, 25, 43, 0.24) 100%) !important;
+}
+
+.control-stack-column > .fan-curve-card--side .status-curve-chart {
+  min-height: 170px;
 }
 
 .status-stack-column > .status-card--integrated .status-roadway-table-shell--integrated {
@@ -2859,55 +2914,18 @@
 }
 
 /* 通风状态卡片：消除大块留白，表格区填满剩余高度 */
+.status-stack-column > .status-card--integrated {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .status-stack-column > .status-card--integrated .ant-card-body {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden !important;
-}
-
-.status-stack-column > .status-card--integrated .center-summary-grid--inside {
-  flex: 0 0 auto;
-  margin-bottom: 6px;
-}
-
-.status-stack-column > .status-card--integrated .center-summary-grid--inside .center-summary-item {
-  min-height: 44px;
-  padding: 6px 7px;
-}
-
-.status-stack-column > .status-card--integrated .status-integrated-body {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.status-stack-column > .status-card--integrated .status-roadway-table-shell--integrated {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 6px 7px;
-}
-
-.status-stack-column > .status-card--integrated .status-roadway-table-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(138, 199, 255, 0.22);
-  background: linear-gradient(180deg, rgba(21, 61, 95, 0.38) 0%, rgba(11, 34, 56, 0.28) 100%);
-  color: #dff2ff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.status-stack-column > .status-card--integrated .status-roadway-table-wrap {
-  border-radius: 10px;
-  overflow: hidden;
+  padding: 6px !important;
+  overflow: hidden !important;
 }
 
 .status-stack-column > .status-card--integrated .status-roadway-table--integrated,
@@ -2915,6 +2933,49 @@
 .status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-nested-loading,
 .status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-container,
 .status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table {
-  height: 100%;
   min-height: 0;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated {
+  flex: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(138, 199, 255, 0.22);
+  background: linear-gradient(180deg, rgba(12, 36, 60, 0.26) 0%, rgba(8, 24, 40, 0.2) 100%);
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* 巷道信息表格高度自适应填满卡片，避免底部留白 */
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-wrapper,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-nested-loading,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-spin-container,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table,
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-container {
+  height: 100%;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-body {
+  max-height: calc(100% - 40px) !important;
+  height: calc(100% - 40px) !important;
+}
+
+/* 巷道信息表格：隐藏滚动条（保留滚动能力） */
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-sticky-scroll {
+  display: none !important;
 }

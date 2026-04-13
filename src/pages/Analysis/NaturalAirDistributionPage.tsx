@@ -10,11 +10,15 @@ import {
   message,
 } from "antd";
 import {
+  ApartmentOutlined,
   DashboardOutlined,
   DownloadOutlined,
+  LineChartOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
+  SettingOutlined,
+  TableOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import type { UploadProps } from "antd";
@@ -66,6 +70,24 @@ const roadwayStatusData: RoadwayStatus[] = [
   { id: "R010", name: "北翼回风联络巷", resistance: 0.039, minAirflow: 420, maxAirflow: 560, measuredAirflow: 438.4, hasMeasurement: true, status: "sufficient" },
   { id: "R011", name: "2203工作面进风巷", resistance: 0.041, minAirflow: 320, maxAirflow: 430, hasMeasurement: false, status: "unknown" },
   { id: "R012", name: "2203工作面回风巷", resistance: 0.044, minAirflow: 320, maxAirflow: 430, measuredAirflow: 335.8, hasMeasurement: true, status: "sufficient" },
+  { id: "R013", name: "2301工作面进风巷", resistance: 0.043, minAirflow: 330, maxAirflow: 450, measuredAirflow: 322.7, hasMeasurement: true, status: "insufficient" },
+  { id: "R014", name: "2301工作面回风巷", resistance: 0.046, minAirflow: 330, maxAirflow: 450, measuredAirflow: 336.4, hasMeasurement: true, status: "sufficient" },
+  { id: "R015", name: "2302工作面进风巷", resistance: 0.047, minAirflow: 340, maxAirflow: 460, hasMeasurement: false, status: "unknown" },
+  { id: "R016", name: "2302工作面回风巷", resistance: 0.048, minAirflow: 340, maxAirflow: 460, measuredAirflow: 347.6, hasMeasurement: true, status: "sufficient" },
+  { id: "R017", name: "南翼进风联络巷", resistance: 0.038, minAirflow: 410, maxAirflow: 550, measuredAirflow: 402.3, hasMeasurement: true, status: "insufficient" },
+  { id: "R018", name: "南翼回风联络巷", resistance: 0.040, minAirflow: 410, maxAirflow: 550, measuredAirflow: 423.9, hasMeasurement: true, status: "sufficient" },
+  { id: "R019", name: "东翼运输大巷", resistance: 0.036, minAirflow: 520, maxAirflow: 700, measuredAirflow: 538.1, hasMeasurement: true, status: "sufficient" },
+  { id: "R020", name: "东翼回风大巷", resistance: 0.037, minAirflow: 520, maxAirflow: 700, hasMeasurement: false, status: "unknown" },
+  { id: "R021", name: "西翼运输大巷", resistance: 0.036, minAirflow: 500, maxAirflow: 680, measuredAirflow: 494.5, hasMeasurement: true, status: "insufficient" },
+  { id: "R022", name: "西翼回风大巷", resistance: 0.038, minAirflow: 500, maxAirflow: 680, measuredAirflow: 508.8, hasMeasurement: true, status: "sufficient" },
+  { id: "R023", name: "中央回风石门", resistance: 0.041, minAirflow: 300, maxAirflow: 390, measuredAirflow: 286.2, hasMeasurement: true, status: "insufficient" },
+  { id: "R024", name: "中央进风石门", resistance: 0.039, minAirflow: 300, maxAirflow: 390, measuredAirflow: 312.7, hasMeasurement: true, status: "sufficient" },
+  { id: "R025", name: "采区胶带巷", resistance: 0.052, minAirflow: 240, maxAirflow: 320, measuredAirflow: 251.4, hasMeasurement: true, status: "sufficient" },
+  { id: "R026", name: "采区轨道巷", resistance: 0.051, minAirflow: 240, maxAirflow: 320, hasMeasurement: false, status: "unknown" },
+  { id: "R027", name: "井底车场回风巷", resistance: 0.034, minAirflow: 450, maxAirflow: 620, measuredAirflow: 447.3, hasMeasurement: true, status: "insufficient" },
+  { id: "R028", name: "井底车场进风巷", resistance: 0.033, minAirflow: 450, maxAirflow: 620, measuredAirflow: 462.8, hasMeasurement: true, status: "sufficient" },
+  { id: "R029", name: "北翼辅助回风巷", resistance: 0.049, minAirflow: 260, maxAirflow: 350, hasMeasurement: false, status: "unknown" },
+  { id: "R030", name: "南翼辅助回风巷", resistance: 0.050, minAirflow: 260, maxAirflow: 350, measuredAirflow: 268.9, hasMeasurement: true, status: "sufficient" },
 ];
 
 const solvedPreset: Record<string, number> = {
@@ -81,6 +103,24 @@ const solvedPreset: Record<string, number> = {
   R010: 441.9,
   R011: 338.5,
   R012: 339.6,
+  R013: 334.9,
+  R014: 341.7,
+  R015: 352.6,
+  R016: 349.1,
+  R017: 416.4,
+  R018: 428.2,
+  R019: 544.9,
+  R020: 536.8,
+  R021: 507.3,
+  R022: 513.6,
+  R023: 301.5,
+  R024: 315.2,
+  R025: 255.8,
+  R026: 248.6,
+  R027: 459.2,
+  R028: 468.4,
+  R029: 271.3,
+  R030: 273.8,
 };
 
 const mainFanData: MainFanInfo[] = [
@@ -187,17 +227,26 @@ export default function NaturalAirDistributionPage() {
     [],
   );
 
+  const toAirflowPerSecond = (value: number) => value / 60;
+  const formatAirflowPerSecond = (value: number, decimals = 2) =>
+    Number(toAirflowPerSecond(value).toFixed(decimals));
+  const formatAirflowPerSecondText = (value: number, decimals = 2) =>
+    toAirflowPerSecond(value).toFixed(decimals);
+
   const measuredCount = roadwayStatusData.filter((item) => item.hasMeasurement).length;
   const missingMeasurementCount = roadwayStatusData.length - measuredCount;
   const boundaryCoverageRate = (measuredCount / roadwayStatusData.length) * 100;
   const totalCurrentAirflow = roadwayStatusData.reduce((sum, item) => sum + (item.measuredAirflow ?? 0), 0);
   const totalRequiredAirflow = roadwayStatusData.reduce((sum, item) => sum + item.minAirflow, 0);
   const airflowBalanceDeviation = totalCurrentAirflow - totalRequiredAirflow;
+  const airflowBalanceDeviationPerSecond = toAirflowPerSecond(airflowBalanceDeviation);
   const naturalVentilationPressure = Number(
     ((((mainFanData[0].pressure + mainFanData[1].pressure) / 2) * 0.012) * (airflowBalanceDeviation >= 0 ? 1 : -1)).toFixed(1),
   );
   const airflowDeviationColor =
     Math.abs(airflowBalanceDeviation) <= 200 ? "#6de3aa" : airflowBalanceDeviation < 0 ? "#ff9f7f" : "#ffd86b";
+  const isAirflowBalanceHealthy = Math.abs(airflowBalanceDeviation) <= 200;
+  const pressureDirectionText = naturalVentilationPressure >= 0 ? "正向助流" : "反向阻流";
 
   const controlStatusMeta = calculating
     ? { label: "解算中", color: "processing" as const }
@@ -222,18 +271,18 @@ export default function NaturalAirDistributionPage() {
     const statusRows = roadwayStatusData.map((item) => ({
       巷道编号: item.id,
       巷道名称: item.name,
-      最小风量: item.minAirflow,
-      最大风量: item.maxAirflow,
-      实测风量: item.measuredAirflow ?? "",
+      "最小风量(m³/s)": formatAirflowPerSecond(item.minAirflow),
+      "最大风量(m³/s)": formatAirflowPerSecond(item.maxAirflow),
+      "实测风量(m³/s)": item.measuredAirflow == null ? "" : formatAirflowPerSecond(item.measuredAirflow),
       风阻: item.resistance,
       状态: item.status,
     }));
     const resultRows = resultData.map((item) => ({
       巷道编号: item.roadwayId,
       巷道名称: item.roadwayName,
-      实测风量: item.measuredAirflow ?? "",
-      解算风量: Number(item.solvedAirflow.toFixed(1)),
-      差值: item.hasMeasurement ? Number((item.solvedAirflow - (item.measuredAirflow ?? 0)).toFixed(1)) : "",
+      "实测风量(m³/s)": item.measuredAirflow == null ? "" : formatAirflowPerSecond(item.measuredAirflow),
+      "解算风量(m³/s)": formatAirflowPerSecond(item.solvedAirflow),
+      "差值(m³/s)": item.hasMeasurement ? formatAirflowPerSecond(item.solvedAirflow - (item.measuredAirflow ?? 0)) : "",
     }));
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(statusRows), "通风状态");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(resultRows), "解算结果");
@@ -258,7 +307,7 @@ export default function NaturalAirDistributionPage() {
       grid: { left: 56, right: 20, top: 52, bottom: 42 },
       xAxis: {
         type: "value",
-        name: "风量 (m3/min)",
+        name: "风量 (m³/s)",
         axisLine: { lineStyle: { color: "rgba(145, 213, 255, 0.5)" } },
         splitLine: { lineStyle: { color: "rgba(145, 213, 255, 0.12)" } },
         axisLabel: { color: "#b8d9ff" },
@@ -278,7 +327,7 @@ export default function NaturalAirDistributionPage() {
           type: "line",
           smooth: true,
           symbol: "none",
-          data: mainFanData[0].curvePoints,
+          data: mainFanData[0].curvePoints.map(([airflow, pressure]) => [formatAirflowPerSecond(airflow), pressure] as [number, number]),
           lineStyle: { width: 3, color: mainFanData[0].curveColor },
         },
         {
@@ -286,7 +335,7 @@ export default function NaturalAirDistributionPage() {
           type: "line",
           smooth: true,
           symbol: "none",
-          data: mainFanData[1].curvePoints,
+          data: mainFanData[1].curvePoints.map(([airflow, pressure]) => [formatAirflowPerSecond(airflow), pressure] as [number, number]),
           lineStyle: { width: 3, color: mainFanData[1].curveColor },
         },
       ],
@@ -298,16 +347,16 @@ export default function NaturalAirDistributionPage() {
     { title: "巷道", dataIndex: "id", key: "id", width: 72, align: "center" },
     { title: "巷道名称", dataIndex: "name", key: "name", width: 132, ellipsis: true },
     {
-      title: "实测风量",
+      title: "实测风量(m³/s)",
       dataIndex: "measuredAirflow",
       key: "measuredAirflow",
       width: 98,
       align: "right",
       render: (value: number | undefined, record) =>
-        record.hasMeasurement ? <span className="status-roadway-value">{value?.toFixed(1)}</span> : <span className="status-roadway-empty">--</span>,
+        record.hasMeasurement && value != null ? <span className="status-roadway-value">{formatAirflowPerSecondText(value)}</span> : <span className="status-roadway-empty">--</span>,
     },
-    { title: "最小风量", dataIndex: "minAirflow", key: "minAirflow", width: 92, align: "right" },
-    { title: "最大风量", dataIndex: "maxAirflow", key: "maxAirflow", width: 92, align: "right" },
+    { title: "最小风量(m³/s)", dataIndex: "minAirflow", key: "minAirflow", width: 92, align: "right", render: (value) => formatAirflowPerSecondText(value) },
+    { title: "最大风量(m³/s)", dataIndex: "maxAirflow", key: "maxAirflow", width: 92, align: "right", render: (value) => formatAirflowPerSecondText(value) },
     { title: "风阻", dataIndex: "resistance", key: "resistance", width: 82, align: "right", render: (value) => value.toFixed(3) },
     { title: "状态", dataIndex: "status", key: "status", width: 76, align: "center", render: renderRoadwayStatus },
   ];
@@ -317,56 +366,8 @@ export default function NaturalAirDistributionPage() {
     { label: "节点压力法", value: "node-pressure", shortLabel: "节点" },
     { label: "回路风量法", value: "loop-airflow", shortLabel: "回路" },
   ] as const;
-
   const currentCalculationMethod =
     calculationMethodOptions.find((item) => item.value === calculationMethod) ?? calculationMethodOptions[0];
-
-  const controlProcessData = [
-    {
-      key: "p1",
-      step: "01",
-      label: "数据导入",
-      value: dataImported ? "已导入" : "待导入",
-      status: dataImported ? "done" : "pending",
-    },
-    {
-      key: "p2",
-      step: "02",
-      label: "边界校核",
-      value: `${boundaryCoverageRate.toFixed(1)}%`,
-      status: !dataImported ? "pending" : boundaryCoverageRate >= 75 ? "done" : "warn",
-    },
-    {
-      key: "p3",
-      step: "03",
-      label: "参数设定",
-      value: currentCalculationMethod.shortLabel,
-      status: "done",
-    },
-    {
-      key: "p4",
-      step: "04",
-      label: "执行求解",
-      value: calculating ? "进行中" : dataImported ? "可启动" : "待启动",
-      status: calculating ? "active" : dataImported ? "ready" : "pending",
-    },
-  ] as const;
-
-  const controlPanelColumns: ColumnsType<{ key: string; item: string; value: string }> = [
-    { title: "控制项", dataIndex: "item", key: "item", width: 90 },
-    { title: "当前值", dataIndex: "value", key: "value", render: (value) => <span className="control-side-value">{value}</span> },
-  ];
-
-  const controlPanelData = [
-    { key: "c1", item: "测点覆盖", value: `${boundaryCoverageRate.toFixed(1)}%` },
-    { key: "c2", item: "缺测巷道", value: `${missingMeasurementCount} 条` },
-    { key: "c3", item: "自然风压", value: `${naturalVentilationPressure} Pa` },
-    { key: "c4", item: "风量偏差", value: `${airflowBalanceDeviation.toFixed(1)} m3/min` },
-    { key: "c5", item: "主扇边界", value: `${mainFanData.length} 台` },
-  ];
-
-  const readinessText = !dataImported ? "待导入" : boundaryCoverageRate >= 75 ? "可解算" : "待校核";
-  const readinessClass = !dataImported ? "pending" : boundaryCoverageRate >= 75 ? "ready" : "warn";
 
   const resultColumns: ColumnsType<ResultRow> = [
     { title: "巷道编号", dataIndex: "roadwayId", key: "roadwayId", width: 90 },
@@ -383,19 +384,19 @@ export default function NaturalAirDistributionPage() {
       ),
     },
     {
-      title: "实测风量",
+      title: "实测风量(m³/s)",
       dataIndex: "measuredAirflow",
       key: "measuredAirflow",
       width: 120,
       render: (value: number | undefined, record) =>
-        record.hasMeasurement ? <span className="result-airflow-value">{value?.toFixed(1)}</span> : <span className="result-airflow-empty">--</span>,
+        record.hasMeasurement && value != null ? <span className="result-airflow-value">{formatAirflowPerSecondText(value)}</span> : <span className="result-airflow-empty">--</span>,
     },
     {
-      title: "解算风量",
+      title: "解算风量(m³/s)",
       dataIndex: "solvedAirflow",
       key: "solvedAirflow",
       width: 130,
-      render: (value: number) => value.toFixed(1),
+      render: (value: number) => formatAirflowPerSecondText(value),
     },
     {
       title: "差值",
@@ -407,7 +408,7 @@ export default function NaturalAirDistributionPage() {
         return (
           <span className={Math.abs(delta) <= 20 ? "result-airflow-delta result-airflow-delta--ok" : "result-airflow-delta result-airflow-delta--warn"}>
             {delta >= 0 ? "+" : ""}
-            {delta.toFixed(1)}
+            {formatAirflowPerSecondText(delta)}
           </span>
         );
       },
@@ -445,6 +446,50 @@ export default function NaturalAirDistributionPage() {
                   通风状态
                 </span>
               }
+              className="boundary-metrics-card natural-panel-card"
+            >
+              <div className="boundary-metrics-grid">
+                <div className="boundary-metric-item boundary-metric-item--coverage">
+                  <span className="boundary-metric-label">测点覆盖率</span>
+                  <strong className="boundary-metric-value">{boundaryCoverageRate.toFixed(1)}%</strong>
+                  <span className="boundary-metric-desc">
+                    {measuredCount}/{roadwayStatusData.length} 条已测
+                  </span>
+                </div>
+
+                <div className="boundary-metric-item boundary-metric-item--missing">
+                  <span className="boundary-metric-label">缺测巷道</span>
+                  <strong className="boundary-metric-value">{missingMeasurementCount}</strong>
+                  <span className="boundary-metric-desc">条待补测</span>
+                </div>
+
+                <div className="boundary-metric-item boundary-metric-item--pressure">
+                  <span className="boundary-metric-label">自然风压</span>
+                  <strong className="boundary-metric-value">
+                    {naturalVentilationPressure >= 0 ? "+" : ""}
+                    {naturalVentilationPressure}
+                  </strong>
+                  <span className="boundary-metric-desc">{pressureDirectionText}</span>
+                </div>
+
+                <div className={`boundary-metric-item ${isAirflowBalanceHealthy ? "boundary-metric-item--healthy" : "boundary-metric-item--warn"}`}>
+                  <span className="boundary-metric-label">风量平衡偏差</span>
+                  <strong className="boundary-metric-value" style={{ color: airflowDeviationColor }}>
+                    {airflowBalanceDeviationPerSecond >= 0 ? "+" : ""}
+                    {airflowBalanceDeviationPerSecond.toFixed(2)}
+                  </strong>
+                  <span className="boundary-metric-desc">m³/s</span>
+                </div>
+              </div>
+            </Card>
+
+            <Card
+              title={
+                <span>
+                  <ApartmentOutlined style={{ marginRight: 8 }} />
+                  巷道信息
+                </span>
+              }
               className="status-card status-card--compact natural-panel-card status-card--integrated"
               extra={
                 <Button className="status-export-btn" size="small" icon={<DownloadOutlined />} onClick={handleExport}>
@@ -452,42 +497,31 @@ export default function NaturalAirDistributionPage() {
                 </Button>
               }
             >
-              <div className="center-summary-grid center-summary-grid--inside">
-                <div className="center-summary-item">
-                  <span>边界完整率</span>
-                  <strong>{boundaryCoverageRate.toFixed(1)}%</strong>
-                </div>
-                <div className="center-summary-item">
-                  <span>风量平衡偏差</span>
-                  <strong style={{ color: airflowDeviationColor }}>{airflowBalanceDeviation.toFixed(1)} m3/min</strong>
-                </div>
-                <div className="center-summary-item">
-                  <span>自然风压</span>
-                  <strong>{naturalVentilationPressure} Pa</strong>
-                </div>
-              </div>
-
-              <div className="status-integrated-body">
-                <div className="status-table-shell status-roadway-table-shell status-roadway-table-shell--integrated">
-                  <div className="status-roadway-table-title">巷道信息表</div>
-                  <div className="status-roadway-table-wrap">
-                    <Table
-                      className="status-roadway-table status-roadway-table--integrated"
-                      columns={statusColumns}
-                      dataSource={roadwayStatusData}
-                      rowKey="id"
-                      pagination={false}
-                      size="small"
-                      tableLayout="fixed"
-                      scroll={{ x: 660, y: 320 }}
-                      rowClassName={(record) => `status-roadway-row status-roadway-row--${record.status}`}
-                    />
-                  </div>
-                </div>
-              </div>
+              <Table
+                className="status-roadway-table status-roadway-table--integrated"
+                columns={statusColumns}
+                dataSource={roadwayStatusData}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                tableLayout="fixed"
+                scroll={{ x: 660, y: 430 }}
+                rowClassName={(record) => `status-roadway-row status-roadway-row--${record.status}`}
+              />
             </Card>
 
-            <Card title="通风机性能曲线" className="fan-curve-card natural-panel-card fan-curve-card--side">
+          </div>
+
+          <div className="control-stack-column">
+            <Card
+              title={
+                <span>
+                  <LineChartOutlined style={{ marginRight: 8 }} />
+                  通风机性能曲线
+                </span>
+              }
+              className="fan-curve-card natural-panel-card fan-curve-card--side"
+            >
               <div className="fan-curve-card-body">
                 <div className="status-curve-chart">
                   <ChartPanel option={fanCurveOption} height="100%" noCard />
@@ -499,110 +533,97 @@ export default function NaturalAirDistributionPage() {
                         {fan.fanName}
                       </span>
                       <span>频率 {fan.frequency.toFixed(1)} Hz</span>
-                      <span>风量 {fan.airflow} m3/min</span>
+                      <span>风量 {formatAirflowPerSecondText(fan.airflow)} m³/s</span>
                       <span>风压 {fan.pressure} Pa</span>
                     </div>
                   ))}
                 </div>
               </div>
             </Card>
+
+            <Card
+              title={
+                <span>
+                  <SettingOutlined style={{ marginRight: 8 }} />
+                  解算控制
+                </span>
+              }
+              className="control-card natural-panel-card control-card--side"
+              extra={<Tag color={controlStatusMeta.color}>{controlStatusMeta.label}</Tag>}
+            >
+              <div className="control-side-shell">
+                <div className="control-toolbar">
+                  <Upload {...uploadProps}>
+                    <Button icon={<UploadOutlined />} size="small" className="control-toolbar-btn">导入</Button>
+                  </Upload>
+                  <Button icon={<DownloadOutlined />} size="small" className="control-toolbar-btn" onClick={handleExport}>导出</Button>
+                  <Button icon={<ReloadOutlined />} size="small" className="control-toolbar-btn" onClick={handleReset}>复位</Button>
+                </div>
+
+                <div className="control-ready-strip">
+                  <div className={`control-ready-item ${dataImported ? "control-ready-item--ok" : "control-ready-item--pending"}`}>
+                    <span>数据状态</span>
+                    <strong>{dataImported ? "已导入" : "未导入"}</strong>
+                  </div>
+                  <div className="control-ready-item control-ready-item--model">
+                    <span>解算模型</span>
+                    <strong>{currentCalculationMethod.shortLabel}</strong>
+                  </div>
+                </div>
+
+                <div className="control-section-title">参数设置</div>
+                <div className="control-form-grid control-form-grid--side">
+                  <div className="control-field">
+                    <span className="control-field-label">求解模型</span>
+                    <Select
+                      value={calculationMethod}
+                      onChange={setCalculationMethod}
+                      size="small"
+                      options={calculationMethodOptions.map(({ label, value }) => ({ label, value }))}
+                    />
+                  </div>
+
+                  <div className="control-field">
+                    <span className="control-field-label">收敛阈值</span>
+                    <InputNumber value={convergenceCriteria} onChange={(v) => setConvergenceCriteria(v || 0.001)} min={0.0001} max={0.01} step={0.0001} size="small" />
+                  </div>
+
+                  <div className="control-field">
+                    <span className="control-field-label">迭代上限</span>
+                    <InputNumber value={maxIterations} onChange={(v) => setMaxIterations(v || 100)} min={10} max={1000} step={10} size="small" />
+                  </div>
+                </div>
+
+                <div className="control-actions control-actions--compact control-actions--side control-actions--solver">
+                  <Button
+                    type="primary"
+                    icon={calculating ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+                    onClick={handleStartCalculation}
+                    loading={calculating}
+                    disabled={!dataImported}
+                    block
+                  >
+                    {calculating ? "解算中..." : "启动解算"}
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
 
-          <Card title="解算控制" className="control-card natural-panel-card control-card--side" extra={<Tag color={controlStatusMeta.color}>{controlStatusMeta.label}</Tag>}>
-            <div className="control-side-shell">
-              <div className="control-toolbar">
-                <Upload {...uploadProps}>
-                  <Button icon={<UploadOutlined />} size="small" className="control-toolbar-btn">导入</Button>
-                </Upload>
-                <Button icon={<DownloadOutlined />} size="small" className="control-toolbar-btn" onClick={handleExport}>导出</Button>
-                <Button icon={<ReloadOutlined />} size="small" className="control-toolbar-btn" onClick={handleReset}>复位</Button>
-              </div>
-
-              <div className="control-kpi-grid">
-                <div className={`control-kpi-item control-kpi-item--${readinessClass}`}>
-                  <span>运行准备</span>
-                  <strong>{readinessText}</strong>
-                </div>
-                <div className="control-kpi-item">
-                  <span>测点覆盖</span>
-                  <strong>{boundaryCoverageRate.toFixed(1)}%</strong>
-                </div>
-                <div className="control-kpi-item">
-                  <span>缺测巷道</span>
-                  <strong>{missingMeasurementCount} 条</strong>
-                </div>
-              </div>
-
-              <div className="control-section-title">解算流程</div>
-              <div className="control-process-grid">
-                {controlProcessData.map((item) => (
-                  <div key={item.key} className={`control-process-item control-process-item--${item.status}`}>
-                    <div className="control-process-head">
-                      <span className="control-process-step">{item.step}</span>
-                      <span className="control-process-dot" />
-                    </div>
-                    <span className="control-process-label">{item.label}</span>
-                    <strong className="control-process-value">{item.value}</strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="control-section-title">边界关键量</div>
-              <Table
-                className="control-side-table"
-                columns={controlPanelColumns}
-                dataSource={controlPanelData}
-                rowKey="key"
-                pagination={false}
-                size="small"
-                tableLayout="fixed"
-              />
-
-              <div className="control-section-title">求解参数</div>
-              <div className="control-form-grid control-form-grid--side">
-                <div className="control-field">
-                  <span className="control-field-label">求解模型</span>
-                  <Select
-                    value={calculationMethod}
-                    onChange={setCalculationMethod}
-                    size="small"
-                    options={calculationMethodOptions.map(({ label, value }) => ({ label, value }))}
-                  />
-                </div>
-
-                <div className="control-field">
-                  <span className="control-field-label">收敛阈值</span>
-                  <InputNumber value={convergenceCriteria} onChange={(v) => setConvergenceCriteria(v || 0.001)} min={0.0001} max={0.01} step={0.0001} size="small" />
-                </div>
-
-                <div className="control-field">
-                  <span className="control-field-label">迭代上限</span>
-                  <InputNumber value={maxIterations} onChange={(v) => setMaxIterations(v || 100)} min={10} max={1000} step={10} size="small" />
-                </div>
-              </div>
-
-              <div className="control-actions control-actions--compact control-actions--side control-actions--solver">
-                <Button
-                  type="primary"
-                  icon={calculating ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                  onClick={handleStartCalculation}
-                  loading={calculating}
-                  disabled={!dataImported}
-                  block
-                >
-                  {calculating ? "解算中..." : "启动解算"}
-                </Button>
-                {!dataImported && <span className="control-action-tip">请先导入边界与测风数据</span>}
-              </div>
-            </div>
-          </Card>
-
-          <Card title="解算结果表格" className="result-card result-card--focused natural-panel-card result-card--bottom" extra={<Tag color="cyan">下栏</Tag>}>
+          <Card
+            title={
+              <span>
+                <TableOutlined style={{ marginRight: 8 }} />
+                解算结果
+              </span>
+            }
+            className="result-card result-card--focused natural-panel-card result-card--bottom"
+          >
             <div className="result-focus-grid">
               <div className="result-focus-item"><span>补全巷道数</span><strong>{missingMeasurementCount} 条</strong></div>
               <div className="result-focus-item"><span>总巷道数</span><strong>{roadwayStatusData.length} 条</strong></div>
               <div className="result-focus-item"><span>主扇边界</span><strong>{mainFanData.length} 台</strong></div>
-              <div className="result-focus-item"><span>风网偏差</span><strong>{airflowBalanceDeviation.toFixed(1)} m3/min</strong></div>
+              <div className="result-focus-item"><span>风网偏差</span><strong>{airflowBalanceDeviationPerSecond.toFixed(2)} m³/s</strong></div>
             </div>
 
             <Table

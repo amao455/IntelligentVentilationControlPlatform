@@ -38,7 +38,7 @@ import WindowControlPage from '../pages/Remote/WindowControlPage';
 import EmergencyExecutionPage from '../pages/Remote/EmergencyExecutionPage';
 import ExecutionMonitorPage from '../pages/Remote/ExecutionMonitorPage';
 import EmergencyOverviewPage from '../pages/Emergency/OverviewPage';
-import EmergencySimulationPage from '../pages/Emergency/SimulationPage';
+import GasDisasterSimulationPage from '../pages/Emergency/GasDisasterSimulationPage';
 import EmergencyEvacuationPage from '../pages/Emergency/EvacuationPage';
 import EmergencyAirControlPage from '../pages/Emergency/AirControlPage';
 import EmergencyExecutionTrackingPage from '../pages/Emergency/ExecutionTrackingPage';
@@ -94,7 +94,7 @@ export function AppRouter() {
         <Route path="/remote/execution-monitor" element={<ExecutionMonitorPage />} />
 
         <Route path="/emergency/overview" element={<EmergencyOverviewPage />} />
-        <Route path="/emergency/simulation" element={<EmergencySimulationPage />} />
+        <Route path="/emergency/gas-disaster-simulation" element={<GasDisasterSimulationPage />} />
         <Route path="/emergency/evacuation" element={<EmergencyEvacuationPage />} />
         <Route path="/emergency/air-control" element={<EmergencyAirControlPage />} />
         <Route path="/emergency/execution-tracking" element={<EmergencyExecutionTrackingPage />} />

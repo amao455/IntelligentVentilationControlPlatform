@@ -34,16 +34,16 @@ export const topMenuList: TopMenuItem[] = [
   {
     key: "monitor",
     title: "实时监测",
-    entryPath: "/monitor/realtime-overview",
+    entryPath: "/monitor/airflow-realtime",
   },
   { key: "twin", title: "三维孪生", entryPath: "/twin/overview" },
   {
     key: "analysis",
     title: "解算分析",
-    entryPath: "/analysis/network-solving",
+    entryPath: "/analysis/natural-air-distribution",
   },
   { key: "decision", title: "调控决策", entryPath: "/decision/target-config" },
-  { key: "remote", title: "远程控制", entryPath: "/remote/scheme-execution" },
+  { key: "remote", title: "远程控制", entryPath: "/remote/main-fan-control" },
   { key: "emergency", title: "应急指挥", entryPath: "/emergency/overview" },
 ];
 
@@ -58,11 +58,6 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
   ],
   monitor: [
     {
-      key: "monitor-realtime-overview",
-      title: "通风参数实时监测",
-      path: "/monitor/realtime-overview",
-    },
-    {
       key: "monitor-airflow-realtime",
       title: "风流实时监测",
       path: "/monitor/airflow-realtime",
@@ -76,6 +71,11 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       key: "monitor-personnel-realtime",
       title: "人员实时监测",
       path: "/monitor/personnel-realtime",
+    },
+    {
+      key: "monitor-realtime-overview",
+      title: "通风参数实时监测",
+      path: "/monitor/realtime-overview",
     },
     {
       key: "monitor-key-area",
@@ -219,18 +219,6 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
   ],
   remote: [
     {
-      key: "remote-scheme-execution",
-      title: "调控方案执行",
-      path: "/remote/scheme-execution",
-      variant: "remote",
-    },
-    {
-      key: "remote-device-control",
-      title: "设备远程集控",
-      path: "/remote/device-control",
-      variant: "remote",
-    },
-    {
       key: "remote-main-fan-control",
       title: "主通风机控制",
       path: "/remote/main-fan-control",
@@ -255,6 +243,18 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       variant: "remote",
     },
     {
+      key: "remote-scheme-execution",
+      title: "调控方案执行",
+      path: "/remote/scheme-execution",
+      variant: "remote",
+    },
+    {
+      key: "remote-device-control",
+      title: "设备远程集控",
+      path: "/remote/device-control",
+      variant: "remote",
+    },
+    {
       key: "remote-emergency-execution",
       title: "应急控风执行",
       path: "/remote/emergency-execution",
@@ -275,9 +275,9 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       variant: "emergency",
     },
     {
-      key: "emergency-simulation",
-      title: "灾变场景模拟分析",
-      path: "/emergency/simulation",
+      key: "emergency-gas-disaster-simulation",
+      title: "灾害场景模拟分析",
+      path: "/emergency/gas-disaster-simulation",
       variant: "emergency",
     },
     {

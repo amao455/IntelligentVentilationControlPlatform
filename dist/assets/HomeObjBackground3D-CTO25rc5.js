@@ -1,4 +1,4 @@
-import{r as Be,j as hn}from"./index-DQ3_hoUm.js";/**
+import{r as Be,j as hn}from"./index-BaaJrXc9.js";/**
  * @license
  * Copyright 2010-2026 Three.js Authors
  * SPDX-License-Identifier: MIT
