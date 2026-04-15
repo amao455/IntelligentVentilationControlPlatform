@@ -113,12 +113,12 @@ export const devicePool = [
 ];
 
 const kpiTemplates = [
-  { key: 'inlet', name: '总进风量', unit: 'm³/min' },
-  { key: 'return', name: '总回风量', unit: 'm³/min' },
-  { key: 'pressure', name: '主扇运行负压', unit: 'Pa' },
-  { key: 'targetRate', name: '风量达标率', unit: '%' },
+  { key: 'inlet', name: '总进风量', unit: 'm³/s' },
+  { key: 'return', name: '总回风量', unit: 'm³/s' },
+  { key: 'totalResistance', name: '总风阻', unit: 'N·s²/m⁸' },
+  { key: 'totalPressure', name: '总风压', unit: 'Pa' },
+  { key: 'lowAirflowRoadways', name: '风量不足巷道数', unit: '条' },
   { key: 'onlinePoints', name: '在线测点数', unit: '个' },
-  { key: 'availability', name: '设备可用率', unit: '%' },
   { key: 'exceptions', name: '当前异常数', unit: '条' },
   { key: 'emergencyState', name: '应急等级', unit: '级' },
 ];
@@ -178,12 +178,57 @@ export function createPageDataset(pageKey: string): PageDataset {
       };
     }
 
-    if (item.key === 'pressure') {
+    if (item.key === 'lowAirflowRoadways') {
+      const lowAirflowCount = seeded(seed, 1, 9, index);
+      const lowAirflowStatus: StatusLevel =
+        lowAirflowCount >= 7
+          ? 'critical'
+          : lowAirflowCount >= 5
+            ? 'alert'
+            : lowAirflowCount >= 3
+              ? 'warning'
+              : 'normal';
       return {
         ...item,
-        value: seeded(seed, 1580, 2320, index),
-        trend: seeded(seed, -4, 5, index + 120),
-        status: statusByValue(base + 15),
+        value: lowAirflowCount,
+        trend: seeded(seed, -3, 4, index + 120),
+        status: lowAirflowStatus,
+      };
+    }
+
+    if (item.key === 'totalResistance') {
+      const resistance = seeded(seed, 1800, 3400, index);
+      const resistanceStatus: StatusLevel =
+        resistance >= 3100
+          ? 'critical'
+          : resistance >= 2800
+            ? 'alert'
+            : resistance >= 2400
+              ? 'warning'
+              : 'normal';
+      return {
+        ...item,
+        value: resistance,
+        trend: seeded(seed, -4, 5, index + 125),
+        status: resistanceStatus,
+      };
+    }
+
+    if (item.key === 'totalPressure') {
+      const pressure = seeded(seed, 1800, 2900, index);
+      const pressureStatus: StatusLevel =
+        pressure < 1850 || pressure > 2850
+          ? 'critical'
+          : pressure < 2000 || pressure > 2700
+            ? 'alert'
+            : pressure < 2150 || pressure > 2550
+              ? 'warning'
+              : 'normal';
+      return {
+        ...item,
+        value: pressure,
+        trend: seeded(seed, -4, 4, index + 128),
+        status: pressureStatus,
       };
     }
 

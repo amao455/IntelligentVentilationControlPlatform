@@ -63,7 +63,7 @@ export function TwinPageTemplate({ moduleName, title, pageKey }: TwinPageTemplat
             <Space direction="vertical" style={{ width: '100%' }}>
               <Typography.Text strong>对象：主扇 F1</Typography.Text>
               <Tag color="processing">实时采集</Tag>
-              <Typography.Text>风量：9250 m³/min</Typography.Text>
+              <Typography.Text>风量：9250 m³/s</Typography.Text>
               <Typography.Text>负压：2086 Pa</Typography.Text>
               <Typography.Text>转速：1180 rpm</Typography.Text>
               <Typography.Text>振动：2.8 mm/s</Typography.Text>

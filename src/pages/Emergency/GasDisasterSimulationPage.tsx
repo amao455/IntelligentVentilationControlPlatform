@@ -272,6 +272,7 @@ const LazyHomeObjBackground = lazy(async () => {
   const module = await import("../../components/topology/HomeObjBackground3D");
   return { default: module.HomeObjBackground3D };
 });
+const GAS_OUTBURST_ESCAPE_ROUTE_OBJ = "/models/GasOutburstEscapeRoute.obj";
 
 export default function GasDisasterSimulationPage() {
   const [disasterType, setDisasterType] = useState<DisasterType>("瓦斯突出");
@@ -298,6 +299,8 @@ export default function GasDisasterSimulationPage() {
   const [highlightPersonId, setHighlightPersonId] = useState<string | null>(
     null,
   );
+  const [showEscapeRouteOverlay, setShowEscapeRouteOverlay] =
+    useState<boolean>(false);
   const [detailSuggestion, setDetailSuggestion] =
     useState<SuggestionItem | null>(null);
 
@@ -313,7 +316,12 @@ export default function GasDisasterSimulationPage() {
       window.clearTimeout(timer);
     };
   }, []);
-    useState<SuggestionItem | null>(null);
+
+  useEffect(() => {
+    if (disasterType !== "瓦斯突出" && showEscapeRouteOverlay) {
+      setShowEscapeRouteOverlay(false);
+    }
+  }, [disasterType, showEscapeRouteOverlay]);
 
   const regionMap = useMemo(
     () => new Map(REGIONS.map((item) => [item.id, item])),
@@ -577,6 +585,11 @@ export default function GasDisasterSimulationPage() {
     disasterType,
   ]);
 
+  const focusSuggestions = useMemo(
+    () => visibleSuggestions.slice(0, 3),
+    [visibleSuggestions],
+  );
+
   const personColumns: ColumnsType<PersonRow> = [
     { title: "人员编号", dataIndex: "id", width: 110 },
     { title: "所属班组", dataIndex: "team", width: 120 },
@@ -600,6 +613,7 @@ export default function GasDisasterSimulationPage() {
     setTimeIndex(0);
     setMonitorRoadwayId(sourceRoadwayId);
     setHighlightPersonId(null);
+    setShowEscapeRouteOverlay(false);
 
     const taskName = `${dayjs(now).format("MMDD-HHmm")}-${disasterType}-${sourceRoadway.name}推演`;
     setSimulationTaskName(taskName);
@@ -613,8 +627,24 @@ export default function GasDisasterSimulationPage() {
     setSimulationDurationMinutes(60);
     setSelectedRiskLevel("关注");
     setMonitorRoadwayId("affected-all");
+    setShowEscapeRouteOverlay(false);
     message.success("模拟条件已恢复默认配置。");
   }, []);
+
+  const handleShowEscapeRoute = useCallback(() => {
+    if (disasterType !== "瓦斯突出") {
+      message.warning("仅“瓦斯突出”场景支持加载逃生路线三维模型。");
+      return;
+    }
+
+    if (showEscapeRouteOverlay) {
+      message.info("逃生路线模型已在三维巷道中显示。");
+      return;
+    }
+
+    setShowEscapeRouteOverlay(true);
+    message.success("已加载瓦斯突出逃生路线三维模型。");
+  }, [disasterType, showEscapeRouteOverlay]);
 
   const handleRefresh = useCallback(() => {
     setLastUpdated(dayjs().format("YYYY-MM-DD HH:mm:ss"));
@@ -714,13 +744,18 @@ export default function GasDisasterSimulationPage() {
             }
           >
             <LazyHomeObjBackground
-              paused
+              paused={true}
               rotationSpeed={0}
               opacity={bgSettings.opacity}
               brightness={bgSettings.brightness}
               disableRotation={false}
               viewScale={4.5}
               viewAzimuthDeg={90}
+              showRouteOverlay={
+                disasterType === "瓦斯突出" && showEscapeRouteOverlay
+              }
+              routeOverlayObjPath={GAS_OUTBURST_ESCAPE_ROUTE_OBJ}
+              routeOverlayColor="#39ff14"
             />
           </Suspense>
         ) : (
@@ -736,8 +771,8 @@ export default function GasDisasterSimulationPage() {
       <Row gutter={[12, 12]} className="gas-top-row">
         {/* 左侧：模拟条件设置 + 灾害总览 */}
         <Col xs={24} xl={5} className="gas-left-column">
-          <Space direction="vertical" style={{ width: "100%", height: "100%" }} size={12}>
-            <Card className="page-card" size="small" title="模拟条件设置">
+          <div className="gas-left-stack">
+            <Card className="page-card gas-left-card gas-condition-card" size="small" title="模拟条件设置">
               <div className="gas-filter-column">
                 <div className="gas-filter-item gas-filter-item--vertical">
                   <span className="gas-field-inline-label">灾害类型</span>
@@ -792,7 +827,7 @@ export default function GasDisasterSimulationPage() {
                 </div>
 
                 <div className="gas-filter-item">
-                  <Space direction="vertical" style={{ width: "100%" }}>
+                  <Space style={{ width: "100%" }} size={8}>
                     <Button type="primary" onClick={handleStartSimulation} block>
                       发起模拟
                     </Button>
@@ -803,7 +838,7 @@ export default function GasDisasterSimulationPage() {
             </Card>
 
             <Card
-              className="page-card"
+              className="page-card gas-left-card gas-overview-card"
               size="small"
               title="灾害总览"
               extra={
@@ -821,55 +856,68 @@ export default function GasDisasterSimulationPage() {
               <div className="gas-overview-compact">
                 <div className="gas-overview-head">
                   <div>
-                    <Typography.Title level={5} style={{ margin: 0, fontSize: 13 }}>
+                    <Typography.Title
+                      level={5}
+                      className="gas-overview-task-title"
+                      style={{ margin: 0 }}
+                    >
                       {simulationTaskName}
                     </Typography.Title>
-                    <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    <Typography.Text className="gas-overview-task-meta">
                       {disasterType} / {sourceRoadway.name}
                     </Typography.Text>
                   </div>
-                  <Tag color={WARNING_TAG[overallWarningLevel]}>
+                  <Tag
+                    color={WARNING_TAG[overallWarningLevel]}
+                    className="gas-overview-level-tag"
+                  >
                     {overallWarningLevel}
                   </Tag>
                 </div>
 
                 <div className="gas-overview-grid-compact">
-                  <Statistic title="模拟开始" value={simulationStartTime} valueStyle={{ fontSize: 12 }} />
-                  <Statistic title="推演时长" value={timeline[timeIndex]} valueStyle={{ fontSize: 12 }} />
                   <Statistic
+                    className="gas-overview-stat gas-overview-stat--time"
+                    title="模拟开始"
+                    value={simulationStartTime}
+                  />
+                  <Statistic
+                    className="gas-overview-stat gas-overview-stat--time"
+                    title="推演时长"
+                    value={timeline[timeIndex]}
+                  />
+                  <Statistic
+                    className="gas-overview-stat gas-overview-stat--warning"
                     title="预警等级"
                     value={overallWarningLevel}
                     valueStyle={{
                       color: WARNING_COLOR[overallWarningLevel],
                       fontWeight: 700,
-                      fontSize: 12,
                     }}
                   />
                   <Statistic
+                    className="gas-overview-stat gas-overview-stat--critical"
                     title="受影响区域"
                     value={warningCounts.affectedRegions}
-                    valueStyle={{ fontSize: 14, fontWeight: 700 }}
                   />
                   <Statistic
+                    className="gas-overview-stat gas-overview-stat--critical"
                     title="受影响巷道"
                     value={warningCounts.affectedRoadways}
-                    valueStyle={{ fontSize: 14, fontWeight: 700 }}
                   />
-                  <Statistic title="更新时间" value={lastUpdated} valueStyle={{ fontSize: 12 }} />
+                  <Statistic
+                    className="gas-overview-stat gas-overview-stat--time"
+                    title="更新时间"
+                    value={lastUpdated}
+                  />
                 </div>
               </div>
             </Card>
-          </Space>
-        </Col>
-
-        {/* 中间：预留空白区域 */}
-        <Col xs={24} xl={14} className="gas-center-column">
-          <div className="gas-center-placeholder">
-            <Typography.Text type="secondary">
-              中间区域预留（可放置3D模型、地图等可视化内容）
-            </Typography.Text>
           </div>
         </Col>
+
+        {/* 中间：空白区域 */}
+        <Col xs={0} xl={14} className="gas-center-spacer"></Col>
 
         {/* 右侧：应急处置建议 */}
         <Col xs={24} xl={5} className="gas-right-column">
@@ -883,6 +931,15 @@ export default function GasDisasterSimulationPage() {
               </Typography.Text>
             }
           >
+            <div className="gas-suggestion-meta-line">
+              <Tag color={WARNING_TAG[overallWarningLevel]}>
+                {disasterType}
+              </Tag>
+              <Typography.Text type="secondary">
+                灾源：{sourceRoadway.name}
+              </Typography.Text>
+            </div>
+
             <div className="gas-suggestion-summary">
               <div className="gas-suggestion-row">
                 <span>处置等级</span>
@@ -897,12 +954,8 @@ export default function GasDisasterSimulationPage() {
               <div className="gas-suggestion-row">
                 <span>受影响人员</span>
                 <strong>
-                  {suggestionSummary.affectedPeopleCount}人
-                  {suggestionSummary.highRiskPeopleCount > 0 && (
-                    <Tag color="error" style={{ marginLeft: 8 }}>
-                      高风险{suggestionSummary.highRiskPeopleCount}人
-                    </Tag>
-                  )}
+                  {suggestionSummary.affectedPeopleCount}人 / 高风险
+                  {suggestionSummary.highRiskPeopleCount}人
                 </strong>
               </div>
               <div className="gas-suggestion-row">
@@ -912,36 +965,18 @@ export default function GasDisasterSimulationPage() {
                 </Tag>
               </div>
               <div className="gas-suggestion-row">
-                <span>关闭设施</span>
-                <Space size={4} wrap>
-                  {suggestionSummary.closeFacilitiesList.map((item, index) => (
-                    <Tag key={index} color="red">
-                      {item}
-                    </Tag>
-                  ))}
-                </Space>
+                <span>设施处置</span>
+                <strong>
+                  关闭{suggestionSummary.closeFacilitiesList.length}项 / 开启
+                  {suggestionSummary.openFacilitiesList.length}项
+                </strong>
               </div>
               <div className="gas-suggestion-row">
-                <span>开启设施</span>
-                <Space size={4} wrap>
-                  {suggestionSummary.openFacilitiesList.map((item, index) => (
-                    <Tag key={index} color="green">
-                      {item}
-                    </Tag>
-                  ))}
-                </Space>
-              </div>
-              <div className="gas-suggestion-row">
-                <span>应急通风</span>
-                <Tag color={warningRank(suggestionSummary.level) >= 2 ? "error" : "warning"}>
-                  {suggestionSummary.emergencyAirControl}
-                </Tag>
-              </div>
-              <div className="gas-suggestion-row">
-                <span>人员管控</span>
-                <Tag color={warningRank(suggestionSummary.level) >= 2 ? "error" : "warning"}>
+                <span>通风/管控</span>
+                <strong>
+                  {suggestionSummary.emergencyAirControl} /{" "}
                   {suggestionSummary.restrictEntry}
-                </Tag>
+                </strong>
               </div>
               <div className="gas-suggestion-row">
                 <span>监测频率</span>
@@ -951,24 +986,45 @@ export default function GasDisasterSimulationPage() {
               </div>
             </div>
 
-            <div className="gas-suggestion-list">
-              {visibleSuggestions.map((item) => (
-                <button
-                  key={item.id}
-                  className="gas-suggestion-item"
-                  onClick={() => setDetailSuggestion(item)}
-                >
-                  <div className="gas-suggestion-item-title">
-                    <Tag color={WARNING_TAG[item.riskLevel]}>
-                      {item.riskLevel}
-                    </Tag>
-                    <span>{item.title}</span>
-                  </div>
-                  <Typography.Text type="secondary">
-                    {item.nextAction}
+            <div className="gas-suggestion-list-section">
+              <div className="gas-suggestion-section-title">重点建议</div>
+              <div className="gas-suggestion-list">
+                {focusSuggestions.map((item, index) => (
+                  <button
+                    key={item.id}
+                    className="gas-suggestion-item"
+                    onClick={() => setDetailSuggestion(item)}
+                  >
+                    <div className="gas-suggestion-item-title">
+                      <span className="gas-suggestion-item-index">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <Tag color={WARNING_TAG[item.riskLevel]}>
+                        {item.riskLevel}
+                      </Tag>
+                      <span>{item.title}</span>
+                    </div>
+                    <Typography.Text className="gas-suggestion-item-detail">
+                      {item.detail}
+                    </Typography.Text>
+                    <Typography.Text
+                      type="secondary"
+                      className="gas-suggestion-item-action"
+                    >
+                      执行：{item.nextAction}
+                    </Typography.Text>
+                  </button>
+                ))}
+                {visibleSuggestions.length > focusSuggestions.length ? (
+                  <Typography.Text
+                    type="secondary"
+                    className="gas-suggestion-more-tip"
+                  >
+                    其余{visibleSuggestions.length - focusSuggestions.length}
+                    项建议可通过“复制”查看完整清单。
                   </Typography.Text>
-                </button>
-              ))}
+                ) : null}
+              </div>
             </div>
 
             <div className="gas-suggestion-actions">
@@ -999,7 +1055,7 @@ export default function GasDisasterSimulationPage() {
           <Button
             type="primary"
             icon={<ApiOutlined />}
-            onClick={() => message.info("逃生路线规划功能开发中")}
+            onClick={handleShowEscapeRoute}
           >
             逃生路线
           </Button>

@@ -36,36 +36,89 @@ export function SideMenu() {
   return (
     <div style={{
       height: '100%',
-      borderRight: '1px solid rgba(43, 82, 124, 0.5)',
-      background: 'linear-gradient(180deg, var(--header-bg) 0%, var(--header-bg-secondary) 100%)',
+      borderRight: '2px solid rgba(150, 205, 255, 0.4)',
+      background: 'linear-gradient(180deg, rgba(17, 54, 94, 0.95) 0%, rgba(15, 47, 83, 0.98) 100%)',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
-      boxShadow: 'inset 0 1px 0 rgba(196, 225, 255, 0.15), 2px 0 10px rgba(11, 35, 62, 0.3)',
+      boxShadow: 'inset 0 1px 0 rgba(196, 225, 255, 0.2), 2px 0 15px rgba(11, 35, 62, 0.5), inset -1px 0 20px rgba(74, 157, 232, 0.1)',
     }}>
-      {/* 背景装饰效果 */}
+      {/* 动态网格背景 */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'repeating-linear-gradient(0deg, rgba(182, 220, 255, 0.03), rgba(182, 220, 255, 0.03) 1px, transparent 1px, transparent 30px)',
+          backgroundImage: `
+            repeating-linear-gradient(0deg, rgba(156, 208, 255, 0.05) 0px, transparent 1px, transparent 20px),
+            repeating-linear-gradient(90deg, rgba(156, 208, 255, 0.05) 0px, transparent 1px, transparent 20px)
+          `,
           pointerEvents: 'none',
           zIndex: 0,
+          animation: 'grid-drift 30s linear infinite',
         }}
       />
 
-      {/* 顶部光效 */}
+      {/* 顶部光效增强 */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '100px',
-          background: 'linear-gradient(180deg, rgba(100, 170, 240, 0.15) 0%, transparent 100%)',
+          height: '150px',
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(156, 208, 255, 0.25) 0%, transparent 70%)',
           pointerEvents: 'none',
           zIndex: 0,
+          animation: 'glow-pulse 3s ease-in-out infinite',
+        }}
+      />
+
+      {/* 扫描线效果 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '2px',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(156, 208, 255, 0.8) 50%, transparent 100%)',
+          boxShadow: '0 0 20px rgba(156, 208, 255, 0.8)',
+          animation: 'scan-vertical 4s linear infinite',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* 左侧边框光效 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: 0,
+          width: '2px',
+          height: '60%',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(156, 208, 255, 0.6) 50%, transparent 100%)',
+          boxShadow: '0 0 15px rgba(156, 208, 255, 0.5)',
+          animation: 'glow-pulse 2s ease-in-out infinite',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* 右侧边框光效 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '30%',
+          right: 0,
+          width: '2px',
+          height: '40%',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(156, 208, 255, 0.6) 50%, transparent 100%)',
+          boxShadow: '0 0 15px rgba(156, 208, 255, 0.5)',
+          animation: 'glow-pulse 2s ease-in-out infinite 1s',
+          pointerEvents: 'none',
+          zIndex: 1,
         }}
       />
 
@@ -90,36 +143,72 @@ export function SideMenu() {
           icon: iconMap[index % iconMap.length],
           label: item.title,
           style: {
-            margin: '4px 8px',
-            borderRadius: '8px',
-            height: '44px',
-            lineHeight: '44px',
+            margin: '6px 10px',
+            borderRadius: '10px',
+            height: '48px',
+            lineHeight: '48px',
             color: 'var(--header-text-muted)',
             fontWeight: 600,
-            border: '1px solid rgba(150, 205, 255, 0.25)',
-            background: 'linear-gradient(180deg, rgba(89, 154, 221, 0.15) 0%, rgba(49, 108, 168, 0.1) 100%)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: 'inset 0 1px 0 rgba(161, 211, 255, 0.1), 0 2px 6px rgba(11, 35, 62, 0.15)',
+            fontSize: '14px',
+            border: '2px solid rgba(150, 205, 255, 0.35)',
+            background: 'linear-gradient(135deg, rgba(89, 154, 221, 0.2) 0%, rgba(49, 108, 168, 0.15) 100%)',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: 'inset 0 1px 0 rgba(161, 211, 255, 0.15), 0 3px 10px rgba(11, 35, 62, 0.2), 0 0 20px rgba(74, 157, 232, 0.1)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            position: 'relative',
           },
         }))}
         onClick={({ key }) => navigate(key)}
       />
 
-      {/* 底部装饰线 */}
+      {/* 底部装饰线增强 */}
       <div
         style={{
           position: 'absolute',
           bottom: 0,
-          left: '10%',
-          right: '10%',
-          height: '2px',
-          background: 'linear-gradient(90deg, transparent 0%, rgba(120, 180, 240, 0.5) 50%, transparent 100%)',
-          boxShadow: '0 0 10px rgba(120, 180, 240, 0.3)',
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(156, 208, 255, 0.6) 20%, rgba(156, 208, 255, 0.8) 50%, rgba(156, 208, 255, 0.6) 80%, transparent 100%)',
+          boxShadow: '0 0 20px rgba(156, 208, 255, 0.6), 0 -2px 30px rgba(74, 157, 232, 0.3)',
           pointerEvents: 'none',
           zIndex: 1,
+          animation: 'glow-pulse 2s ease-in-out infinite',
+        }}
+      />
+
+      {/* 底部角落装饰 */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 8,
+          left: 8,
+          width: '20px',
+          height: '20px',
+          borderLeft: '2px solid rgba(156, 208, 255, 0.7)',
+          borderBottom: '2px solid rgba(156, 208, 255, 0.7)',
+          boxShadow: '-2px 2px 15px rgba(156, 208, 255, 0.5)',
+          pointerEvents: 'none',
+          zIndex: 1,
+          animation: 'corner-pulse-bl 2s ease-in-out infinite',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 8,
+          right: 8,
+          width: '20px',
+          height: '20px',
+          borderRight: '2px solid rgba(156, 208, 255, 0.7)',
+          borderBottom: '2px solid rgba(156, 208, 255, 0.7)',
+          boxShadow: '2px 2px 15px rgba(156, 208, 255, 0.5)',
+          pointerEvents: 'none',
+          zIndex: 1,
+          animation: 'corner-pulse-br 2s ease-in-out infinite 0.5s',
         }}
       />
     </div>

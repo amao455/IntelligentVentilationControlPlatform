@@ -625,7 +625,7 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography.Text>总风量</Typography.Text>
-                    <Typography.Text strong style={{ color: '#52c41a' }}>9250 m³/min</Typography.Text>
+                    <Typography.Text strong style={{ color: '#52c41a' }}>9250 m³/s</Typography.Text>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography.Text>负压值</Typography.Text>
@@ -931,7 +931,7 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
             <StatusTag status="running" />
           </Descriptions.Item>
           <Descriptions.Item label="当前负压">2086 Pa</Descriptions.Item>
-          <Descriptions.Item label="风量">9250 m³/min</Descriptions.Item>
+          <Descriptions.Item label="风量">9250 m³/s</Descriptions.Item>
           <Descriptions.Item label="联锁状态">已接入联锁</Descriptions.Item>
           <Descriptions.Item label="最近维护">2026-03-29</Descriptions.Item>
         </Descriptions>

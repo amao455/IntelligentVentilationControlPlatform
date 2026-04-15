@@ -12,7 +12,8 @@
       "Bash(cp /tmp/LocalFanControlPage_fixed2.tsx \"C:\\\\Users\\\\Lenovo\\\\Desktop\\\\IntelligentVentilationControlPlatform\\\\src\\\\pages\\\\Remote\\\\LocalFanControlPage.tsx\")",
       "Read(//c/Users/Lenovo/AppData/Local/Temp/claude/c--Users-Lenovo-Desktop-IntelligentVentilationControlPlatform/38fb1e88-1e02-4252-8d73-889e8332d37d/tasks/**)",
       "Bash(npx eslint:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm start:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Lenovo\\Desktop\\IntelligentVentilationControlPlatform\\src\\pages\\Remote",

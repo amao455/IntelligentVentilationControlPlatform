@@ -540,61 +540,88 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(120, 180, 240, 0.2), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(156, 208, 255, 0.3), transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
+.ant-menu-light .ant-menu-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(156, 208, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
 .ant-menu-light .ant-menu-item .anticon {
   color: #8ec7ff;
-  filter: drop-shadow(0 0 3px rgba(142, 199, 255, 0.3));
+  filter: drop-shadow(0 0 4px rgba(142, 199, 255, 0.4));
   transition: all 0.3s ease;
 }
 
 .ant-menu-light .ant-menu-item:hover {
   color: #ffffff !important;
-  border-color: rgba(166, 215, 255, 0.6) !important;
-  background: linear-gradient(180deg, rgba(102, 174, 244, 0.35) 0%, rgba(76, 145, 212, 0.25) 100%) !important;
+  border-color: rgba(156, 208, 255, 0.7) !important;
+  background: linear-gradient(135deg, rgba(102, 174, 244, 0.4) 0%, rgba(76, 145, 212, 0.3) 100%) !important;
   box-shadow:
-    inset 0 1px 0 rgba(182, 224, 255, 0.2),
-    0 0 12px rgba(89, 165, 236, 0.4),
-    0 0 20px rgba(89, 165, 236, 0.2) !important;
-  transform: translateX(2px);
+    inset 0 1px 0 rgba(182, 224, 255, 0.25),
+    0 0 20px rgba(89, 165, 236, 0.5),
+    0 0 35px rgba(89, 165, 236, 0.3),
+    inset 0 0 30px rgba(156, 208, 255, 0.15) !important;
+  transform: translateX(4px) scale(1.02);
 }
 
 .ant-menu-light .ant-menu-item:hover::before {
   opacity: 1;
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
+
+.ant-menu-light .ant-menu-item:hover::after {
+  left: 100%;
 }
 
 .ant-menu-light .ant-menu-item:hover .anticon {
   color: #ffffff;
-  filter: drop-shadow(0 0 6px rgba(142, 199, 255, 0.8));
-  transform: scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(142, 199, 255, 1));
+  transform: scale(1.15) rotate(5deg);
+  animation: icon-glow 1s ease-in-out infinite;
 }
 
 .ant-menu-light .ant-menu-item-selected {
   color: #ffffff !important;
-  border-color: rgba(177, 221, 255, 0.8) !important;
-  background: linear-gradient(180deg, rgba(88, 171, 250, 0.5) 0%, rgba(64, 143, 219, 0.4) 100%) !important;
+  border-color: rgba(177, 221, 255, 1) !important;
+  background: linear-gradient(135deg, rgba(88, 171, 250, 0.6) 0%, rgba(64, 143, 219, 0.5) 100%) !important;
   box-shadow:
-    inset 0 1px 0 rgba(191, 229, 255, 0.3),
-    inset 0 0 15px rgba(100, 180, 255, 0.2),
-    0 0 15px rgba(74, 156, 233, 0.6),
-    0 0 30px rgba(74, 156, 233, 0.3) !important;
+    inset 0 1px 0 rgba(191, 229, 255, 0.4),
+    inset 0 0 30px rgba(100, 180, 255, 0.3),
+    0 0 25px rgba(74, 156, 233, 0.8),
+    0 0 45px rgba(74, 156, 233, 0.5) !important;
+  animation: menu-item-active-glow 2s ease-in-out infinite;
 }
 
 .ant-menu-light .ant-menu-item-selected::before {
   opacity: 1;
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.ant-menu-light .ant-menu-item-selected::after {
+  left: 0;
+  animation: shimmer-flow 3s linear infinite;
 }
 
 .ant-menu-light .ant-menu-item-selected .anticon {
   color: #ffffff;
-  filter: drop-shadow(0 0 8px rgba(142, 199, 255, 0.9));
+  filter: drop-shadow(0 0 12px rgba(142, 199, 255, 1));
+  animation: icon-glow 1s ease-in-out infinite;
 }
 
 .ant-menu-light .ant-menu-item-active:not(.ant-menu-item-selected) {
-  background: linear-gradient(180deg, rgba(102, 174, 244, 0.25) 0%, rgba(76, 145, 212, 0.15) 100%) !important;
+  background: linear-gradient(135deg, rgba(102, 174, 244, 0.3) 0%, rgba(76, 145, 212, 0.2) 100%) !important;
 }
 
 .right-panel-tabs .ant-tabs-tab {
@@ -868,6 +895,58 @@ body {
   100% {
     transform: scale(1.5);
     opacity: 0;
+  }
+}
+
+@keyframes scan-vertical {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes menu-item-active-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(191, 229, 255, 0.4),
+      inset 0 0 30px rgba(100, 180, 255, 0.3),
+      0 0 25px rgba(74, 156, 233, 0.8),
+      0 0 45px rgba(74, 156, 233, 0.5);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(191, 229, 255, 0.5),
+      inset 0 0 40px rgba(100, 180, 255, 0.4),
+      0 0 30px rgba(74, 156, 233, 1),
+      0 0 55px rgba(74, 156, 233, 0.7);
+  }
+}
+
+@keyframes shimmer-flow {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
   }
 }
 

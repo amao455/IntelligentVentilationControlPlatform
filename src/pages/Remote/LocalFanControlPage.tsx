@@ -71,16 +71,16 @@ export default function LocalFanControlPage() {
 
   // 局部风机数据
   const fanData = [
-    { id: "局扇-08", location: "1号进风巷", status: "运行", power: "55kW", current: "12.8A", load: "85%", windVolume: "420m³/min" },
-    { id: "局扇-15", location: "2号进风巷", status: "运行", power: "55kW", current: "11.5A", load: "78%", windVolume: "395m³/min" },
-    { id: "局扇-23", location: "3号进风巷", status: "停止", power: "45kW", current: "0A", load: "0%", windVolume: "0m³/min" },
-    { id: "局扇-05", location: "回风巷", status: "运行", power: "75kW", current: "16.2A", load: "92%", windVolume: "580m³/min" },
-    { id: "局扇-12", location: "辅助巷道", status: "维护", power: "55kW", current: "0A", load: "0%", windVolume: "0m³/min" },
-    { id: "局扇-18", location: "4号进风巷", status: "运行", power: "55kW", current: "13.1A", load: "88%", windVolume: "430m³/min" },
-    { id: "局扇-27", location: "5号进风巷", status: "运行", power: "45kW", current: "10.2A", load: "75%", windVolume: "360m³/min" },
-    { id: "局扇-31", location: "6号进风巷", status: "停止", power: "55kW", current: "0A", load: "0%", windVolume: "0m³/min" },
-    { id: "局扇-42", location: "7号进风巷", status: "运行", power: "75kW", current: "17.5A", load: "95%", windVolume: "610m³/min" },
-    { id: "局扇-56", location: "8号进风巷", status: "运行", power: "55kW", current: "12.3A", load: "82%", windVolume: "410m³/min" },
+    { id: "局扇-08", location: "1号进风巷", status: "运行", power: "55kW", current: "12.8A", load: "85%", windVolume: "420m³/s" },
+    { id: "局扇-15", location: "2号进风巷", status: "运行", power: "55kW", current: "11.5A", load: "78%", windVolume: "395m³/s" },
+    { id: "局扇-23", location: "3号进风巷", status: "停止", power: "45kW", current: "0A", load: "0%", windVolume: "0m³/s" },
+    { id: "局扇-05", location: "回风巷", status: "运行", power: "75kW", current: "16.2A", load: "92%", windVolume: "580m³/s" },
+    { id: "局扇-12", location: "辅助巷道", status: "维护", power: "55kW", current: "0A", load: "0%", windVolume: "0m³/s" },
+    { id: "局扇-18", location: "4号进风巷", status: "运行", power: "55kW", current: "13.1A", load: "88%", windVolume: "430m³/s" },
+    { id: "局扇-27", location: "5号进风巷", status: "运行", power: "45kW", current: "10.2A", load: "75%", windVolume: "360m³/s" },
+    { id: "局扇-31", location: "6号进风巷", status: "停止", power: "55kW", current: "0A", load: "0%", windVolume: "0m³/s" },
+    { id: "局扇-42", location: "7号进风巷", status: "运行", power: "75kW", current: "17.5A", load: "95%", windVolume: "610m³/s" },
+    { id: "局扇-56", location: "8号进风巷", status: "运行", power: "55kW", current: "12.3A", load: "82%", windVolume: "410m³/s" },
   ];
 
   // 获取当前选中的风机数据
@@ -2151,7 +2151,7 @@ export default function LocalFanControlPage() {
         }
         open={windModalVisible}
         onOk={() => {
-          api.success(`${currentFan.id} 风量已调整为 ${windValue}m³/min`);
+          api.success(`${currentFan.id} 风量已调整为 ${windValue}m³/s`);
           setWindModalVisible(false);
         }}
         onCancel={() => setWindModalVisible(false)}
@@ -2306,7 +2306,7 @@ export default function LocalFanControlPage() {
                 textShadow: '0 0 20px rgba(135, 208, 104, 0.8), 0 2px 8px rgba(135, 208, 104, 0.4)'
               }}>
                 {windValue}
-                <span style={{ fontSize: 20, fontWeight: 400, marginLeft: 8 }}>m³/min</span>
+                <span style={{ fontSize: 20, fontWeight: 400, marginLeft: 8 }}>m³/s</span>
               </Typography.Text>
             </div>
 
@@ -2325,7 +2325,7 @@ export default function LocalFanControlPage() {
                     700: { style: { fontSize: 11, color: '#b8d9ff' }, label: '700' },
                   }}
                   tooltip={{
-                    formatter: (value) => `${value}m³/min`,
+                    formatter: (value) => `${value}m³/s`,
                     placement: 'top'
                   }}
                   trackStyle={{ background: 'linear-gradient(90deg, #87d068 0%, #95de64 100%)', height: 6 }}
@@ -2345,7 +2345,7 @@ export default function LocalFanControlPage() {
                   max={700}
                   value={windValue}
                   onChange={(value) => setWindValue(value || 420)}
-                  suffix="m³/min"
+                  suffix="m³/s"
                   style={{
                     width: '100%',
                     height: 40,
@@ -2375,7 +2375,7 @@ export default function LocalFanControlPage() {
                 调整说明：
               </Typography.Text>
               <Typography.Text style={{ fontSize: 12, color: '#e8f4ff', display: 'block', lineHeight: 1.6 }}>
-                • 风量调整范围：200-700m³/min
+                • 风量调整范围：200-700m³/s
               </Typography.Text>
               <Typography.Text style={{ fontSize: 12, color: '#e8f4ff', display: 'block', lineHeight: 1.6 }}>
                 • 调整后设备将在 3-5 秒内响应

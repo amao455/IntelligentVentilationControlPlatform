@@ -1,43 +1,23 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import {
-  Card,
-  Col,
-  Progress,
-  Row,
-  Space,
-  Table,
-  Tabs,
-  Timeline,
-  Typography,
-} from "antd";
-import type { ColumnsType } from "antd/es/table";
+﻿import { lazy, Suspense, useEffect, useState } from "react";
+import { Card, Checkbox, Col, Progress, Row, Tabs, Typography } from "antd";
 import {
   ThunderboltOutlined,
   CheckCircleOutlined,
-  PieChartOutlined,
-  WarningOutlined,
   LineChartOutlined,
-  ClockCircleOutlined,
+  AlertOutlined,
   DesktopOutlined,
   DashboardOutlined,
   ApiOutlined,
   GatewayOutlined,
   ControlOutlined,
+  SafetyOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { KpiCard } from "../../components/cards/KpiCard";
 import { ChartPanel } from "../../components/charts/ChartPanel";
 import { StatusTag } from "../../components/common/StatusTag";
 import { createPageDataset } from "../../mock/mockData";
-import { buildLineOption, buildPieOption } from "../templates/chartOptions";
 import "./home.css";
-
-interface RiskRow {
-  key: string;
-  area: string;
-  score: number;
-  level: string;
-  suggestion: string;
-}
 
 interface BackgroundSettings {
   paused: boolean;
@@ -46,31 +26,61 @@ interface BackgroundSettings {
   brightness: number;
 }
 
-const actionSuggestions = [
-  "加强局扇联动",
-  "提高测点采样频率",
-  "复核风门开度",
-  "安排现场巡检",
-  "启用备用回风路径",
-];
-
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
   paused: false,
   rotationSpeed: 0.06,
-  opacity: 0.55, // 从0.35增加到0.55，模型更清晰
-  brightness: 1.4, // 从1.2增加到1.4，更亮
+  opacity: 0.55,
+  brightness: 1.4,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
   const module = await import("../../components/topology/HomeObjBackground3D");
-
   return { default: module.HomeObjBackground3D };
 });
 
 export default function HomePage() {
   const dataset = createPageDataset("/home");
+  const homeKpis = dataset.kpis.map((item) => {
+    if (item.key === "inlet") {
+      return { ...item, value: 513, trend: 2, status: "normal" as const };
+    }
+    if (item.key === "return") {
+      return { ...item, value: 487, trend: 1, status: "normal" as const };
+    }
+    return item;
+  });
   const [bgSettings] = useState<BackgroundSettings>(DEFAULT_BG_SETTINGS);
   const [backgroundReady, setBackgroundReady] = useState(false);
+  const sensorTypeOptions = [
+    { key: "ch4", label: "甲烷", count: 24 },
+    { key: "co", label: "一氧化碳", count: 16 },
+    { key: "co2", label: "二氧化碳", count: 12 },
+    { key: "o2", label: "氧气", count: 14 },
+    { key: "temp", label: "温度", count: 19 },
+    { key: "humidity", label: "湿度", count: 19 },
+    { key: "windSpeed", label: "风速", count: 22 },
+    { key: "dust", label: "粉尘", count: 15 },
+    { key: "smoke", label: "烟雾", count: 10 },
+    { key: "h2", label: "氢气", count: 8 },
+  ];
+  const [selectedSensorTypes, setSelectedSensorTypes] = useState<string[]>(
+    sensorTypeOptions.map((item) => item.key),
+  );
+  const allSensorTypeKeys = sensorTypeOptions.map((item) => item.key);
+  const toggleSensorType = (key: string) => {
+    setSelectedSensorTypes((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key],
+    );
+  };
+  const allSensorsChecked = selectedSensorTypes.length === sensorTypeOptions.length;
+  const sensorIndeterminate =
+    selectedSensorTypes.length > 0 && selectedSensorTypes.length < sensorTypeOptions.length;
+  const handleSelectAllSensors = (checked: boolean) => {
+    setSelectedSensorTypes(checked ? allSensorTypeKeys : []);
+  };
+  const selectedSensorCount = sensorTypeOptions
+    .filter((item) => selectedSensorTypes.includes(item.key))
+    .reduce((sum, item) => sum + item.count, 0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -82,137 +92,300 @@ export default function HomePage() {
     };
   }, []);
 
-  const riskRows: RiskRow[] = dataset.riskRanking.map((item, index) => ({
-    key: String(index),
-    area: item.area,
-    score: item.score,
-    level: item.level,
-    suggestion: actionSuggestions[index % actionSuggestions.length],
-  }));
-
-  const riskColumns: ColumnsType<RiskRow> = [
-    {
-      title: "排名",
-      width: 65,
-      align: "center",
-      render: (_, __, index) => (
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto",
-            background:
-              index === 0
-                ? "linear-gradient(135deg, #ff7875 0%, #ff4d4f 100%)"
-                : index === 1
-                  ? "linear-gradient(135deg, #ffc069 0%, #faad14 100%)"
-                  : index === 2
-                    ? "linear-gradient(135deg, #95de64 0%, #73d13d 100%)"
-                    : "linear-gradient(135deg, rgba(89, 154, 221, 0.4) 0%, rgba(89, 154, 221, 0.3) 100%)",
-            border: `2px solid ${index === 0 ? "#ff4d4f" : index === 1 ? "#faad14" : index === 2 ? "#73d13d" : "rgba(150, 205, 255, 0.5)"}`,
-            boxShadow:
-              index < 3
-                ? `0 0 12px ${index === 0 ? "rgba(255, 77, 79, 0.5)" : index === 1 ? "rgba(250, 173, 20, 0.5)" : "rgba(115, 209, 61, 0.5)"}`
-                : "none",
-            fontWeight: 700,
-            fontSize: 13,
-            color: "#ffffff",
-            textShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          {index + 1}
-        </div>
-      ),
-    },
-    {
-      title: "区域",
-      dataIndex: "area",
-      width: 140,
-      render: (text) => (
-        <Typography.Text
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#e8f4ff",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "block",
-          }}
-        >
-          {text}
-        </Typography.Text>
-      ),
-    },
-    {
-      title: "分值",
-      dataIndex: "score",
-      width: 85,
-      align: "center",
-      render: (score) => (
-        <div
-          style={{
-            display: "inline-block",
-            padding: "3px 10px",
-            borderRadius: 6,
-            background:
-              score >= 80
-                ? "linear-gradient(135deg, rgba(255, 77, 79, 0.2) 0%, rgba(255, 77, 79, 0.1) 100%)"
-                : score >= 60
-                  ? "linear-gradient(135deg, rgba(250, 173, 20, 0.2) 0%, rgba(250, 173, 20, 0.1) 100%)"
-                  : "linear-gradient(135deg, rgba(82, 196, 26, 0.2) 0%, rgba(82, 196, 26, 0.1) 100%)",
-            border: `1px solid ${score >= 80 ? "rgba(255, 77, 79, 0.4)" : score >= 60 ? "rgba(250, 173, 20, 0.4)" : "rgba(82, 196, 26, 0.4)"}`,
-            fontWeight: 700,
-            fontSize: 13,
-            color:
-              score >= 80 ? "#ff7875" : score >= 60 ? "#ffc069" : "#95de64",
-            textShadow: `0 0 8px ${score >= 80 ? "rgba(255, 77, 79, 0.5)" : score >= 60 ? "rgba(250, 173, 20, 0.5)" : "rgba(82, 196, 26, 0.5)"}`,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {score}
-        </div>
-      ),
-    },
-    {
-      title: "状态",
-      dataIndex: "level",
-      width: 75,
-      align: "center",
-      render: (level) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <StatusTag status={level} />
-        </div>
-      ),
-    },
-    {
-      title: "处置建议",
-      dataIndex: "suggestion",
-      ellipsis: true,
-      render: (text) => (
-        <Typography.Text
-          style={{
-            fontSize: 12,
-            color: "#b8d9ff",
-            fontWeight: 500,
-            lineHeight: 1.4,
-          }}
-        >
-          {text}
-        </Typography.Text>
-      ),
-    },
+  const keyAirflowPointData = [
+    { name: "3105工作面", airflow: 86, lowerLimit: 78 },
+    { name: "东翼回风巷", airflow: 74, lowerLimit: 72 },
+    { name: "主运输大巷", airflow: 68, lowerLimit: 70 },
+    { name: "西翼联络巷", airflow: 77, lowerLimit: 73 },
+    { name: "北二采区", airflow: 64, lowerLimit: 66 },
+    { name: "二水平皮带巷", airflow: 72, lowerLimit: 69 },
   ];
+  const keyAirflowPassCount = keyAirflowPointData.filter(
+    (item) => item.airflow >= item.lowerLimit,
+  ).length;
+  const keyAirflowInsufficientCount =
+    keyAirflowPointData.length - keyAirflowPassCount;
+  const airflowCurrentSeriesName = "当前风量";
+  const airflowLimitSeriesName = "最低要求";
+  const keyAirflowMax = Math.max(
+    ...keyAirflowPointData.map((item) => Math.max(item.airflow, item.lowerLimit)),
+  );
+  const keyAirflowOption: any = {
+    backgroundColor: "transparent",
+    tooltip: {
+      trigger: "axis",
+      triggerOn: "mousemove|click",
+      backgroundColor: "rgba(8, 24, 43, 0.92)",
+      borderColor: "rgba(145, 213, 255, 0.45)",
+      borderWidth: 1,
+      padding: 0,
+      textStyle: { color: "#e9f6ff", fontSize: 12 },
+      extraCssText:
+        "box-shadow:0 8px 22px rgba(3,14,29,0.55),0 0 18px rgba(105,192,255,0.18);border-radius:10px;backdrop-filter:blur(6px);",
+      axisPointer: { type: "shadow" },
+      formatter: (params: any[]) => {
+        const current = params?.find((p) => p.seriesName === airflowCurrentSeriesName);
+        const limit = params?.find((p) => p.seriesName === airflowLimitSeriesName);
+        if (!current || !limit) return "";
+        const isPass = current.value >= limit.value;
+        const statusText = isPass ? "达标" : "不足";
+        const statusBg = isPass
+          ? "linear-gradient(135deg, rgba(82,196,26,.26) 0%, rgba(115,209,61,.12) 100%)"
+          : "linear-gradient(135deg, rgba(250,173,20,.28) 0%, rgba(250,140,22,.14) 100%)";
+        const statusBorder = isPass ? "rgba(115,209,61,.45)" : "rgba(250,173,20,.5)";
+        const statusColor = isPass ? "#ebffe4" : "#ffeccb";
+        return `
+          <div style="width:188px;">
+            <div style="padding:6px 8px;border-bottom:1px solid rgba(145,213,255,.24);background:linear-gradient(180deg, rgba(89,154,221,.2) 0%, rgba(89,154,221,.08) 100%);">
+              <span style="font-size:12px;font-weight:700;color:#dff2ff;letter-spacing:.15px;line-height:1.25;">${current.axisValue}</span>
+            </div>
+            <div style="padding:7px 8px 8px;display:grid;grid-template-columns:1fr auto;column-gap:8px;row-gap:5px;align-items:center;">
+              <div style="color:rgba(191,220,247,.85);font-size:11px;line-height:1.3;">当前风量</div>
+              <div style="color:#f2fbff;font-weight:700;font-size:12px;line-height:1.3;text-align:right;">${current.value} m³/s</div>
+              <div style="color:rgba(191,220,247,.85);font-size:11px;line-height:1.3;">最低要求</div>
+              <div style="color:#d7ecff;font-weight:600;font-size:12px;line-height:1.3;text-align:right;">${limit.value} m³/s</div>
+              <div style="color:rgba(191,220,247,.85);font-size:11px;line-height:1.3;">状态</div>
+              <div style="text-align:right;">
+                <span style="display:inline-block;padding:1px 7px;border-radius:999px;border:1px solid ${statusBorder};background:${statusBg};color:${statusColor};font-weight:700;font-size:11px;line-height:1.45;">${statusText}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+    },
+    legend: {
+      top: 0,
+      right: 8,
+      icon: "roundRect",
+      itemWidth: 10,
+      itemHeight: 8,
+      itemGap: 12,
+      textStyle: {
+        color: "rgba(219, 239, 255, 0.9)",
+        fontSize: 10,
+        fontWeight: 600,
+      },
+      formatter: (name: string) => `${name}（m³/s）`,
+      data: [airflowCurrentSeriesName, airflowLimitSeriesName],
+    },
+    grid: { left: 76, right: 12, top: 28, bottom: 10 },
+    xAxis: {
+      type: "value",
+      max: Math.ceil((keyAirflowMax + 6) / 5) * 5,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      splitLine: { lineStyle: { color: "rgba(150, 205, 255, 0.14)" } },
+      axisLabel: { color: "rgba(189, 219, 245, 0.72)", fontSize: 10 },
+    },
+    yAxis: {
+      type: "category",
+      data: keyAirflowPointData.map((item) => item.name),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#dceeff", fontSize: 11 },
+    },
+    series: [
+      {
+        name: airflowLimitSeriesName,
+        type: "bar",
+        data: keyAirflowPointData.map((item) => item.lowerLimit),
+        barWidth: 12,
+        itemStyle: {
+          color: "rgba(24, 144, 255, 0.2)",
+          borderRadius: 8,
+        },
+        z: 1,
+      },
+      {
+        name: airflowCurrentSeriesName,
+        type: "bar",
+        data: keyAirflowPointData.map((item) => item.airflow),
+        barWidth: 12,
+        barGap: "-100%",
+        itemStyle: {
+          borderRadius: 8,
+          color: (params: any) => {
+            const row = keyAirflowPointData[params.dataIndex];
+            return row.airflow >= row.lowerLimit ? "#52c41a" : "#faad14";
+          },
+        },
+        label: {
+          show: true,
+          position: "right",
+          color: "#e9f6ff",
+          fontSize: 10,
+          formatter: "{c}",
+        },
+        z: 2,
+      },
+    ],
+  };
+  // 24h风量趋势采用与KPI一致的矿井风量量级（总进风量当前值=513m³/s）
+  const inletAirSeries = [498, 503, 507, 510, 516, 514, 513];
+  const returnAirSeries = [472, 476, 481, 485, 490, 488, 487];
+  const latestInletAir = inletAirSeries[inletAirSeries.length - 1] ?? 0;
+  const latestReturnAir = returnAirSeries[returnAirSeries.length - 1] ?? 0;
+  const latestAirDiff = latestInletAir - latestReturnAir;
+
+  const inletReturnTrendOption: any = {
+    backgroundColor: "transparent",
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "line",
+        lineStyle: { color: "rgba(145, 213, 255, 0.45)", width: 1 },
+      },
+      formatter: (params: any[]) => {
+        if (!params?.length) return "";
+        const inlet = params.find((p) => p.seriesName === "总进风量");
+        const ret = params.find((p) => p.seriesName === "总回风量");
+        const time = params[0]?.axisValue ?? "";
+        const inletValue = inlet?.value ?? 0;
+        const returnValue = ret?.value ?? 0;
+        const diff = inletValue - returnValue;
+        return [
+          `${time}`,
+          `总进风量：${Number(inletValue).toLocaleString()} m³/s`,
+          `总回风量：${Number(returnValue).toLocaleString()} m³/s`,
+          `风量差值：${Number(diff).toLocaleString()} m³/s`,
+        ].join("<br/>");
+      },
+    },
+    legend: {
+      data: ["总进风量", "总回风量"],
+      top: 2,
+      right: 8,
+      itemWidth: 10,
+      itemHeight: 6,
+      textStyle: {
+        color: "rgba(210, 233, 255, 0.86)",
+        fontSize: 11,
+      },
+    },
+    grid: { left: 44, right: 14, top: 34, bottom: 24 },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: dataset.lineLabels,
+      axisLine: { lineStyle: { color: "rgba(133, 165, 255, 0.42)" } },
+      axisTick: { show: false },
+      axisLabel: { color: "rgba(191, 220, 247, 0.78)", fontSize: 11 },
+    },
+    yAxis: {
+      type: "value",
+      name: "m³/s",
+      nameTextStyle: { color: "rgba(184, 217, 255, 0.68)", fontSize: 10, padding: [0, 0, 0, 8] },
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "rgba(191, 220, 247, 0.78)", fontSize: 11 },
+      splitLine: {
+        lineStyle: { color: "rgba(150, 205, 255, 0.18)", type: "dashed" },
+      },
+    },
+    series: [
+      {
+        name: "总进风量",
+        type: "line",
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 5,
+        data: inletAirSeries,
+        lineStyle: { width: 2, color: "#69c0ff" },
+        itemStyle: { color: "#69c0ff" },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: "rgba(105,192,255,.28)" },
+              { offset: 1, color: "rgba(105,192,255,.04)" },
+            ],
+          },
+        },
+      },
+      {
+        name: "总回风量",
+        type: "line",
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 5,
+        data: returnAirSeries,
+        lineStyle: { width: 2, color: "#95de64" },
+        itemStyle: { color: "#95de64" },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: "rgba(149,222,100,.22)" },
+              { offset: 1, color: "rgba(149,222,100,.03)" },
+            ],
+          },
+        },
+      },
+    ],
+  };
+
+  const alertPriority: Record<string, number> = {
+    critical: 4,
+    alert: 3,
+    warning: 2,
+    offline: 1,
+    normal: 0,
+    running: 0,
+  };
+  const alertLabelMap: Record<string, string> = {
+    critical: "严重",
+    alert: "告警",
+    warning: "预警",
+    offline: "离线",
+    normal: "正常",
+    running: "运行",
+  };
+  const levelClassMap: Record<string, string> = {
+    critical: "critical",
+    alert: "alert",
+    warning: "warning",
+    offline: "offline",
+    normal: "normal",
+    running: "normal",
+  };
+  const rowAlerts = dataset.tableRows
+    .filter((item) => alertPriority[item.status] > 0)
+    .sort((a, b) => alertPriority[b.status] - alertPriority[a.status]);
+  const logAlerts = dataset.logs
+    .filter((item) => alertPriority[item.level] > 0)
+    .sort((a, b) => alertPriority[b.level] - alertPriority[a.level]);
+  const mergedAlerts = [
+    ...rowAlerts.map((item, index) => ({
+      key: `${item.id}-${index}`,
+      level: item.status,
+      title: `${item.name}${alertLabelMap[item.status] ? `（${alertLabelMap[item.status]}）` : ""}`,
+      area: item.area,
+      detail: item.value,
+      time: item.updatedAt.slice(11, 16),
+    })),
+    ...logAlerts.map((item, index) => ({
+      key: `log-${index}`,
+      level: item.level,
+      title: item.message,
+      area: item.actor,
+      detail: "系统事件",
+      time: item.time.slice(11, 16),
+    })),
+  ].slice(0, 8);
+  const alertSummary = {
+    total: rowAlerts.length + logAlerts.length,
+    critical: rowAlerts.filter((item) => item.status === "critical").length,
+    alert: rowAlerts.filter((item) => item.status === "alert").length,
+    warning: rowAlerts.filter((item) => item.status === "warning").length,
+  };
 
   return (
     <div className="home-cockpit">
@@ -220,7 +393,7 @@ export default function HomePage() {
         {backgroundReady ? (
           <Suspense
             fallback={
-              <div className="home-background-placeholder">3D背景载入中</div>
+              <div className="home-background-placeholder">3D背景载入中...</div>
             }
           >
             <LazyHomeObjBackground
@@ -243,7 +416,7 @@ export default function HomePage() {
       <div className="home-content-layer">
         {/* KPI 指标卡片 */}
         <Row gutter={[16, 16]} className="home-kpi-row">
-          {dataset.kpis.slice(0, 8).map((item) => (
+          {homeKpis.slice(0, 8).map((item) => (
             <Col key={item.key} xs={24} sm={12} md={8} lg={6} xl={3}>
               <KpiCard item={item} />
             </Col>
@@ -253,19 +426,15 @@ export default function HomePage() {
         {/* 主要内容区域 - 三栏布局 */}
         <Row
           gutter={[16, 16]}
-          style={{ flex: 1, minHeight: 0, marginTop: 14 }}
+          style={{ flex: 1, minHeight: 0 }}
           className="home-main-layout-row"
         >
           {/* 左栏 */}
           <Col xs={24} lg={{ flex: "0 0 18.75%" }} className="home-side-column">
-            <Space
-              direction="vertical"
-              style={{ width: "100%", height: "100%" }}
-              size={12}
-            >
-              {/* 主通风机运行状态 */}
+            <div className="home-left-column-stack">
+              {/* 主通风机运行状态*/}
               <Card
-                className="page-card home-transparent-card fan-status-card"
+                className="page-card home-transparent-card fan-status-card home-left-fan-card"
                 size="small"
                 title={
                   <div
@@ -277,8 +446,16 @@ export default function HomePage() {
                     <span>主通风机运行状态</span>
                   </div>
                 }
-                style={{ flex: "0 0 auto", height: 340 }}
+                style={{ minHeight: 0 }}
               >
+                {/* 扫描线*/}
+                <div className="scan-line" />
+
+                {/* 四角装饰 */}
+                <div className="corner-deco top-left" />
+                <div className="corner-deco top-right" />
+                <div className="corner-deco bottom-left" />
+                <div className="corner-deco bottom-right" />
                 <div
                   style={{
                     height: "100%",
@@ -365,7 +542,7 @@ export default function HomePage() {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  运行中
+                                  运行中{" "}
                                 </Typography.Text>
                               </div>
                               <div style={{ flexShrink: 0 }}>
@@ -418,7 +595,7 @@ export default function HomePage() {
                                   <span
                                     style={{ fontSize: 11, color: "#b8d9ff" }}
                                   >
-                                    m³/min
+                                    m3/s
                                   </span>
                                 </Typography.Text>
                               </div>
@@ -672,7 +849,7 @@ export default function HomePage() {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  运行中
+                                  运行中{" "}
                                 </Typography.Text>
                               </div>
                               <div style={{ flexShrink: 0 }}>
@@ -725,7 +902,7 @@ export default function HomePage() {
                                   <span
                                     style={{ fontSize: 11, color: "#b8d9ff" }}
                                   >
-                                    m³/min
+                                    m3/s
                                   </span>
                                 </Typography.Text>
                               </div>
@@ -910,48 +1087,160 @@ export default function HomePage() {
                 </div>
               </Card>
 
-              {/* 设备状态占比 */}
+              {/* 关键用风点风量*/}
               <ChartPanel
                 title={
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <PieChartOutlined
-                      style={{ fontSize: 15, color: "#69c0ff" }}
+                  <div className="home-sensor-card-title">
+                    <EnvironmentOutlined
+                      style={{ fontSize: 15, color: "#95de64" }}
                     />
-                    <span>设备状态占比</span>
+                    <span>关键用风点风量</span>
                   </div>
                 }
-                option={buildPieOption(dataset.pieSeries)}
-                height={280}
-                className="home-transparent-card"
+                option={keyAirflowOption}
+                height="100%"
+                className="home-transparent-card home-sensor-ratio-card home-left-sensor-card"
+                extra={
+                  <div className="home-airflow-legend">
+                    <span className="home-airflow-chip home-airflow-chip--focus">
+                      <span className="home-airflow-chip__label">指定巷道</span>
+                      <span className="home-airflow-chip__value">
+                        {keyAirflowPointData.length}
+                      </span>
+                    </span>
+                    <span className="home-airflow-chip home-airflow-chip--pass">
+                      达标 {keyAirflowPassCount}
+                    </span>
+                    <span className="home-airflow-chip home-airflow-chip--warn">
+                      不足 {keyAirflowInsufficientCount}
+                    </span>
+                  </div>
+                }
               />
 
-              {/* 区域风险排行与处置建议 */}
+              {/* 综合监测 */}
               <Card
-                className="page-card home-transparent-card"
+                className="page-card home-transparent-card home-monitor-card home-left-monitor-card"
                 size="small"
                 title={
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <WarningOutlined
-                      style={{ fontSize: 15, color: "#ff7875" }}
+                    <DashboardOutlined
+                      style={{ fontSize: 15, color: "#69c0ff" }}
                     />
-                    <span>区域风险排行与处置建议</span>
+                    <span>综合监测</span>
                   </div>
                 }
-                style={{ flex: "1 1 auto", minHeight: 0 }}
+                style={{ minHeight: 0 }}
               >
-                <Table<RiskRow>
-                  size="small"
-                  pagination={false}
-                  scroll={{ y: 240 }}
-                  columns={riskColumns}
-                  dataSource={riskRows}
-                />
+                {/* 扫描线*/}
+                <div className="scan-line" />
+
+                {/* 四角装饰 */}
+                <div className="corner-deco top-left" />
+                <div className="corner-deco top-right" />
+                <div className="corner-deco bottom-left" />
+                <div className="corner-deco bottom-right" />
+
+                {/* 数据流线条*/}
+                <div className="data-stream stream-1" />
+                <div className="data-stream stream-2" />
+                <div className="data-stream stream-3" />
+
+                <div className="home-monitor-grid">
+                  <div className="home-monitor-item is-normal">
+                    <div className="home-monitor-item__icon">
+                      <SafetyOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        安全监测
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>28</strong>
+                        <span>/ 30</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="home-monitor-item is-warn">
+                    <div className="home-monitor-item__icon">
+                      <ThunderboltOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        煤层自燃发火
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>15</strong>
+                        <span>/ 16</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="home-monitor-item is-info">
+                    <div className="home-monitor-item__icon">
+                      <ApiOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        仪器充电管理
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>42</strong>
+                        <span>/ 45</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="home-monitor-item is-normal">
+                    <div className="home-monitor-item__icon">
+                      <DashboardOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        精准测风
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>18</strong>
+                        <span>/ 20</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="home-monitor-item is-info">
+                    <div className="home-monitor-item__icon">
+                      <EnvironmentOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        人员定位
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>35</strong>
+                        <span>/ 38</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="home-monitor-item is-normal">
+                    <div className="home-monitor-item__icon">
+                      <GatewayOutlined />
+                    </div>
+                    <div className="home-monitor-item__content">
+                      <Typography.Text className="home-monitor-item__name">
+                        调度通信
+                      </Typography.Text>
+                      <div className="home-monitor-item__value">
+                        <strong>22</strong>
+                        <span>/ 24</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </Card>
-            </Space>
+            </div>
           </Col>
 
           {/* 中栏 - 上侧留空显示3D模型 */}
@@ -962,15 +1251,77 @@ export default function HomePage() {
           ></Col>
 
           {/* 右栏 */}
-          <Col xs={24} lg={{ flex: "0 0 18.75%" }} className="home-side-column">
-            <Space
-              direction="vertical"
-              style={{ width: "100%", height: "100%" }}
-              size={12}
-            >
-              {/* 设备运行状态 */}
+          <Col
+            xs={24}
+            lg={{ flex: "0 0 18.75%" }}
+            className="home-side-column home-right-side-column"
+          >
+            <div className="home-right-column-stack">
+              <div className="home-right-top-row">
+                {/* 传感器 */}
+                <Card
+                  className="page-card home-transparent-card home-right-sensor-card"
+                  size="small"
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <ApiOutlined style={{ fontSize: 15, color: "#69c0ff" }} />
+                      <span>传感器</span>
+                    </div>
+                  }
+                  extra={
+                    <Typography.Text className="home-right-sensor-card__extra">
+                      已选 {selectedSensorTypes.length} 类 / {selectedSensorCount} 台
+                    </Typography.Text>
+                  }
+                  style={{ minHeight: 0, overflow: "hidden" }}
+                >
+                  {/* 扫描线*/}
+                  <div className="scan-line" />
+
+                  {/* 四角装饰 */}
+                  <div className="corner-deco top-left" />
+                  <div className="corner-deco top-right" />
+                  <div className="corner-deco bottom-left" />
+                  <div className="corner-deco bottom-right" />
+
+                  <div className="home-right-sensor-select-all">
+                    <Checkbox
+                      checked={allSensorsChecked}
+                      indeterminate={sensorIndeterminate}
+                      onChange={(e) => handleSelectAllSensors(e.target.checked)}
+                    >
+                      全选
+                    </Checkbox>
+                  </div>
+
+                  <div className="home-right-sensor-list">
+                    {sensorTypeOptions.map((item) => {
+                      const checked = selectedSensorTypes.includes(item.key);
+                      return (
+                        <div
+                          key={item.key}
+                          className={`home-right-sensor-item${checked ? " is-checked" : ""}`}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onChange={() => toggleSensorType(item.key)}
+                          >
+                            <span className="home-right-sensor-item__label">
+                              {item.label}
+                            </span>
+                          </Checkbox>
+                          <span className="home-right-sensor-item__count">
+                            {item.count} 台
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+
+              {/* 设备运行状态*/}
               <Card
-                className="page-card home-transparent-card"
+                className="page-card home-transparent-card home-right-status-card"
                 size="small"
                 title={
                   <div
@@ -982,8 +1333,16 @@ export default function HomePage() {
                     <span>设备运行状态</span>
                   </div>
                 }
-                style={{ flex: "0 0 auto", height: 340 }}
+                style={{ minHeight: 0, overflow: "hidden" }}
               >
+                {/* 扫描线*/}
+                <div className="scan-line" />
+
+                {/* 四角装饰 */}
+                <div className="corner-deco top-left" />
+                <div className="corner-deco top-right" />
+                <div className="corner-deco bottom-left" />
+                <div className="corner-deco bottom-right" />
                 <div
                   style={{
                     display: "flex",
@@ -1092,12 +1451,12 @@ export default function HomePage() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        2/2 在线
+                        2/2 在位（1运1备）
                       </Typography.Text>
                     </div>
                   </div>
 
-                  {/* 局扇运行 */}
+                  {/* 局扇运行*/}
                   <div
                     style={{
                       background:
@@ -1197,12 +1556,12 @@ export default function HomePage() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        6/7 在线
+                        6/7 在线（1检修）
                       </Typography.Text>
                     </div>
                   </div>
 
-                  {/* 风门联锁 */}
+                  {/* 风门 */}
                   <div
                     style={{
                       background:
@@ -1272,7 +1631,7 @@ export default function HomePage() {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          风门联锁
+                          风门
                         </Typography.Text>
                         <div
                           style={{
@@ -1287,7 +1646,7 @@ export default function HomePage() {
                             flexShrink: 0,
                           }}
                         >
-                          运行中
+                          正常
                         </div>
                       </div>
                       <Typography.Text
@@ -1302,12 +1661,12 @@ export default function HomePage() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        14 处
+                        14/14 可控
                       </Typography.Text>
                     </div>
                   </div>
 
-                  {/* 风窗调节 */}
+                  {/* 风窗 */}
                   <div
                     style={{
                       background:
@@ -1377,7 +1736,7 @@ export default function HomePage() {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          风窗调节
+                          风窗
                         </Typography.Text>
                         <div
                           style={{
@@ -1392,7 +1751,7 @@ export default function HomePage() {
                             flexShrink: 0,
                           }}
                         >
-                          执行中
+                          正常
                         </div>
                       </div>
                       <Typography.Text
@@ -1407,14 +1766,15 @@ export default function HomePage() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        3 处
+                        3/3 可调
                       </Typography.Text>
                     </div>
                   </div>
                 </div>
               </Card>
+              </div>
 
-              {/* 24h 总风量趋势 */}
+              {/* 24h 总进/回风量趋势*/}
               <ChartPanel
                 title={
                   <div
@@ -1423,55 +1783,96 @@ export default function HomePage() {
                     <LineChartOutlined
                       style={{ fontSize: 15, color: "#91d5ff" }}
                     />
-                    <span>24h 总风量趋势</span>
+                    <span>24h 总进/回风量趋势</span>
                   </div>
                 }
-                option={buildLineOption(
-                  dataset.lineLabels,
-                  dataset.lineSeries,
-                  "总风量",
-                )}
-                height={280}
-                className="home-transparent-card"
+                option={inletReturnTrendOption}
+                height="100%"
+                className="home-transparent-card home-right-trend-card"
+                extra={
+                  <Typography.Text style={{ fontSize: 10, color: "rgba(173, 208, 239, 0.9)" }}>
+                    差值 {latestAirDiff.toLocaleString()} m³/s
+                  </Typography.Text>
+                }
               />
 
-              {/* 调控执行动态 */}
+              {/* 预警报警 */}
               <Card
-                className="page-card home-transparent-card home-log-card"
+                className="page-card home-transparent-card home-alert-card"
                 size="small"
                 title={
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <ClockCircleOutlined
-                      style={{ fontSize: 15, color: "#ffd666" }}
-                    />
-                    <span>调控执行动态</span>
+                    <AlertOutlined style={{ fontSize: 15, color: "#ff7875" }} />
+                    <span>预警报警</span>
                   </div>
                 }
-                style={{ flex: "1 1 auto", minHeight: 0, overflow: "hidden" }}
+                extra={
+                  <Typography.Text className="home-alert-extra">
+                    当前 {alertSummary.total} 条
+                  </Typography.Text>
+                }
+                style={{ minHeight: 0, overflow: "hidden" }}
               >
-                <div style={{ maxHeight: 240, overflowY: "auto" }}>
-                  <Timeline
-                    items={dataset.logs.map((item) => ({
-                      color:
-                        item.level === "alert"
-                          ? "red"
-                          : item.level === "warning"
-                            ? "orange"
-                            : "blue",
-                      children: (
-                        <Typography.Text
-                          style={{ fontSize: 13, color: "#e8f4ff" }}
-                        >
-                          {item.time.slice(11)} {item.message}
+                {/* 扫描线*/}
+                <div className="scan-line" />
+
+                {/* 四角装饰 */}
+                <div className="corner-deco top-left" />
+                <div className="corner-deco top-right" />
+                <div className="corner-deco bottom-left" />
+                <div className="corner-deco bottom-right" />
+                <div className="home-alert-summary">
+                  <div className="home-alert-summary-item critical">
+                    <span>严重</span>
+                    <strong>{alertSummary.critical}</strong>
+                  </div>
+                  <div className="home-alert-summary-item alert">
+                    <span>告警</span>
+                    <strong>{alertSummary.alert}</strong>
+                  </div>
+                  <div className="home-alert-summary-item warning">
+                    <span>预警</span>
+                    <strong>{alertSummary.warning}</strong>
+                  </div>
+                </div>
+                <div className="home-alert-list">
+                  {mergedAlerts.length > 0 ? (
+                    mergedAlerts.map((item) => (
+                      <div
+                        key={item.key}
+                        className={`home-alert-item ${levelClassMap[item.level] ?? "normal"}`}
+                      >
+                        <div className="home-alert-item__head">
+                          <span
+                            className={`home-alert-dot ${levelClassMap[item.level] ?? "normal"}`}
+                          />
+                          <Typography.Text className="home-alert-item__title">
+                            {item.title}
+                          </Typography.Text>
+                          <span
+                            className={`home-alert-level ${levelClassMap[item.level] ?? "normal"}`}
+                          >
+                            {alertLabelMap[item.level] ?? "信息"}
+                          </span>
+                          <span className="home-alert-item__time">
+                            {item.time}
+                          </span>
+                        </div>
+                        <Typography.Text className="home-alert-item__meta">
+                          {item.area} · {item.detail}
                         </Typography.Text>
-                      ),
-                    }))}
-                  />
+                      </div>
+                    ))
+                  ) : (
+                    <Typography.Text className="home-alert-empty">
+                      当前无预警报警信息
+                    </Typography.Text>
+                  )}
                 </div>
               </Card>
-            </Space>
+            </div>
           </Col>
         </Row>
 

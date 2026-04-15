@@ -49,7 +49,7 @@ export function DecisionPageTemplate({ moduleName, title, pageKey }: DecisionPag
           <Card className="page-card" size="small" title="调控目标与约束">
             <Space direction="vertical" style={{ width: '100%' }}>
               <Typography.Text>目标区域：东翼回风巷 / 3105综采工作面</Typography.Text>
-              <Typography.Text>目标风量：9200 m³/min（允差 ±3%）</Typography.Text>
+              <Typography.Text>目标风量：9200 m³/s（允差 ±3%）</Typography.Text>
               <Typography.Text>安全边界：瓦斯浓度 ≤ 0.5%，CO ≤ 24ppm</Typography.Text>
               <Typography.Text>优先级：安全达标 &gt; 稳定性 &gt; 能耗</Typography.Text>
               <Progress percent={88} status="active" />

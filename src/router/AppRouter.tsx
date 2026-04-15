@@ -9,8 +9,6 @@ import PersonnelRealtimePage from '../pages/Monitor/PersonnelRealtimePage';
 import KeyAreaPage from '../pages/Monitor/KeyAreaPage';
 import DeviceStatusPage from '../pages/Monitor/DeviceStatusPage';
 import HistoryTrendPage from '../pages/Monitor/HistoryTrendPage';
-import PointMapPage from '../pages/Monitor/PointMapPage';
-import SensorHealthPage from '../pages/Monitor/SensorHealthPage';
 import TwinOverviewPage from '../pages/Twin/OverviewPage';
 import TwinRealtimeMappingPage from '../pages/Twin/RealtimeMappingPage';
 import TwinAirflowSimulationPage from '../pages/Twin/AirflowSimulationPage';
@@ -18,11 +16,9 @@ import TwinDisasterEvolutionPage from '../pages/Twin/DisasterEvolutionPage';
 import NaturalAirDistributionPage from '../pages/Analysis/NaturalAirDistributionPage';
 import DemandAirDistributionPage from '../pages/Analysis/DemandAirDistributionPage';
 import NetworkSolvingPage from '../pages/Analysis/NetworkSolvingPage';
-import ParameterCorrectionPage from '../pages/Analysis/ParameterCorrectionPage';
 import QualityEvaluationPage from '../pages/Analysis/QualityEvaluationPage';
 import DemandResistancePage from '../pages/Analysis/DemandResistancePage';
 import BottleneckDiagnosisPage from '../pages/Analysis/BottleneckDiagnosisPage';
-import SensitivityStabilityPage from '../pages/Analysis/SensitivityStabilityPage';
 import TargetConfigPage from '../pages/Decision/TargetConfigPage';
 import SchemeGeneratePage from '../pages/Decision/SchemeGeneratePage';
 import SchemeComparePage from '../pages/Decision/SchemeComparePage';
@@ -60,8 +56,6 @@ export function AppRouter() {
         <Route path="/monitor/key-area" element={<KeyAreaPage />} />
         <Route path="/monitor/device-status" element={<DeviceStatusPage />} />
         <Route path="/monitor/history-trend" element={<HistoryTrendPage />} />
-        <Route path="/monitor/point-map" element={<PointMapPage />} />
-        <Route path="/monitor/sensor-health" element={<SensorHealthPage />} />
 
         <Route path="/twin/overview" element={<TwinOverviewPage />} />
         <Route path="/twin/realtime-mapping" element={<TwinRealtimeMappingPage />} />
@@ -71,11 +65,9 @@ export function AppRouter() {
         <Route path="/analysis/natural-air-distribution" element={<NaturalAirDistributionPage />} />
         <Route path="/analysis/demand-air-distribution" element={<DemandAirDistributionPage />} />
         <Route path="/analysis/network-solving" element={<NetworkSolvingPage />} />
-        <Route path="/analysis/parameter-correction" element={<ParameterCorrectionPage />} />
         <Route path="/analysis/quality-evaluation" element={<QualityEvaluationPage />} />
         <Route path="/analysis/demand-resistance" element={<DemandResistancePage />} />
         <Route path="/analysis/bottleneck-diagnosis" element={<BottleneckDiagnosisPage />} />
-        <Route path="/analysis/sensitivity-stability" element={<SensitivityStabilityPage />} />
 
         <Route path="/decision/target-config" element={<TargetConfigPage />} />
         <Route path="/decision/scheme-generate" element={<SchemeGeneratePage />} />
@@ -98,6 +90,7 @@ export function AppRouter() {
         <Route path="/emergency/evacuation" element={<EmergencyEvacuationPage />} />
         <Route path="/emergency/air-control" element={<EmergencyAirControlPage />} />
         <Route path="/emergency/execution-tracking" element={<EmergencyExecutionTrackingPage />} />
+        <Route path="/emergency" element={<Navigate to="/emergency/gas-disaster-simulation" replace />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

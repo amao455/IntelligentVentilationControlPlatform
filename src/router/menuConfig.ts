@@ -44,7 +44,11 @@ export const topMenuList: TopMenuItem[] = [
   },
   { key: "decision", title: "调控决策", entryPath: "/decision/target-config" },
   { key: "remote", title: "远程控制", entryPath: "/remote/main-fan-control" },
-  { key: "emergency", title: "应急指挥", entryPath: "/emergency/overview" },
+  {
+    key: "emergency",
+    title: "应急指挥",
+    entryPath: "/emergency/gas-disaster-simulation",
+  },
 ];
 
 export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
@@ -91,16 +95,6 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       key: "monitor-history-trend",
       title: "历史监测趋势分析",
       path: "/monitor/history-trend",
-    },
-    {
-      key: "monitor-point-map",
-      title: "监测点空间分布",
-      path: "/monitor/point-map",
-    },
-    {
-      key: "monitor-sensor-health",
-      title: "传感器健康状态",
-      path: "/monitor/sensor-health",
     },
   ],
   twin: [
@@ -149,12 +143,6 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       variant: "analysis",
     },
     {
-      key: "analysis-parameter-correction",
-      title: "动态反向解算与参数修正",
-      path: "/analysis/parameter-correction",
-      variant: "analysis",
-    },
-    {
       key: "analysis-quality-evaluation",
       title: "解算校核与质量评估",
       path: "/analysis/quality-evaluation",
@@ -170,12 +158,6 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
       key: "analysis-bottleneck-diagnosis",
       title: "异常诊断与瓶颈识别",
       path: "/analysis/bottleneck-diagnosis",
-      variant: "analysis",
-    },
-    {
-      key: "analysis-sensitivity-stability",
-      title: "灵敏度与稳定性分析",
-      path: "/analysis/sensitivity-stability",
       variant: "analysis",
     },
   ],
@@ -269,15 +251,15 @@ export const secondaryMenuMap: Record<ModuleKey, SecondaryMenuItem[]> = {
   ],
   emergency: [
     {
-      key: "emergency-overview",
-      title: "灾变态势总览",
-      path: "/emergency/overview",
-      variant: "emergency",
-    },
-    {
       key: "emergency-gas-disaster-simulation",
       title: "灾害场景模拟分析",
       path: "/emergency/gas-disaster-simulation",
+      variant: "emergency",
+    },
+    {
+      key: "emergency-overview",
+      title: "灾变态势总览",
+      path: "/emergency/overview",
       variant: "emergency",
     },
     {
