@@ -1,7 +1,8 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from "react";
 import {
   Button,
   Card,
+  Checkbox,
   Col,
   Descriptions,
   Drawer,
@@ -14,21 +15,30 @@ import {
   Typography,
   Statistic,
   Tag,
-} from 'antd';
+  Tree,
+} from "antd";
 import {
   LineChartOutlined,
   BarChartOutlined,
   PieChartOutlined,
   UnorderedListOutlined,
-} from '@ant-design/icons';
-import { KpiCard } from '../../components/cards/KpiCard';
-import { ChartPanel } from '../../components/charts/ChartPanel';
-import { StatusTag } from '../../components/common/StatusTag';
-import { IndustrialTable } from '../../components/tables/IndustrialTable';
-import { TopologyPlaceholder } from '../../components/topology/TopologyPlaceholder';
-import { createPageDataset } from '../../mock/mockData';
-import { buildBarOption, buildLineOption, buildPieOption, buildGasBarOption, buildPersonnelBarOption, buildPersonnelOverviewOption } from './chartOptions';
-import { PageToolbar } from './PageToolbar';
+  ControlOutlined,
+} from "@ant-design/icons";
+import { KpiCard } from "../../components/cards/KpiCard";
+import { ChartPanel } from "../../components/charts/ChartPanel";
+import { StatusTag } from "../../components/common/StatusTag";
+import { IndustrialTable } from "../../components/tables/IndustrialTable";
+import { TopologyPlaceholder } from "../../components/topology/TopologyPlaceholder";
+import { createPageDataset } from "../../mock/mockData";
+import {
+  buildBarOption,
+  buildLineOption,
+  buildPieOption,
+  buildGasBarOption,
+  buildPersonnelBarOption,
+  buildPersonnelOverviewOption,
+} from "./chartOptions";
+import { PageToolbar } from "./PageToolbar";
 
 interface StandardIndustrialPageProps {
   moduleName: string;
@@ -36,23 +46,171 @@ interface StandardIndustrialPageProps {
   pageKey: string;
 }
 
-export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardIndustrialPageProps) {
+export function StandardIndustrialPage({
+  moduleName,
+  title,
+  pageKey,
+}: StandardIndustrialPageProps) {
   const dataset = useMemo(() => createPageDataset(pageKey), [pageKey]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeNavTab, setActiveNavTab] = useState('airflow');
+  const [activeNavTab, setActiveNavTab] = useState("airflow");
+  const airflowSensorDeviceMap: Record<
+    string,
+    Array<{
+      id: string;
+      area: string;
+      value: number;
+      status: "normal" | "warning";
+    }>
+  > = {
+    "wind-speed": [
+      { id: "FS-01", area: "东翼回风巷", value: 3.8, status: "normal" },
+      { id: "FS-03", area: "3105工作面进风口", value: 3.4, status: "normal" },
+      { id: "FS-08", area: "主运输大巷", value: 2.9, status: "warning" },
+      { id: "FS-11", area: "西翼联络巷", value: 3.2, status: "normal" },
+      { id: "FS-16", area: "北二采区主巷", value: 2.7, status: "warning" },
+      { id: "FS-21", area: "二水平皮带巷", value: 3.1, status: "normal" },
+    ],
+    "wind-pressure": [
+      { id: "FP-02", area: "主扇进风口", value: 2056, status: "normal" },
+      { id: "FP-04", area: "主扇出风口", value: 2148, status: "normal" },
+      { id: "FP-07", area: "东翼回风巷", value: 1985, status: "warning" },
+      { id: "FP-10", area: "3105工作面回风口", value: 2068, status: "normal" },
+      { id: "FP-13", area: "西翼联络巷", value: 2012, status: "normal" },
+      { id: "FP-17", area: "回风上山", value: 1960, status: "warning" },
+    ],
+  };
+  const airflowSensorOptions = [
+    { key: "wind-speed", label: "风速传感器", count: 26, unit: "m/s" },
+    { key: "wind-pressure", label: "风压传感器", count: 18, unit: "Pa" },
+  ];
+  const allAirflowSensorDeviceKeys = airflowSensorOptions.flatMap((option) =>
+    (airflowSensorDeviceMap[option.key] ?? []).map(
+      (device) => `${option.key}|${device.id}`,
+    ),
+  );
+  const [checkedAirflowTreeKeys, setCheckedAirflowTreeKeys] = useState<
+    string[]
+  >(allAirflowSensorDeviceKeys);
+  const [expandedAirflowKeys, setExpandedAirflowKeys] = useState<string[]>([]);
+  const checkedAirflowDeviceCount = checkedAirflowTreeKeys.filter((key) =>
+    key.includes("|"),
+  ).length;
+  const airflowTreeAllChecked =
+    checkedAirflowDeviceCount === allAirflowSensorDeviceKeys.length;
+  const airflowTreeIndeterminate =
+    checkedAirflowDeviceCount > 0 &&
+    checkedAirflowDeviceCount < allAirflowSensorDeviceKeys.length;
+  const airflowSensorTreeData = airflowSensorOptions.map((option) => ({
+    title: (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ color: "#eaf5ff", fontSize: 12, fontWeight: 700 }}>
+          {option.label}
+        </span>
+        <Tag
+          color="processing"
+          style={{ marginInlineEnd: 0, lineHeight: "16px", fontSize: 10 }}
+        >
+          {option.count} 台
+        </Tag>
+      </span>
+    ),
+    key: option.key,
+    children: (airflowSensorDeviceMap[option.key] ?? []).map((device) => ({
+      title: (
+        <span style={{ fontSize: 11, color: "#d7ecff", fontWeight: 700 }}>
+          {device.id}
+        </span>
+      ),
+      key: `${option.key}|${device.id}`,
+    })),
+  }));
+  const gasSensorDeviceMap: Record<string, Array<{ id: string }>> = {
+    methane: [{ id: "CH4-01" }, { id: "CH4-03" }, { id: "CH4-08" }],
+    co: [{ id: "CO-02" }, { id: "CO-07" }, { id: "CO-11" }],
+    co2: [{ id: "CO2-04" }, { id: "CO2-09" }],
+    o2: [{ id: "O2-05" }, { id: "O2-10" }],
+    temperature: [{ id: "TMP-06" }, { id: "TMP-12" }, { id: "TMP-15" }],
+    dust: [{ id: "DUST-13" }, { id: "DUST-18" }],
+    smoke: [{ id: "SMK-14" }, { id: "SMK-19" }],
+    h2: [{ id: "H2-16" }, { id: "H2-21" }],
+  };
+  const gasSensorOptions = [
+    { key: "methane", label: "甲烷传感器" },
+    { key: "co", label: "一氧化碳传感器" },
+    { key: "co2", label: "二氧化碳传感器" },
+    { key: "o2", label: "氧气传感器" },
+    { key: "temperature", label: "温度传感器" },
+    { key: "dust", label: "粉尘传感器" },
+    { key: "smoke", label: "烟雾传感器" },
+    { key: "h2", label: "氢气传感器" },
+  ];
+  const allGasSensorDeviceKeys = gasSensorOptions.flatMap((option) =>
+    (gasSensorDeviceMap[option.key] ?? []).map(
+      (device) => `${option.key}|${device.id}`,
+    ),
+  );
+  const [checkedGasTreeKeys, setCheckedGasTreeKeys] = useState<string[]>(
+    allGasSensorDeviceKeys,
+  );
+  const [expandedGasKeys, setExpandedGasKeys] = useState<string[]>([]);
+  const checkedGasDeviceCount = checkedGasTreeKeys.filter((key) =>
+    key.includes("|"),
+  ).length;
+  const gasTreeAllChecked =
+    checkedGasDeviceCount === allGasSensorDeviceKeys.length;
+  const gasTreeIndeterminate =
+    checkedGasDeviceCount > 0 &&
+    checkedGasDeviceCount < allGasSensorDeviceKeys.length;
+  const gasSensorTreeData = gasSensorOptions.map((option) => ({
+    title: (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ color: "#eaf5ff", fontSize: 12, fontWeight: 700 }}>
+          {option.label}
+        </span>
+        <Tag
+          color="processing"
+          style={{ marginInlineEnd: 0, lineHeight: "16px", fontSize: 10 }}
+        >
+          {(gasSensorDeviceMap[option.key] ?? []).length} 台
+        </Tag>
+      </span>
+    ),
+    key: option.key,
+    children: (gasSensorDeviceMap[option.key] ?? []).map((device) => ({
+      title: (
+        <span style={{ fontSize: 11, color: "#d7ecff", fontWeight: 700 }}>
+          {device.id}
+        </span>
+      ),
+      key: `${option.key}|${device.id}`,
+    })),
+  }));
 
-  const showPointMap = pageKey.includes('point-map') || pageKey.includes('network-solving');
-  const showDeviceTabs = pageKey.includes('device-status');
-  const showSensorStats = pageKey.includes('sensor-health');
-  const showRealtimeNav = pageKey.includes('realtime-overview');
-  const showAirflowRealtime = pageKey.includes('airflow-realtime');
-  const showGasRealtime = pageKey.includes('gas-realtime');
-  const showPersonnelRealtime = pageKey.includes('personnel-realtime');
+  const showPointMap =
+    pageKey.includes("point-map") || pageKey.includes("network-solving");
+  const showDeviceTabs = pageKey.includes("device-status");
+  const showSensorStats = pageKey.includes("sensor-health");
+  const showRealtimeNav = pageKey.includes("realtime-overview");
+  const showAirflowRealtime = pageKey.includes("airflow-realtime");
+  const showGasRealtime = pageKey.includes("gas-realtime");
+  const showPersonnelRealtime = pageKey.includes("personnel-realtime");
 
   return (
-    <div className="page-wrapper" style={(showAirflowRealtime || showGasRealtime || showPersonnelRealtime) ? { padding: 0, height: 'calc(100vh - 80px)', overflow: 'hidden' } : {}}>
+    <div
+      className="page-wrapper"
+      style={
+        showAirflowRealtime || showGasRealtime || showPersonnelRealtime
+          ? { padding: 0, height: "calc(100vh - 80px)", overflow: "hidden" }
+          : {}
+      }
+    >
       {!showAirflowRealtime && !showGasRealtime && !showPersonnelRealtime && (
-        <PageToolbar moduleName={moduleName} title={title} actions={dataset.actions} />
+        <PageToolbar
+          moduleName={moduleName}
+          title={title}
+          actions={dataset.actions}
+        />
       )}
 
       {!showAirflowRealtime && !showGasRealtime && !showPersonnelRealtime && (
@@ -66,15 +224,17 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
       )}
 
       {showAirflowRealtime || showGasRealtime || showPersonnelRealtime ? (
-        <div style={{
-          padding: '0',
-          height: 'calc(100vh - 80px)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          overflow: 'hidden',
-          boxSizing: 'border-box'
-        }}>
+        <div
+          style={{
+            padding: "0",
+            height: "calc(100vh - 80px)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            overflow: "hidden",
+            boxSizing: "border-box",
+          }}
+        >
           {showPersonnelRealtime && (
             <style>{`
               @keyframes border-glow {
@@ -200,83 +360,439 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
             `}</style>
           )}
           {/* 上栏 - 占 3/4 */}
-          <div style={{ flex: '3', minHeight: 0, display: 'flex', gap: '16px', overflow: 'hidden', padding: '12px' }}>
+          <div
+            style={{
+              flex: "3",
+              minHeight: 0,
+              display: "flex",
+              gap: "16px",
+              overflow: "hidden",
+              padding: "12px",
+            }}
+          >
             {/* 左侧空白区域 - 显示三维模型 */}
-            <div style={{ flex: '1', minWidth: 0 }}>
-              {/* 这里是三维模型背景显示区域 */}
+            <div style={{ flex: "1", minWidth: 0, position: "relative" }}>
+              {showAirflowRealtime && (
+                <Card
+                  className="page-card home-transparent-card"
+                  size="small"
+                  title={
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <ControlOutlined
+                        style={{ fontSize: 15, color: "#69c0ff" }}
+                      />
+                      <span>风流传感器选择</span>
+                    </div>
+                  }
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "min(260px, 100%)",
+                    zIndex: 2,
+                    pointerEvents: "auto",
+                    overflow: "hidden",
+                  }}
+                  styles={{
+                    body: {
+                      padding: "7px 7px 6px",
+                      maxHeight: "58vh",
+                      overflow: "hidden",
+                    },
+                  }}
+                >
+                  <style>{`
+                    .airflow-tree-select-all {
+                      margin-bottom: 6px;
+                      padding: 4px 6px;
+                      border-radius: 6px;
+                      border: 1px solid rgba(150, 205, 255, 0.24);
+                      background: rgba(12, 35, 59, 0.48);
+                    }
+                    .airflow-tree-select-all .ant-checkbox-wrapper {
+                      color: #dceeff !important;
+                      font-size: 11px;
+                      font-weight: 700;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree {
+                      background: transparent !important;
+                      color: #d7ecff !important;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-node-content-wrapper {
+                      border-radius: 6px;
+                      padding: 1px 6px;
+                      transition: all .2s ease;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-node-content-wrapper:hover {
+                      background: rgba(105, 192, 255, 0.16) !important;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-node-selected {
+                      background: rgba(64, 156, 255, 0.2) !important;
+                      box-shadow: inset 0 0 0 1px rgba(145, 213, 255, 0.38);
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-title {
+                      color: #dceeff !important;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-switcher {
+                      color: rgba(173, 221, 255, 0.78) !important;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-checkbox-inner {
+                      background: rgba(8, 28, 49, 0.88) !important;
+                      border-color: rgba(133, 197, 255, 0.74) !important;
+                      border-radius: 3px;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-checkbox-checked .ant-tree-checkbox-inner {
+                      background: #52c41a !important;
+                      border-color: #73d13d !important;
+                      box-shadow: 0 0 8px rgba(115, 209, 61, 0.42);
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-checkbox-indeterminate .ant-tree-checkbox-inner::after {
+                      background: #95de64 !important;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-list-holder::-webkit-scrollbar {
+                      width: 6px;
+                    }
+                    .airflow-sensor-tree-wrap .ant-tree-list-holder::-webkit-scrollbar-thumb {
+                      background: rgba(133, 197, 255, 0.35);
+                      border-radius: 999px;
+                    }
+                  `}</style>
+                  <div
+                    className="airflow-sensor-tree-wrap"
+                    style={{
+                      height: "100%",
+                      maxHeight: "calc(58vh - 62px)",
+                      overflow: "auto",
+                      borderRadius: 6,
+                      border: "1px solid rgba(150, 205, 255, 0.24)",
+                      padding: "6px 4px",
+                    }}
+                  >
+                    <div className="airflow-tree-select-all">
+                      <Checkbox
+                        checked={airflowTreeAllChecked}
+                        indeterminate={airflowTreeIndeterminate}
+                        onChange={(e) => {
+                          setCheckedAirflowTreeKeys(
+                            e.target.checked ? allAirflowSensorDeviceKeys : [],
+                          );
+                        }}
+                      >
+                        全选
+                      </Checkbox>
+                    </div>
+                    <Tree
+                      className="airflow-sensor-tree"
+                      showLine
+                      blockNode
+                      checkable
+                      treeData={airflowSensorTreeData as any}
+                      expandedKeys={expandedAirflowKeys}
+                      checkedKeys={checkedAirflowTreeKeys}
+                      onExpand={(keys) =>
+                        setExpandedAirflowKeys(keys as string[])
+                      }
+                      onCheck={(checkedKeys) => {
+                        const keys = Array.isArray(checkedKeys)
+                          ? checkedKeys
+                          : checkedKeys.checked;
+                        setCheckedAirflowTreeKeys(keys as string[]);
+                      }}
+                    />
+                  </div>
+                </Card>
+              )}
+
+              {showGasRealtime && (
+                <Card
+                  className="page-card home-transparent-card"
+                  size="small"
+                  title={
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <ControlOutlined
+                        style={{ fontSize: 15, color: "#69c0ff" }}
+                      />
+                      <span>气体传感器选择</span>
+                    </div>
+                  }
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "min(260px, 100%)",
+                    zIndex: 2,
+                    pointerEvents: "auto",
+                    overflow: "hidden",
+                  }}
+                  styles={{
+                    body: {
+                      padding: "7px 7px 6px",
+                      maxHeight: "58vh",
+                      overflow: "hidden",
+                    },
+                  }}
+                >
+                  <style>{`
+                    .gas-tree-select-all {
+                      margin-bottom: 6px;
+                      padding: 4px 6px;
+                      border-radius: 6px;
+                      border: 1px solid rgba(150, 205, 255, 0.24);
+                      background: rgba(12, 35, 59, 0.48);
+                    }
+                    .gas-tree-select-all .ant-checkbox-wrapper {
+                      color: #dceeff !important;
+                      font-size: 11px;
+                      font-weight: 700;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree {
+                      background: transparent !important;
+                      color: #d7ecff !important;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-node-content-wrapper {
+                      border-radius: 6px;
+                      padding: 1px 6px;
+                      transition: all .2s ease;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-node-content-wrapper:hover {
+                      background: rgba(105, 192, 255, 0.16) !important;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-node-selected {
+                      background: rgba(64, 156, 255, 0.2) !important;
+                      box-shadow: inset 0 0 0 1px rgba(145, 213, 255, 0.38);
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-title {
+                      color: #dceeff !important;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-switcher {
+                      color: rgba(173, 221, 255, 0.78) !important;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-checkbox-inner {
+                      background: rgba(8, 28, 49, 0.88) !important;
+                      border-color: rgba(133, 197, 255, 0.74) !important;
+                      border-radius: 3px;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-checkbox-checked .ant-tree-checkbox-inner {
+                      background: #52c41a !important;
+                      border-color: #73d13d !important;
+                      box-shadow: 0 0 8px rgba(115, 209, 61, 0.42);
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-checkbox-indeterminate .ant-tree-checkbox-inner::after {
+                      background: #95de64 !important;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-list-holder::-webkit-scrollbar {
+                      width: 6px;
+                    }
+                    .gas-sensor-tree-wrap .ant-tree-list-holder::-webkit-scrollbar-thumb {
+                      background: rgba(133, 197, 255, 0.35);
+                      border-radius: 999px;
+                    }
+                  `}</style>
+                  <div
+                    className="gas-sensor-tree-wrap"
+                    style={{
+                      height: "100%",
+                      maxHeight: "calc(58vh - 62px)",
+                      overflow: "auto",
+                      borderRadius: 6,
+                      border: "1px solid rgba(150, 205, 255, 0.24)",
+                      padding: "6px 4px",
+                    }}
+                  >
+                    <div className="gas-tree-select-all">
+                      <Checkbox
+                        checked={gasTreeAllChecked}
+                        indeterminate={gasTreeIndeterminate}
+                        onChange={(e) => {
+                          setCheckedGasTreeKeys(
+                            e.target.checked ? allGasSensorDeviceKeys : [],
+                          );
+                        }}
+                      >
+                        全选
+                      </Checkbox>
+                    </div>
+                    <Tree
+                      className="gas-sensor-tree"
+                      showLine
+                      blockNode
+                      checkable
+                      treeData={gasSensorTreeData as any}
+                      expandedKeys={expandedGasKeys}
+                      checkedKeys={checkedGasTreeKeys}
+                      onExpand={(keys) => setExpandedGasKeys(keys as string[])}
+                      onCheck={(checkedKeys) => {
+                        const keys = Array.isArray(checkedKeys)
+                          ? checkedKeys
+                          : checkedKeys.checked;
+                        setCheckedGasTreeKeys(keys as string[]);
+                      }}
+                    />
+                  </div>
+                </Card>
+              )}
             </div>
 
             {/* 右侧图表区域 */}
-            <div style={{
-              flex: '0 0 18.75%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              minHeight: 0,
-              overflow: 'hidden'
-            }}>
+            <div
+              style={{
+                flex: "0 0 18.75%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                minHeight: 0,
+                overflow: "hidden",
+              }}
+            >
               <Card
-                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
+                className={`page-card home-transparent-card${showPersonnelRealtime ? " personnel-card" : ""}`}
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <LineChartOutlined style={{ fontSize: 15, color: '#69c0ff' }} />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <LineChartOutlined
+                      style={{ fontSize: 15, color: "#69c0ff" }}
+                    />
                     <span>
-                      {showAirflowRealtime ? '风流实时趋势' : showGasRealtime ? '瓦斯浓度趋势' : '人员总览'}
+                      {showAirflowRealtime
+                        ? "风流实时趋势"
+                        : showGasRealtime
+                          ? "瓦斯浓度趋势"
+                          : "人员总览"}
                     </span>
                   </div>
                 }
-                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
                 styles={{
-                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                  body: {
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: "hidden",
+                    padding: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                  },
                 }}
               >
-                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                   <ChartPanel
-                    option={showPersonnelRealtime ? buildPersonnelOverviewOption() : buildLineOption(dataset.lineLabels, dataset.lineSeries, showAirflowRealtime ? '风量' : '瓦斯浓度')}
+                    option={
+                      showPersonnelRealtime
+                        ? buildPersonnelOverviewOption()
+                        : buildLineOption(
+                            dataset.lineLabels,
+                            dataset.lineSeries,
+                            showAirflowRealtime ? "风量" : "瓦斯浓度",
+                          )
+                    }
                     height="100%"
                     noCard
                   />
                 </div>
               </Card>
               <Card
-                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
+                className={`page-card home-transparent-card${showPersonnelRealtime ? " personnel-card" : ""}`}
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <BarChartOutlined style={{ fontSize: 15, color: '#95de64' }} />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <BarChartOutlined
+                      style={{ fontSize: 15, color: "#95de64" }}
+                    />
                     <span>
-                      {showAirflowRealtime ? '各区域风速分布' : showGasRealtime ? '各区域气体浓度' : '区域人员分布'}
+                      {showAirflowRealtime
+                        ? "各区域风速分布"
+                        : showGasRealtime
+                          ? "各区域气体浓度"
+                          : "区域人员分布"}
                     </span>
                   </div>
                 }
-                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
                 styles={{
-                  body: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '8px', display: 'flex', flexDirection: 'column' }
+                  body: {
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: "hidden",
+                    padding: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                  },
                 }}
               >
-                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                   <ChartPanel
-                    option={showGasRealtime ? buildGasBarOption() : showPersonnelRealtime ? buildPersonnelBarOption() : buildBarOption(dataset.barCategories, dataset.barSeries, '风速')}
+                    option={
+                      showGasRealtime
+                        ? buildGasBarOption()
+                        : showPersonnelRealtime
+                          ? buildPersonnelBarOption()
+                          : buildBarOption(
+                              dataset.barCategories,
+                              dataset.barSeries,
+                              "风速",
+                            )
+                    }
                     height="100%"
                     noCard
                   />
                 </div>
               </Card>
               <Card
-                className={`page-card home-transparent-card${showPersonnelRealtime ? ' personnel-card' : ''}`}
+                className={`page-card home-transparent-card${showPersonnelRealtime ? " personnel-card" : ""}`}
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <PieChartOutlined style={{ fontSize: 15, color: '#ffc069' }} />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <PieChartOutlined
+                      style={{ fontSize: 15, color: "#ffc069" }}
+                    />
                     <span>
-                      {showAirflowRealtime ? '风压分布' : showGasRealtime ? '环境参数达标率' : '最近告警'}
+                      {showAirflowRealtime
+                        ? "风压分布"
+                        : showGasRealtime
+                          ? "环境参数达标率"
+                          : "最近告警"}
                     </span>
                   </div>
                 }
-                style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
                 styles={{
-                  body: { flex: 1, minHeight: 0, overflow: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', scrollbarWidth: 'none', msOverflowStyle: 'none' }
+                  body: {
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: "auto",
+                    padding: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  },
                 }}
               >
                 <style>{`
@@ -344,35 +860,64 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 `}</style>
                 <Timeline
                   className="alert-timeline"
-                  style={{ padding: '12px 0' }}
+                  style={{ padding: "12px 0" }}
                   items={[
                     {
-                      color: 'red',
+                      color: "red",
                       dot: (
-                        <div style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: '50%',
-                          background: '#ff4d4f',
-                          boxShadow: '0 0 0 3px rgba(255, 77, 79, 0.2), 0 0 8px rgba(255, 77, 79, 0.6)',
-                        }} />
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                            background: "#ff4d4f",
+                            boxShadow:
+                              "0 0 0 3px rgba(255, 77, 79, 0.2), 0 0 8px rgba(255, 77, 79, 0.6)",
+                          }}
+                        />
                       ),
                       children: (
                         <div className="alert-card-item critical">
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#8ca4be" }}
+                            >
                               2026-04-07 14:22
                             </Typography.Text>
                             <span className="alert-badge critical">危急</span>
                           </div>
-                          <Typography.Text strong style={{ fontSize: 14, color: '#ff7875', display: 'block', marginBottom: 6 }}>
+                          <Typography.Text
+                            strong
+                            style={{
+                              fontSize: 14,
+                              color: "#ff7875",
+                              display: "block",
+                              marginBottom: 6,
+                            }}
+                          >
                             人员 P-012 离线超时
                           </Typography.Text>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               📍 3105工作面
                             </Typography.Text>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               ⏱ 离线 15 分钟
                             </Typography.Text>
                           </div>
@@ -380,32 +925,61 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                       ),
                     },
                     {
-                      color: 'orange',
+                      color: "orange",
                       dot: (
-                        <div style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: '50%',
-                          background: '#fa8c16',
-                          boxShadow: '0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)',
-                        }} />
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                            background: "#fa8c16",
+                            boxShadow:
+                              "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
+                          }}
+                        />
                       ),
                       children: (
                         <div className="alert-card-item warning">
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#8ca4be" }}
+                            >
                               2026-04-07 13:15
                             </Typography.Text>
                             <span className="alert-badge warning">警告</span>
                           </div>
-                          <Typography.Text strong style={{ fontSize: 14, color: '#ffc069', display: 'block', marginBottom: 6 }}>
+                          <Typography.Text
+                            strong
+                            style={{
+                              fontSize: 14,
+                              color: "#ffc069",
+                              display: "block",
+                              marginBottom: 6,
+                            }}
+                          >
                             人员 P-008 进入禁区
                           </Typography.Text>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               📍 西翼联络巷
                             </Typography.Text>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               🚫 未授权区域
                             </Typography.Text>
                           </div>
@@ -413,32 +987,61 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                       ),
                     },
                     {
-                      color: 'orange',
+                      color: "orange",
                       dot: (
-                        <div style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: '50%',
-                          background: '#fa8c16',
-                          boxShadow: '0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)',
-                        }} />
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                            background: "#fa8c16",
+                            boxShadow:
+                              "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
+                          }}
+                        />
                       ),
                       children: (
                         <div className="alert-card-item warning">
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#8ca4be' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#8ca4be" }}
+                            >
                               2026-04-07 12:08
                             </Typography.Text>
                             <span className="alert-badge warning">警告</span>
                           </div>
-                          <Typography.Text strong style={{ fontSize: 14, color: '#ffc069', display: 'block', marginBottom: 6 }}>
+                          <Typography.Text
+                            strong
+                            style={{
+                              fontSize: 14,
+                              color: "#ffc069",
+                              display: "block",
+                              marginBottom: 6,
+                            }}
+                          >
                             人员 P-015 心率异常
                           </Typography.Text>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               💓 心率 128 bpm
                             </Typography.Text>
-                            <Typography.Text style={{ fontSize: 12, color: '#6b8199' }}>
+                            <Typography.Text
+                              style={{ fontSize: 12, color: "#6b8199" }}
+                            >
                               📈 超出正常范围
                             </Typography.Text>
                           </div>
@@ -452,39 +1055,52 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           </div>
 
           {/* 下栏 - 占 1/4 */}
-          <div style={{ flex: '1', minHeight: 0, overflow: 'hidden', padding: '0 12px 12px 12px' }}>
+          <div
+            style={{
+              flex: "1",
+              minHeight: 0,
+              overflow: "hidden",
+              padding: "0 12px 12px 12px",
+            }}
+          >
             <Card
-              className={`page-card home-transparent-card airflow-detail-card${showPersonnelRealtime ? ' personnel-detail-card' : ''}`}
+              className={`page-card home-transparent-card airflow-detail-card${showPersonnelRealtime ? " personnel-detail-card" : ""}`}
               size="small"
               title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <UnorderedListOutlined style={{ fontSize: 15, color: '#9cd0ff' }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <UnorderedListOutlined
+                    style={{ fontSize: 15, color: "#9cd0ff" }}
+                  />
                   <span>
-                    {showAirflowRealtime ? '风流监测点详情' : showGasRealtime ? '气体监测点详情' : '人员位置与状态'}
+                    {showAirflowRealtime
+                      ? "风流监测点详情"
+                      : showGasRealtime
+                        ? "气体监测点详情"
+                        : "人员位置与状态"}
                   </span>
                 </div>
               }
               style={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                maxHeight: '100%'
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                maxHeight: "100%",
               }}
               styles={{
                 header: {
                   flexShrink: 0,
                   minHeight: 0,
-                  padding: '8px 12px'
+                  padding: "8px 12px",
                 },
                 body: {
                   flex: 1,
                   minHeight: 0,
-                  overflow: 'hidden',
-                  padding: '8px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }
+                  overflow: "hidden",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                },
               }}
             >
               <style>{`
@@ -554,8 +1170,13 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
       ) : showPersonnelRealtime ? (
         <Row gutter={[16, 16]}>
           <Col xs={24} xl={8}>
-            <Card className="page-card" size="small" title="人员分布统计" style={{ height: '100%' }}>
-              <Space direction="vertical" style={{ width: '100%' }} size={16}>
+            <Card
+              className="page-card"
+              size="small"
+              title="人员分布统计"
+              style={{ height: "100%" }}
+            >
+              <Space direction="vertical" style={{ width: "100%" }} size={16}>
                 <Statistic title="总人数" value={24} suffix="人" />
                 <Statistic title="在线率" value={95.8} suffix="%" />
                 <Statistic title="异常人数" value={0} suffix="人" />
@@ -563,17 +1184,40 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
             </Card>
           </Col>
           <Col xs={24} xl={8}>
-            <Card className="page-card" size="small" title="设备状态" style={{ height: '100%' }}>
-              <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Card
+              className="page-card"
+              size="small"
+              title="设备状态"
+              style={{ height: "100%" }}
+            >
+              <Space direction="vertical" style={{ width: "100%" }} size={12}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <Typography.Text>在线</Typography.Text>
                   <Tag color="green">23</Tag>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <Typography.Text>离线</Typography.Text>
                   <Tag color="red">1</Tag>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <Typography.Text>异常</Typography.Text>
                   <Tag color="orange">0</Tag>
                 </div>
@@ -581,12 +1225,35 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
             </Card>
           </Col>
           <Col xs={24} xl={8}>
-            <Card className="page-card" size="small" title="最近告警" style={{ height: '100%' }}>
+            <Card
+              className="page-card"
+              size="small"
+              title="最近告警"
+              style={{ height: "100%" }}
+            >
               <Timeline
                 items={[
-                  { children: <Typography.Text>2026-04-02 14:22 - 人员 P-012 离线</Typography.Text> },
-                  { children: <Typography.Text>2026-04-02 13:15 - 人员 P-008 进入禁区</Typography.Text> },
-                  { children: <Typography.Text>2026-04-02 12:08 - 人员 P-015 心率异常</Typography.Text> },
+                  {
+                    children: (
+                      <Typography.Text>
+                        2026-04-02 14:22 - 人员 P-012 离线
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    children: (
+                      <Typography.Text>
+                        2026-04-02 13:15 - 人员 P-008 进入禁区
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    children: (
+                      <Typography.Text>
+                        2026-04-02 12:08 - 人员 P-015 心率异常
+                      </Typography.Text>
+                    ),
+                  },
                 ]}
               />
             </Card>
@@ -601,35 +1268,67 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
         <Row gutter={[12, 12]}>
           {/* 左侧导航栏 */}
           <Col xs={24} lg={5}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space direction="vertical" style={{ width: "100%" }} size={12}>
               {/* 风流实时监测 */}
               <Card
                 className="page-card"
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <span>风流实时监测</span>
                   </div>
                 }
                 style={{
-                  cursor: 'pointer',
-                  border: activeNavTab === 'airflow' ? '2px solid #1890ff' : undefined,
-                  background: activeNavTab === 'airflow' ? 'rgba(24, 144, 255, 0.05)' : undefined,
+                  cursor: "pointer",
+                  border:
+                    activeNavTab === "airflow"
+                      ? "2px solid #1890ff"
+                      : undefined,
+                  background:
+                    activeNavTab === "airflow"
+                      ? "rgba(24, 144, 255, 0.05)"
+                      : undefined,
                 }}
-                onClick={() => setActiveNavTab('airflow')}
+                onClick={() => setActiveNavTab("airflow")}
               >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>主风道风速</Typography.Text>
-                    <Typography.Text strong style={{ color: '#1890ff' }}>3.8 m/s</Typography.Text>
+                    <Typography.Text strong style={{ color: "#1890ff" }}>
+                      3.8 m/s
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>总风量</Typography.Text>
-                    <Typography.Text strong style={{ color: '#52c41a' }}>9250 m³/s</Typography.Text>
+                    <Typography.Text strong style={{ color: "#52c41a" }}>
+                      9250 m³/s
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>负压值</Typography.Text>
-                    <Typography.Text strong style={{ color: '#faad14' }}>2086 Pa</Typography.Text>
+                    <Typography.Text strong style={{ color: "#faad14" }}>
+                      2086 Pa
+                    </Typography.Text>
                   </div>
                   <Progress percent={92} size="small" showInfo={false} />
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
@@ -643,33 +1342,71 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 className="page-card"
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <span>气体实时监测</span>
                   </div>
                 }
                 style={{
-                  cursor: 'pointer',
-                  border: activeNavTab === 'gas' ? '2px solid #1890ff' : undefined,
-                  background: activeNavTab === 'gas' ? 'rgba(24, 144, 255, 0.05)' : undefined,
+                  cursor: "pointer",
+                  border:
+                    activeNavTab === "gas" ? "2px solid #1890ff" : undefined,
+                  background:
+                    activeNavTab === "gas"
+                      ? "rgba(24, 144, 255, 0.05)"
+                      : undefined,
                 }}
-                onClick={() => setActiveNavTab('gas')}
+                onClick={() => setActiveNavTab("gas")}
               >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>瓦斯浓度</Typography.Text>
-                    <Typography.Text strong style={{ color: '#52c41a' }}>0.42%</Typography.Text>
+                    <Typography.Text strong style={{ color: "#52c41a" }}>
+                      0.42%
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>二氧化碳</Typography.Text>
-                    <Typography.Text strong style={{ color: '#1890ff' }}>0.18%</Typography.Text>
+                    <Typography.Text strong style={{ color: "#1890ff" }}>
+                      0.18%
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>一氧化碳</Typography.Text>
-                    <Typography.Text strong style={{ color: '#52c41a' }}>0.00%</Typography.Text>
+                    <Typography.Text strong style={{ color: "#52c41a" }}>
+                      0.00%
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>温度</Typography.Text>
-                    <Typography.Text strong style={{ color: '#faad14' }}>24.5°C</Typography.Text>
+                    <Typography.Text strong style={{ color: "#faad14" }}>
+                      24.5°C
+                    </Typography.Text>
                   </div>
                   <Tag color="green">安全</Tag>
                 </Space>
@@ -680,33 +1417,73 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 className="page-card"
                 size="small"
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <span>人员实时监测</span>
                   </div>
                 }
                 style={{
-                  cursor: 'pointer',
-                  border: activeNavTab === 'personnel' ? '2px solid #1890ff' : undefined,
-                  background: activeNavTab === 'personnel' ? 'rgba(24, 144, 255, 0.05)' : undefined,
+                  cursor: "pointer",
+                  border:
+                    activeNavTab === "personnel"
+                      ? "2px solid #1890ff"
+                      : undefined,
+                  background:
+                    activeNavTab === "personnel"
+                      ? "rgba(24, 144, 255, 0.05)"
+                      : undefined,
                 }}
-                onClick={() => setActiveNavTab('personnel')}
+                onClick={() => setActiveNavTab("personnel")}
               >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>井下人数</Typography.Text>
-                    <Typography.Text strong style={{ color: '#1890ff' }}>24 人</Typography.Text>
+                    <Typography.Text strong style={{ color: "#1890ff" }}>
+                      24 人
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>在线设备</Typography.Text>
-                    <Typography.Text strong style={{ color: '#52c41a' }}>23 个</Typography.Text>
+                    <Typography.Text strong style={{ color: "#52c41a" }}>
+                      23 个
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>离线设备</Typography.Text>
-                    <Typography.Text strong style={{ color: '#ff7875' }}>1 个</Typography.Text>
+                    <Typography.Text strong style={{ color: "#ff7875" }}>
+                      1 个
+                    </Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography.Text>异常告警</Typography.Text>
-                    <Typography.Text strong style={{ color: '#faad14' }}>0 条</Typography.Text>
+                    <Typography.Text strong style={{ color: "#faad14" }}>
+                      0 条
+                    </Typography.Text>
                   </div>
                   <Tag color="blue">正常</Tag>
                 </Space>
@@ -716,43 +1493,82 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
 
           {/* 主要内容区域 */}
           <Col xs={24} lg={19}>
-            {activeNavTab === 'airflow' && (
+            {activeNavTab === "airflow" && (
               <Row gutter={[12, 12]}>
                 <Col xs={24} lg={12}>
-                  <ChartPanel title="风流实时趋势" option={buildLineOption(dataset.lineLabels, dataset.lineSeries, '风量')} />
+                  <ChartPanel
+                    title="风流实时趋势"
+                    option={buildLineOption(
+                      dataset.lineLabels,
+                      dataset.lineSeries,
+                      "风量",
+                    )}
+                  />
                 </Col>
                 <Col xs={24} lg={12}>
-                  <ChartPanel title="各区域风速分布" option={buildBarOption(dataset.barCategories, dataset.barSeries, '风速')} />
+                  <ChartPanel
+                    title="各区域风速分布"
+                    option={buildBarOption(
+                      dataset.barCategories,
+                      dataset.barSeries,
+                      "风速",
+                    )}
+                  />
                 </Col>
                 <Col xs={24}>
-                  <Card className="page-card" size="small" title="风流监测点详情">
-                    <IndustrialTable rows={dataset.tableRows} title="风流监测数据" />
+                  <Card
+                    className="page-card"
+                    size="small"
+                    title="风流监测点详情"
+                  >
+                    <IndustrialTable
+                      rows={dataset.tableRows}
+                      title="风流监测数据"
+                    />
                   </Card>
                 </Col>
               </Row>
             )}
 
-            {activeNavTab === 'gas' && (
+            {activeNavTab === "gas" && (
               <Row gutter={[12, 12]}>
                 <Col xs={24} lg={12}>
-                  <ChartPanel title="瓦斯浓度趋势" option={buildLineOption(dataset.lineLabels, dataset.lineSeries, '瓦斯浓度')} />
+                  <ChartPanel
+                    title="瓦斯浓度趋势"
+                    option={buildLineOption(
+                      dataset.lineLabels,
+                      dataset.lineSeries,
+                      "瓦斯浓度",
+                    )}
+                  />
                 </Col>
                 <Col xs={24} lg={12}>
-                  <ChartPanel title="气体成分占比" option={buildPieOption(dataset.pieSeries)} height={260} />
+                  <ChartPanel
+                    title="气体成分占比"
+                    option={buildPieOption(dataset.pieSeries)}
+                    height={260}
+                  />
                 </Col>
                 <Col xs={24}>
-                  <Card className="page-card" size="small" title="气体监测点详情">
-                    <IndustrialTable rows={dataset.tableRows} title="气体监测数据" />
+                  <Card
+                    className="page-card"
+                    size="small"
+                    title="气体监测点详情"
+                  >
+                    <IndustrialTable
+                      rows={dataset.tableRows}
+                      title="气体监测数据"
+                    />
                   </Card>
                 </Col>
               </Row>
             )}
 
-            {activeNavTab === 'personnel' && (
+            {activeNavTab === "personnel" && (
               <Row gutter={[12, 12]}>
                 <Col xs={24} lg={8}>
                   <Card className="page-card" size="small" title="人员分布统计">
-                    <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space direction="vertical" style={{ width: "100%" }}>
                       <Statistic title="总人数" value={24} suffix="人" />
                       <Statistic title="在线率" value={95.8} suffix="%" />
                       <Statistic title="异常人数" value={0} suffix="人" />
@@ -761,16 +1577,31 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 </Col>
                 <Col xs={24} lg={8}>
                   <Card className="page-card" size="small" title="设备状态">
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography.Text>在线</Typography.Text>
                         <Tag color="green">23</Tag>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography.Text>离线</Typography.Text>
                         <Tag color="red">1</Tag>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography.Text>异常</Typography.Text>
                         <Tag color="orange">0</Tag>
                       </div>
@@ -781,16 +1612,41 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                   <Card className="page-card" size="small" title="最近告警">
                     <Timeline
                       items={[
-                        { children: <Typography.Text>2026-04-02 14:22 - 人员 P-012 离线</Typography.Text> },
-                        { children: <Typography.Text>2026-04-02 13:15 - 人员 P-008 进入禁区</Typography.Text> },
-                        { children: <Typography.Text>2026-04-02 12:08 - 人员 P-015 心率异常</Typography.Text> },
+                        {
+                          children: (
+                            <Typography.Text>
+                              2026-04-02 14:22 - 人员 P-012 离线
+                            </Typography.Text>
+                          ),
+                        },
+                        {
+                          children: (
+                            <Typography.Text>
+                              2026-04-02 13:15 - 人员 P-008 进入禁区
+                            </Typography.Text>
+                          ),
+                        },
+                        {
+                          children: (
+                            <Typography.Text>
+                              2026-04-02 12:08 - 人员 P-015 心率异常
+                            </Typography.Text>
+                          ),
+                        },
                       ]}
                     />
                   </Card>
                 </Col>
                 <Col xs={24}>
-                  <Card className="page-card" size="small" title="人员位置与状态">
-                    <IndustrialTable rows={dataset.tableRows} title="人员监测数据" />
+                  <Card
+                    className="page-card"
+                    size="small"
+                    title="人员位置与状态"
+                  >
+                    <IndustrialTable
+                      rows={dataset.tableRows}
+                      title="人员监测数据"
+                    />
                   </Card>
                 </Col>
               </Row>
@@ -803,10 +1659,42 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
             <Card className="page-card" size="small" title="设备类别与工况">
               <Tabs
                 items={[
-                  { key: 'main-fan', label: '主扇', children: <Typography.Text>主扇 F1/F2 当前负压稳定，转速波动 ≤ 2.1%</Typography.Text> },
-                  { key: 'local-fan', label: '局扇', children: <Typography.Text>局扇 J3 处于运行状态，J7 处于待命状态</Typography.Text> },
-                  { key: 'door', label: '风门', children: <Typography.Text>风门 D12 执行完毕，D18 联锁待解锁</Typography.Text> },
-                  { key: 'window', label: '风窗', children: <Typography.Text>风窗 W08 开度 62%，W14 开度 48%</Typography.Text> },
+                  {
+                    key: "main-fan",
+                    label: "主扇",
+                    children: (
+                      <Typography.Text>
+                        主扇 F1/F2 当前负压稳定，转速波动 ≤ 2.1%
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: "local-fan",
+                    label: "局扇",
+                    children: (
+                      <Typography.Text>
+                        局扇 J3 处于运行状态，J7 处于待命状态
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: "door",
+                    label: "风门",
+                    children: (
+                      <Typography.Text>
+                        风门 D12 执行完毕，D18 联锁待解锁
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: "window",
+                    label: "风窗",
+                    children: (
+                      <Typography.Text>
+                        风窗 W08 开度 62%，W14 开度 48%
+                      </Typography.Text>
+                    ),
+                  },
                 ]}
               />
               <Button type="primary" onClick={() => setDrawerOpen(true)}>
@@ -818,13 +1706,23 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           {showPointMap ? (
             <Row gutter={[12, 12]}>
               <Col span={5}>
-                <Card className="page-card" size="small" title="筛选区" style={{ height: 360 }}>
+                <Card
+                  className="page-card"
+                  size="small"
+                  title="筛选区"
+                  style={{ height: 360 }}
+                >
                   <List
                     size="small"
                     dataSource={dataset.riskRanking}
                     renderItem={(item) => (
                       <List.Item>
-                        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                        <Space
+                          style={{
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
+                        >
                           <Typography.Text>{item.area}</Typography.Text>
                           <StatusTag status={item.level} />
                         </Space>
@@ -834,7 +1732,11 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 </Card>
               </Col>
               <Col span={13}>
-                <Card className="page-card" size="small" title="监测点平面分布 / 风网拓扑">
+                <Card
+                  className="page-card"
+                  size="small"
+                  title="监测点平面分布 / 风网拓扑"
+                >
                   <TopologyPlaceholder
                     title="监测点空间分布"
                     subtitle="展示测点位置、风流方向与关键告警点位"
@@ -843,10 +1745,17 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
                 </Card>
               </Col>
               <Col span={6}>
-                <Card className="page-card" size="small" title="点位详情" style={{ height: 360 }}>
+                <Card
+                  className="page-card"
+                  size="small"
+                  title="点位详情"
+                  style={{ height: 360 }}
+                >
                   <Descriptions size="small" column={1}>
                     <Descriptions.Item label="点位">S-201</Descriptions.Item>
-                    <Descriptions.Item label="区域">东翼回风巷</Descriptions.Item>
+                    <Descriptions.Item label="区域">
+                      东翼回风巷
+                    </Descriptions.Item>
                     <Descriptions.Item label="风速">3.8 m/s</Descriptions.Item>
                     <Descriptions.Item label="瓦斯">0.42 %</Descriptions.Item>
                     <Descriptions.Item label="状态">
@@ -859,13 +1768,31 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           ) : (
             <Row gutter={[12, 12]}>
               <Col xs={24} lg={10}>
-                <ChartPanel title="实时趋势" option={buildLineOption(dataset.lineLabels, dataset.lineSeries, '风量')} />
+                <ChartPanel
+                  title="实时趋势"
+                  option={buildLineOption(
+                    dataset.lineLabels,
+                    dataset.lineSeries,
+                    "风量",
+                  )}
+                />
               </Col>
               <Col xs={24} lg={8}>
-                <ChartPanel title="区域达标率" option={buildBarOption(dataset.barCategories, dataset.barSeries, '达标率')} />
+                <ChartPanel
+                  title="区域达标率"
+                  option={buildBarOption(
+                    dataset.barCategories,
+                    dataset.barSeries,
+                    "达标率",
+                  )}
+                />
               </Col>
               <Col xs={24} lg={6}>
-                <ChartPanel title="状态占比" option={buildPieOption(dataset.pieSeries)} height={260} />
+                <ChartPanel
+                  title="状态占比"
+                  option={buildPieOption(dataset.pieSeries)}
+                  height={260}
+                />
               </Col>
             </Row>
           )}
@@ -875,20 +1802,30 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
               <Col span={8}>
                 <Card className="page-card" size="small" title="在线率统计">
                   <Progress percent={96} status="active" />
-                  <Typography.Text type="secondary">离线 4 个，异常 3 个，通信时延均值 112ms</Typography.Text>
+                  <Typography.Text type="secondary">
+                    离线 4 个，异常 3 个，通信时延均值 112ms
+                  </Typography.Text>
                 </Card>
               </Col>
               <Col span={8}>
                 <Card className="page-card" size="small" title="最近异常时间">
-                  <Typography.Title level={5}>2026-04-01 14:22</Typography.Title>
-                  <Typography.Text type="secondary">传感器 S-086 通信抖动，已自动恢复</Typography.Text>
+                  <Typography.Title level={5}>
+                    2026-04-01 14:22
+                  </Typography.Title>
+                  <Typography.Text type="secondary">
+                    传感器 S-086 通信抖动，已自动恢复
+                  </Typography.Text>
                 </Card>
               </Col>
               <Col span={8}>
                 <Card className="page-card" size="small" title="维护建议">
                   <List
                     size="small"
-                    dataSource={['优先巡检东翼回风巷传感器', '复核 S-201 标定系数', '检查北二采区交换机链路']}
+                    dataSource={[
+                      "优先巡检东翼回风巷传感器",
+                      "复核 S-201 标定系数",
+                      "检查北二采区交换机链路",
+                    ]}
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                   />
                 </Card>
@@ -899,18 +1836,34 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
           <Row gutter={[12, 12]}>
             <Col xs={24} lg={16}>
               <Card className="page-card" size="small" title="明细数据表">
-                <IndustrialTable rows={dataset.tableRows} title="设备/测点状态明细" />
+                <IndustrialTable
+                  rows={dataset.tableRows}
+                  title="设备/测点状态明细"
+                />
               </Card>
             </Col>
             <Col xs={24} lg={8}>
-              <Card className="page-card" size="small" title="执行与告警时间轴" style={{ height: 360, overflowY: 'auto' }}>
+              <Card
+                className="page-card"
+                size="small"
+                title="执行与告警时间轴"
+                style={{ height: 360, overflowY: "auto" }}
+              >
                 <Timeline
                   items={dataset.logs.map((log) => ({
-                    color: log.level === 'alert' || log.level === 'critical' ? 'red' : log.level === 'warning' ? 'orange' : 'blue',
+                    color:
+                      log.level === "alert" || log.level === "critical"
+                        ? "red"
+                        : log.level === "warning"
+                          ? "orange"
+                          : "blue",
                     children: (
                       <Space direction="vertical" size={0}>
                         <Typography.Text>{log.message}</Typography.Text>
-                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        <Typography.Text
+                          type="secondary"
+                          style={{ fontSize: 12 }}
+                        >
                           {log.time} / {log.actor}
                         </Typography.Text>
                       </Space>
@@ -923,7 +1876,12 @@ export function StandardIndustrialPage({ moduleName, title, pageKey }: StandardI
         </>
       )}
 
-      <Drawer open={drawerOpen} width={420} onClose={() => setDrawerOpen(false)} title="设备详情 - 主扇 F1">
+      <Drawer
+        open={drawerOpen}
+        width={420}
+        onClose={() => setDrawerOpen(false)}
+        title="设备详情 - 主扇 F1"
+      >
         <Descriptions column={1} size="small" bordered>
           <Descriptions.Item label="设备编号">F1-001</Descriptions.Item>
           <Descriptions.Item label="设备类型">主扇</Descriptions.Item>

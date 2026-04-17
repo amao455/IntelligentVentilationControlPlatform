@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 interface HomeObjBackground3DProps {
@@ -14,6 +15,42 @@ interface HomeObjBackground3DProps {
   showRouteOverlay?: boolean;
   routeOverlayObjPath?: string;
   routeOverlayColor?: string;
+  airflowLabels?: ReadonlyArray<TunnelAirflowLabel>;
+  roadwayPointObjPath?: string;
+  roadwayPointLabels?: ReadonlyArray<RoadwayPointAirflowLabel>;
+}
+
+interface TunnelAirflowLabel {
+  id: string;
+  name: string;
+  airflow: number | string;
+  unit?: string;
+  // Normalized anchor in model bounding box: [0, 1].
+  anchor: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  // Additional Y offset in model units; when omitted, auto-lift is used.
+  lift?: number;
+  color?: string;
+  background?: string;
+  borderColor?: string;
+  leaderColor?: string;
+  markerColor?: string;
+}
+
+interface RoadwayPointAirflowLabel {
+  id: string;
+  name: string;
+  airflow: number | string;
+  pointIndex: number;
+  unit?: string;
+  color?: string;
+  background?: string;
+  borderColor?: string;
+  leaderColor?: string;
+  markerColor?: string;
 }
 
 interface TunnelNormalization {
@@ -25,6 +62,8 @@ interface TunnelNormalization {
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
+
+const LABEL_LEADER_LENGTH_PX = 20;
 
 function centerObjectAtOrigin(object: THREE.Object3D): THREE.Vector3 {
   object.updateMatrixWorld(true);
@@ -260,6 +299,83 @@ function isOverlayCloseToTunnel(
   return overlayCenter.distanceTo(tunnelCenter) <= tunnelDiag * 0.8;
 }
 
+function getLabelWorldPosition(
+  bounds: THREE.Box3,
+  anchor: TunnelAirflowLabel["anchor"],
+  lift?: number,
+) {
+  const clamped = {
+    x: clamp(anchor.x, 0, 1),
+    y: clamp(anchor.y, 0, 1),
+    z: clamp(anchor.z, 0, 1),
+  };
+  const size = bounds.getSize(new THREE.Vector3());
+  const min = bounds.min;
+  const world = new THREE.Vector3(
+    min.x + size.x * clamped.x,
+    min.y + size.y * clamped.y,
+    min.z + size.z * clamped.z,
+  );
+  world.y += lift ?? size.y * 0.035;
+  return world;
+}
+
+function collectObjectMeshCenters(object: THREE.Object3D): THREE.Vector3[] {
+  const points: Array<{ name: string; point: THREE.Vector3 }> = [];
+
+  object.updateMatrixWorld(true);
+  object.traverse((node) => {
+    if (!(node instanceof THREE.Mesh)) return;
+    const point = node.getWorldPosition(new THREE.Vector3());
+    points.push({ name: node.name ?? "", point });
+  });
+
+  // Keep deterministic ordering for pointIndex mapping.
+  points.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
+  return points.map((item) => item.point);
+}
+
+function createDefaultAirflowByPointIndex(pointIndex: number): number {
+  // Deterministic pseudo distribution between ~18 and ~33 m^3/s.
+  const value = 18 + ((pointIndex * 1.73) % 14) + (pointIndex % 3) * 0.35;
+  return Number(value.toFixed(1));
+}
+
+function buildRoadwayPointLabels(
+  pointCount: number,
+  providedLabels: ReadonlyArray<RoadwayPointAirflowLabel>,
+): RoadwayPointAirflowLabel[] {
+  const labelsByIndex = new Map<number, RoadwayPointAirflowLabel>();
+  for (const label of providedLabels) {
+    if (
+      Number.isInteger(label.pointIndex) &&
+      label.pointIndex >= 0 &&
+      label.pointIndex < pointCount &&
+      !labelsByIndex.has(label.pointIndex)
+    ) {
+      labelsByIndex.set(label.pointIndex, label);
+    }
+  }
+
+  const result: RoadwayPointAirflowLabel[] = [];
+  for (let i = 0; i < pointCount; i += 1) {
+    const provided = labelsByIndex.get(i);
+    if (provided) {
+      result.push(provided);
+      continue;
+    }
+
+    const indexText = String(i + 1).padStart(3, "0");
+    result.push({
+      id: `roadway-auto-${indexText}`,
+      name: `巷道-${indexText}`,
+      airflow: createDefaultAirflowByPointIndex(i),
+      pointIndex: i,
+    });
+  }
+  return result;
+}
+
 export function HomeObjBackground3D({
   paused = false,
   rotationSpeed = 0.06,
@@ -271,22 +387,58 @@ export function HomeObjBackground3D({
   showRouteOverlay = false,
   routeOverlayObjPath,
   routeOverlayColor = "#52c41a",
+  airflowLabels = [],
+  roadwayPointObjPath,
+  roadwayPointLabels = [],
 }: HomeObjBackground3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const labelLayerRef = useRef<HTMLDivElement | null>(null);
+  const labelElementsRef = useRef<Record<string, HTMLDivElement | null>>({});
+  const airflowLabelsRef = useRef<ReadonlyArray<TunnelAirflowLabel>>(airflowLabels);
+  const roadwayPointLabelLayerRef = useRef<HTMLDivElement | null>(null);
+  const roadwayPointLabelElementsRef = useRef<Record<string, HTMLDivElement | null>>(
+    {},
+  );
+  const roadwayPointLabelsRef = useRef<ReadonlyArray<RoadwayPointAirflowLabel>>(
+    roadwayPointLabels,
+  );
+  const resolvedRoadwayPointLabelsRef = useRef<
+    ReadonlyArray<RoadwayPointAirflowLabel>
+  >([]);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const modelRef = useRef<THREE.Group | null>(null);
+  const modelBoundsRef = useRef<THREE.Box3 | null>(null);
   const routeOverlayRef = useRef<THREE.Group | null>(null);
+  const roadwayPointOverlayRef = useRef<THREE.Object3D | null>(null);
+  const roadwayPointOverlayPathRef = useRef<string | undefined>(undefined);
+  const roadwayPointWorldPositionsRef = useRef<THREE.Vector3[]>([]);
   const tunnelNormalizationRef = useRef<TunnelNormalization | null>(null);
   const routeOverlayLoadingRef = useRef(false);
+  const roadwayPointLoadingRef = useRef(false);
   const animationIdRef = useRef<number | null>(null);
   const isInteractingRef = useRef(false);
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [resolvedRoadwayPointLabels, setResolvedRoadwayPointLabels] = useState<
+    ReadonlyArray<RoadwayPointAirflowLabel>
+  >([]);
+
+  useEffect(() => {
+    airflowLabelsRef.current = airflowLabels;
+  }, [airflowLabels]);
+
+  useEffect(() => {
+    roadwayPointLabelsRef.current = roadwayPointLabels;
+  }, [roadwayPointLabels]);
+
+  useEffect(() => {
+    resolvedRoadwayPointLabelsRef.current = resolvedRoadwayPointLabels;
+  }, [resolvedRoadwayPointLabels]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -394,6 +546,7 @@ export function HomeObjBackground3D({
 
         const centerOffset = centerObjectAtOrigin(object);
         scene.add(object);
+        modelBoundsRef.current = new THREE.Box3().setFromObject(object).clone();
         fitCameraToObject(object, camera, controls, viewScale, viewAzimuthDeg);
 
         tunnelNormalizationRef.current = {
@@ -414,6 +567,92 @@ export function HomeObjBackground3D({
       },
     );
 
+    const updateAirflowLabelPositions = () => {
+      const bounds = modelBoundsRef.current;
+      const layer = labelLayerRef.current;
+      const labels = airflowLabelsRef.current;
+      if (!bounds || !layer || labels.length === 0) {
+        return;
+      }
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      for (const item of labels) {
+        const el = labelElementsRef.current[item.id];
+        if (!el) continue;
+
+        const world = getLabelWorldPosition(bounds, item.anchor, item.lift);
+        const projected = world.clone().project(camera);
+        const visible =
+          projected.z >= -1 &&
+          projected.z <= 1 &&
+          projected.x >= -1.05 &&
+          projected.x <= 1.05 &&
+          projected.y >= -1.05 &&
+          projected.y <= 1.05;
+
+        if (!visible) {
+          el.style.opacity = "0";
+          el.style.transform = `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(0.92)`;
+          continue;
+        }
+
+        const x = (projected.x * 0.5 + 0.5) * width;
+        const y = (-projected.y * 0.5 + 0.5) * height;
+
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        el.style.opacity = "1";
+        el.style.transform = `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(1)`;
+      }
+    };
+
+    const updateRoadwayPointLabelPositions = () => {
+      const labels = resolvedRoadwayPointLabelsRef.current;
+      const points = roadwayPointWorldPositionsRef.current;
+      const layer = roadwayPointLabelLayerRef.current;
+      if (!layer || labels.length === 0 || points.length === 0) {
+        return;
+      }
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      for (const item of labels) {
+        const el = roadwayPointLabelElementsRef.current[item.id];
+        if (!el) continue;
+        const point = points[item.pointIndex];
+        if (!point) {
+          el.style.opacity = "0";
+          continue;
+        }
+
+        const projected = point.clone().project(camera);
+        const visible =
+          projected.z >= -1 &&
+          projected.z <= 1 &&
+          projected.x >= -1.05 &&
+          projected.x <= 1.05 &&
+          projected.y >= -1.05 &&
+          projected.y <= 1.05;
+
+        if (!visible) {
+          el.style.opacity = "0";
+          el.style.transform = `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(0.92)`;
+          continue;
+        }
+
+        const x = (projected.x * 0.5 + 0.5) * width;
+        const y = (-projected.y * 0.5 + 0.5) * height;
+
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        el.style.opacity = "1";
+        el.style.transform = `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(1)`;
+      }
+    };
+
     const animate = () => {
       controls.update();
       if (
@@ -427,6 +666,8 @@ export function HomeObjBackground3D({
           routeOverlayRef.current.rotation.y = modelRef.current.rotation.y;
         }
       }
+      updateAirflowLabelPositions();
+      updateRoadwayPointLabelPositions();
       renderer.render(scene, camera);
       animationIdRef.current = requestAnimationFrame(animate);
     };
@@ -463,9 +704,14 @@ export function HomeObjBackground3D({
 
       disposeObject(scene);
       modelRef.current = null;
+      modelBoundsRef.current = null;
       routeOverlayRef.current = null;
+      roadwayPointOverlayRef.current = null;
+      roadwayPointOverlayPathRef.current = undefined;
+      roadwayPointWorldPositionsRef.current = [];
       tunnelNormalizationRef.current = null;
       routeOverlayLoadingRef.current = false;
+      roadwayPointLoadingRef.current = false;
     };
   }, [
     paused,
@@ -546,6 +792,105 @@ export function HomeObjBackground3D({
     };
   }, [modelLoaded, routeOverlayObjPath, routeOverlayColor, showRouteOverlay]);
 
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    const shouldLoad =
+      modelLoaded &&
+      !!roadwayPointObjPath &&
+      !!modelRef.current;
+
+    if (!shouldLoad) {
+      if (roadwayPointOverlayRef.current) {
+        roadwayPointOverlayRef.current.visible = false;
+      }
+      roadwayPointWorldPositionsRef.current = [];
+      setResolvedRoadwayPointLabels([]);
+      return;
+    }
+
+    if (
+      roadwayPointOverlayRef.current &&
+      roadwayPointOverlayPathRef.current === roadwayPointObjPath
+    ) {
+      roadwayPointOverlayRef.current.visible = false;
+      if (roadwayPointWorldPositionsRef.current.length === 0) {
+        roadwayPointWorldPositionsRef.current = collectObjectMeshCenters(
+          roadwayPointOverlayRef.current,
+        );
+      }
+      setResolvedRoadwayPointLabels(
+        buildRoadwayPointLabels(
+          roadwayPointWorldPositionsRef.current.length,
+          roadwayPointLabelsRef.current,
+        ),
+      );
+      return;
+    }
+
+    if (roadwayPointOverlayRef.current) {
+      scene.remove(roadwayPointOverlayRef.current);
+      disposeObject(roadwayPointOverlayRef.current);
+      roadwayPointOverlayRef.current = null;
+      roadwayPointOverlayPathRef.current = undefined;
+      roadwayPointWorldPositionsRef.current = [];
+      setResolvedRoadwayPointLabels([]);
+    }
+
+    if (roadwayPointLoadingRef.current) return;
+    roadwayPointLoadingRef.current = true;
+
+    let cancelled = false;
+    const loader = new FBXLoader();
+    loader.load(
+      roadwayPointObjPath!,
+      (pointObject) => {
+        if (cancelled || !sceneRef.current || !modelRef.current) {
+          disposeObject(pointObject);
+          roadwayPointLoadingRef.current = false;
+          return;
+        }
+
+        const normalization = tunnelNormalizationRef.current;
+        if (normalization) {
+          applyTunnelNormalizationToOverlay(pointObject, normalization);
+        }
+        if (!isOverlayCloseToTunnel(pointObject, modelRef.current)) {
+          alignOverlayToTunnel(pointObject, modelRef.current);
+        }
+
+        pointObject.traverse((node) => {
+          if (node instanceof THREE.Mesh) {
+            node.visible = false;
+          }
+        });
+        pointObject.visible = false;
+        pointObject.name = "roadway-point-overlay";
+
+        sceneRef.current.add(pointObject);
+        roadwayPointOverlayRef.current = pointObject;
+        roadwayPointOverlayPathRef.current = roadwayPointObjPath;
+        roadwayPointWorldPositionsRef.current = collectObjectMeshCenters(pointObject);
+        setResolvedRoadwayPointLabels(
+          buildRoadwayPointLabels(
+            roadwayPointWorldPositionsRef.current.length,
+            roadwayPointLabelsRef.current,
+          ),
+        );
+        roadwayPointLoadingRef.current = false;
+      },
+      undefined,
+      () => {
+        roadwayPointLoadingRef.current = false;
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [modelLoaded, roadwayPointLabels, roadwayPointObjPath]);
+
   return (
     <>
       <div
@@ -570,6 +915,198 @@ export function HomeObjBackground3D({
           }
         }}
       />
+
+      {airflowLabels.length > 0 && (
+        <div
+          ref={labelLayerRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          {airflowLabels.map((item) => {
+            const airflowText =
+              typeof item.airflow === "number"
+                ? item.airflow.toFixed(1)
+                : item.airflow;
+            return (
+              <div
+                key={item.id}
+                ref={(node) => {
+                  labelElementsRef.current[item.id] = node;
+                }}
+                style={{
+                  position: "absolute",
+                  left: "-9999px",
+                  top: "-9999px",
+                  transform: `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(0.92)`,
+                  opacity: 0,
+                  transition: "opacity 180ms ease, transform 180ms ease",
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: `1px solid ${item.borderColor ?? "rgba(129, 186, 246, 0.72)"}`,
+                  background:
+                    item.background ??
+                    "linear-gradient(180deg, rgba(11, 36, 64, 0.9) 0%, rgba(20, 57, 94, 0.82) 100%)",
+                  boxShadow:
+                    "0 6px 16px rgba(7, 21, 38, 0.36), inset 0 1px 0 rgba(176, 220, 255, 0.18)",
+                  backdropFilter: "blur(2px)",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1.2,
+                }}
+              >
+                <div
+                  style={{
+                    color: item.color ?? "#cfe9ff",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    marginBottom: 2,
+                  }}
+                >
+                  {item.name}
+                </div>
+                <div
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  {airflowText} {item.unit ?? "m³/s"}
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: "100%",
+                    width: 2,
+                    height: LABEL_LEADER_LENGTH_PX,
+                    transform: "translateX(-50%)",
+                    background:
+                      item.leaderColor ??
+                      "linear-gradient(180deg, rgba(124, 196, 255, 0.88) 0%, rgba(95, 170, 242, 0.9) 100%)",
+                    boxShadow: "0 0 10px rgba(118, 188, 255, 0.75)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: `calc(100% + ${LABEL_LEADER_LENGTH_PX}px)`,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    transform: "translate(-50%, -50%)",
+                    background: item.markerColor ?? "#8ed0ff",
+                    border: "1px solid rgba(186, 229, 255, 0.95)",
+                    boxShadow:
+                      "0 0 0 2px rgba(86, 153, 219, 0.28), 0 0 12px rgba(143, 212, 255, 0.85)",
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {resolvedRoadwayPointLabels.length > 0 && (
+        <div
+          ref={roadwayPointLabelLayerRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 3,
+          }}
+        >
+          {resolvedRoadwayPointLabels.map((item) => {
+            const airflowText =
+              typeof item.airflow === "number"
+                ? item.airflow.toFixed(1)
+                : item.airflow;
+            return (
+              <div
+                key={item.id}
+                ref={(node) => {
+                  roadwayPointLabelElementsRef.current[item.id] = node;
+                }}
+                style={{
+                  position: "absolute",
+                  left: "-9999px",
+                  top: "-9999px",
+                  transform: `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(0.92)`,
+                  opacity: 0,
+                  transition: "opacity 180ms ease, transform 180ms ease",
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: `1px solid ${item.borderColor ?? "rgba(129, 186, 246, 0.72)"}`,
+                  background:
+                    item.background ??
+                    "linear-gradient(180deg, rgba(11, 36, 64, 0.9) 0%, rgba(20, 57, 94, 0.82) 100%)",
+                  boxShadow:
+                    "0 6px 16px rgba(7, 21, 38, 0.36), inset 0 1px 0 rgba(176, 220, 255, 0.18)",
+                  backdropFilter: "blur(2px)",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1.2,
+                }}
+              >
+                <div
+                  style={{
+                    color: item.color ?? "#cfe9ff",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    marginBottom: 2,
+                  }}
+                >
+                  {item.name}
+                </div>
+                <div
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  {airflowText} {item.unit ?? "m³/s"}
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: "100%",
+                    width: 2,
+                    height: LABEL_LEADER_LENGTH_PX,
+                    transform: "translateX(-50%)",
+                    background:
+                      item.leaderColor ??
+                      "linear-gradient(180deg, rgba(124, 196, 255, 0.88) 0%, rgba(95, 170, 242, 0.9) 100%)",
+                    boxShadow: "0 0 10px rgba(118, 188, 255, 0.75)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: `calc(100% + ${LABEL_LEADER_LENGTH_PX}px)`,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    transform: "translate(-50%, -50%)",
+                    background: item.markerColor ?? "#8ed0ff",
+                    border: "1px solid rgba(186, 229, 255, 0.95)",
+                    boxShadow:
+                      "0 0 0 2px rgba(86, 153, 219, 0.28), 0 0 12px rgba(143, 212, 255, 0.85)",
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {!modelLoaded && !loadingError && (
         <div
