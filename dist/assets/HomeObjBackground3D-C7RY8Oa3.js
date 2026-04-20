@@ -1,4 +1,4 @@
-import{r as $e,j as vt}from"./index-BYW22Lo1.js";/**
+import{r as $e,j as vt}from"./index-CTi6EgXs.js";/**
  * @license
  * Copyright 2010-2026 Three.js Authors
  * SPDX-License-Identifier: MIT
