@@ -17,7 +17,14 @@ interface HomeObjBackground3DProps {
   routeOverlayColor?: string;
   airflowLabels?: ReadonlyArray<TunnelAirflowLabel>;
   roadwayPointObjPath?: string;
+  roadwayPointSerialReferenceObjPath?: string;
+  roadwayPointOverlayVisible?: boolean;
   roadwayPointLabels?: ReadonlyArray<RoadwayPointAirflowLabel>;
+  autoFillRoadwayPointLabels?: boolean;
+  roadwayPointSerialNameMap?: Readonly<Record<string, number>>;
+  roadwayPointShowSerial?: boolean;
+  roadwaySerialHighlightObjPath?: string;
+  roadwaySerialHighlightVisible?: boolean;
 }
 
 interface TunnelAirflowLabel {
@@ -43,8 +50,9 @@ interface TunnelAirflowLabel {
 interface RoadwayPointAirflowLabel {
   id: string;
   name: string;
-  airflow: number | string;
+  airflow?: number | string;
   pointIndex: number;
+  serialNo?: number;
   unit?: string;
   color?: string;
   background?: string;
@@ -182,7 +190,10 @@ function createConcreteTextureSet() {
   return { map, normalMap, roughnessMap };
 }
 
-function applyTunnelMaterial(object: THREE.Object3D, opacity: number) {
+function applyTunnelMaterial(
+  object: THREE.Object3D,
+  opacity: number,
+) {
   const textures = createConcreteTextureSet();
   const base = new THREE.MeshStandardMaterial({
     map: textures.map,
@@ -238,6 +249,28 @@ function applyRouteMaterial(object: THREE.Object3D, colorValue: string) {
   });
 }
 
+function applyRoadwaySerialOverlayStyle(object: THREE.Object3D) {
+  const serialMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffd24d,
+    emissive: 0xff9f1a,
+    emissiveIntensity: 1.45,
+    roughness: 0.18,
+    metalness: 0.05,
+    transparent: true,
+    opacity: 1,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    depthTest: false,
+    toneMapped: false,
+  });
+
+  object.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    child.material = serialMaterial.clone();
+    child.renderOrder = 65;
+  });
+}
+
 function alignOverlayToTunnel(
   overlayObject: THREE.Object3D,
   tunnelObject: THREE.Object3D,
@@ -277,6 +310,33 @@ function applyTunnelNormalizationToOverlay(
   overlayObject.scale.setScalar(normalization.uniformScale);
   overlayObject.position.sub(normalization.centerOffset);
   overlayObject.updateMatrixWorld(true);
+}
+
+function normalizeAndAlignOverlayToTunnel(
+  overlayObject: THREE.Object3D,
+  tunnelObject: THREE.Object3D,
+  normalization: TunnelNormalization | null,
+) {
+  if (normalization) {
+    applyTunnelNormalizationToOverlay(overlayObject, normalization);
+  }
+  if (!isOverlayCloseToTunnel(overlayObject, tunnelObject)) {
+    alignOverlayToTunnel(overlayObject, tunnelObject);
+  }
+}
+
+function normalizeAndAlignRoadwayOverlayToTunnel(
+  overlayObject: THREE.Object3D,
+  tunnelObject: THREE.Object3D,
+  normalization: TunnelNormalization | null,
+) {
+  if (normalization) {
+    applyTunnelNormalizationToOverlay(overlayObject, normalization);
+  }
+
+  if (!isOverlayCloseToTunnel(overlayObject, tunnelObject)) {
+    alignOverlayToTunnel(overlayObject, tunnelObject);
+  }
 }
 
 function isOverlayCloseToTunnel(
@@ -320,19 +380,286 @@ function getLabelWorldPosition(
   return world;
 }
 
-function collectObjectMeshCenters(object: THREE.Object3D): THREE.Vector3[] {
-  const points: Array<{ name: string; point: THREE.Vector3 }> = [];
+interface RoadwayPointCollection {
+  points: THREE.Vector3[];
+  indexBySerial: Map<number, number>;
+  indexByNormalizedSerial: Map<number, number>;
+}
+
+function collectObjectMeshCenters(
+  object: THREE.Object3D,
+  serialNameMap?: Readonly<Record<string, number>>,
+): RoadwayPointCollection {
+  const meshPoints: Array<{ name: string; point: THREE.Vector3; serial: number | null }> = [];
+  const serialMeshBoxes = new Map<number, { name: string; box: THREE.Box3 }>();
+  const serialObjectAnchors = new Map<number, { name: string; point: THREE.Vector3 }>();
+  const serialByName = new Map<string, number>();
+  if (serialNameMap) {
+    Object.entries(serialNameMap).forEach(([name, serial]) => {
+      if (!Number.isFinite(serial)) return;
+      const normalizedName = name.trim().toLowerCase();
+      serialByName.set(normalizedName, Math.trunc(serial));
+      serialByName.set(normalizedName.replace(/[\s_-]+/g, ""), Math.trunc(serial));
+    });
+  }
+  const hasExplicitMapping = serialByName.size > 0;
+  const parseSerialFromName = (value: string): number | null => {
+    if (hasExplicitMapping) {
+      const normalizedName = value.trim().toLowerCase();
+      const directMapped = serialByName.get(normalizedName);
+      if (directMapped != null) {
+        return directMapped;
+      }
+      const compactMapped = serialByName.get(normalizedName.replace(/[\s_-]+/g, ""));
+      if (compactMapped != null) {
+        return compactMapped;
+      }
+      const textToken = value.match(/text\s*0*\d{1,4}/i)?.[0];
+      if (textToken) {
+        const tokenKey = textToken.replace(/\s+/g, "").toLowerCase();
+        const tokenMapped = serialByName.get(tokenKey);
+        if (tokenMapped != null) {
+          return tokenMapped;
+        }
+      }
+      const textNumberMatched = value.match(/text[^0-9]*0*(\d{1,4})/i);
+      if (textNumberMatched) {
+        const serialDigits = Number.parseInt(textNumberMatched[1], 10);
+        if (Number.isFinite(serialDigits)) {
+          const zeroPaddedKey = `text${String(serialDigits).padStart(3, "0")}`;
+          const paddedMapped = serialByName.get(zeroPaddedKey);
+          if (paddedMapped != null) {
+            return paddedMapped;
+          }
+        }
+      }
+      return null;
+    }
+
+    const textSerialMatched = value.match(/(?:text|序号|编号)\s*0*(\d{1,4})/i);
+    if (!textSerialMatched) return null;
+    const parsed = Number.parseInt(textSerialMatched[1], 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
 
   object.updateMatrixWorld(true);
   object.traverse((node) => {
-    if (!(node instanceof THREE.Mesh)) return;
-    const point = node.getWorldPosition(new THREE.Vector3());
-    points.push({ name: node.name ?? "", point });
+    const lineage: Array<{
+      node: THREE.Object3D;
+      name: string;
+      serial: number | null;
+    }> = [];
+    let cursor: THREE.Object3D | null = node;
+    for (let depth = 0; cursor && depth < 6; depth += 1) {
+      if (cursor.name) {
+        lineage.push({
+          node: cursor,
+          name: cursor.name,
+          serial: parseSerialFromName(cursor.name),
+        });
+      }
+      cursor = cursor.parent;
+    }
+    const serial = lineage.find((item) => item.serial != null)?.serial ?? null;
+    const name = lineage[0]?.name ?? node.name ?? "";
+    const matchedSerialCarrier = serial != null
+      ? lineage.find((item) => item.serial === serial)?.node ?? null
+      : null;
+    const serialAnchorPoint =
+      hasExplicitMapping && matchedSerialCarrier
+        ? matchedSerialCarrier.getWorldPosition(new THREE.Vector3())
+        : null;
+
+    if (node instanceof THREE.Mesh) {
+      const meshBox = new THREE.Box3().setFromObject(node);
+      const fallbackPoint = !meshBox.isEmpty()
+        ? meshBox.getCenter(new THREE.Vector3())
+        : node.getWorldPosition(new THREE.Vector3());
+      const point = serialAnchorPoint ?? fallbackPoint;
+      meshPoints.push({ name, point, serial });
+
+      if (serial != null && serial > 0 && serialAnchorPoint) {
+        if (!serialObjectAnchors.has(serial)) {
+          serialObjectAnchors.set(serial, {
+            name,
+            point: serialAnchorPoint.clone(),
+          });
+        }
+      }
+
+      if (serial != null && serial > 0 && !meshBox.isEmpty()) {
+        const existing = serialMeshBoxes.get(serial);
+        if (existing) {
+          existing.box.union(meshBox);
+        } else {
+          serialMeshBoxes.set(serial, { name, box: meshBox.clone() });
+        }
+      }
+    }
   });
 
-  // Keep deterministic ordering for pointIndex mapping.
-  points.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
-  return points.map((item) => item.point);
+  const deduplicatedNamed: Array<{ name: string; point: THREE.Vector3; serial: number | null }> =
+    [];
+  const positionKeyIndexMap = new Map<string, number>();
+  for (const item of meshPoints) {
+    const key = `${item.point.x.toFixed(3)}|${item.point.y.toFixed(3)}|${item.point.z.toFixed(3)}`;
+    const existingIndex = positionKeyIndexMap.get(key);
+    if (existingIndex != null) {
+      const existing = deduplicatedNamed[existingIndex];
+      if (existing.serial == null && item.serial != null) {
+        existing.serial = item.serial;
+      }
+      if (!existing.name && item.name) {
+        existing.name = item.name;
+      }
+      continue;
+    }
+    positionKeyIndexMap.set(key, deduplicatedNamed.length);
+    deduplicatedNamed.push({
+      name: item.name,
+      point: item.point,
+      serial: item.serial,
+    });
+  }
+
+  const namedPointMap = new Map<number, { name: string; point: THREE.Vector3 }>();
+  for (const [serial, item] of serialObjectAnchors.entries()) {
+    namedPointMap.set(serial, {
+      name: item.name,
+      point: item.point.clone(),
+    });
+  }
+  for (const [serial, item] of serialMeshBoxes.entries()) {
+    if (!namedPointMap.has(serial)) {
+      namedPointMap.set(serial, {
+        name: item.name,
+        point: item.box.getCenter(new THREE.Vector3()),
+      });
+    }
+  }
+  for (const item of deduplicatedNamed) {
+    if (item.serial != null && item.serial > 0 && !namedPointMap.has(item.serial)) {
+      namedPointMap.set(item.serial, { name: item.name, point: item.point });
+    }
+  }
+
+  const namedPoints = Array.from(namedPointMap.entries())
+    .map(([serial, item]) => ({ name: item.name, point: item.point, serial }))
+    .sort(
+      (a, b) =>
+        a.serial - b.serial ||
+        a.name.localeCompare(b.name, "zh-CN", { numeric: true, sensitivity: "base" }),
+    );
+
+  const unnamedPoints = deduplicatedNamed
+    .filter((item) => item.serial == null || item.serial <= 0)
+    .sort((a, b) =>
+      a.name.localeCompare(b.name, "zh-CN", { numeric: true, sensitivity: "base" }),
+    );
+
+  const expectedMappedSerialCount = hasExplicitMapping
+    ? new Set(serialByName.values()).size
+    : 0;
+  const mappedCoverage =
+    expectedMappedSerialCount > 0
+      ? namedPoints.length / expectedMappedSerialCount
+      : 1;
+  const preferMappedOnly =
+    hasExplicitMapping &&
+    namedPoints.length > 0 &&
+    mappedCoverage >= 0.75;
+  const ordered = preferMappedOnly
+    ? namedPoints
+    : [...namedPoints, ...unnamedPoints];
+  const orderedPoints: THREE.Vector3[] = [];
+  const indexBySerial = new Map<number, number>();
+  for (const item of ordered) {
+    const nextIndex = orderedPoints.length;
+    orderedPoints.push(item.point);
+    if (item.serial != null && item.serial > 0 && !indexBySerial.has(item.serial)) {
+      indexBySerial.set(item.serial, nextIndex);
+    }
+  }
+
+  const sortedSerials = Array.from(indexBySerial.keys()).sort((a, b) => a - b);
+  const indexByNormalizedSerial = new Map<number, number>();
+  sortedSerials.forEach((serial, index) => {
+    const mappedIndex = indexBySerial.get(serial);
+    if (mappedIndex != null) {
+      indexByNormalizedSerial.set(index + 1, mappedIndex);
+    }
+  });
+
+  return {
+    points: orderedPoints,
+    indexBySerial,
+    indexByNormalizedSerial,
+  };
+}
+
+function collectNormalizedSerialReferencePoints(object: THREE.Object3D): Array<{
+  serialNo: number;
+  point: THREE.Vector3;
+}> {
+  const collection = collectObjectMeshCenters(object);
+  const sortedRawSerials = Array.from(collection.indexBySerial.keys()).sort((a, b) => a - b);
+  return sortedRawSerials
+    .map((rawSerial, index) => {
+      const mappedIndex = collection.indexBySerial.get(rawSerial);
+      if (mappedIndex == null) return null;
+      const point = collection.points[mappedIndex];
+      if (!point) return null;
+      return {
+        serialNo: index + 1,
+        point: point.clone(),
+      };
+    })
+    .filter((item): item is { serialNo: number; point: THREE.Vector3 } => item != null);
+}
+
+function buildNearestSerialAssignmentByPointIndex(
+  anchorPoints: ReadonlyArray<THREE.Vector3>,
+  serialReferencePoints: ReadonlyArray<{ serialNo: number; point: THREE.Vector3 }>,
+): Map<number, number> {
+  const result = new Map<number, number>();
+  if (anchorPoints.length === 0 || serialReferencePoints.length === 0) {
+    return result;
+  }
+
+  const pairs: Array<{ pointIndex: number; serialNo: number; cost: number }> = [];
+  anchorPoints.forEach((anchorPoint, pointIndex) => {
+    serialReferencePoints.forEach((serialItem) => {
+      const dx = anchorPoint.x - serialItem.point.x;
+      const dz = anchorPoint.z - serialItem.point.z;
+      const dy = anchorPoint.y - serialItem.point.y;
+      // Serial model is vertically above sphere anchors, so prioritize XZ proximity.
+      const cost = dx * dx + dz * dz + dy * dy * 0.05;
+      pairs.push({
+        pointIndex,
+        serialNo: serialItem.serialNo,
+        cost,
+      });
+    });
+  });
+  pairs.sort((a, b) => a.cost - b.cost);
+
+  const assignedPointIndex = new Set<number>();
+  const assignedSerialNo = new Set<number>();
+  for (const pair of pairs) {
+    if (assignedPointIndex.has(pair.pointIndex) || assignedSerialNo.has(pair.serialNo)) {
+      continue;
+    }
+    result.set(pair.pointIndex, pair.serialNo);
+    assignedPointIndex.add(pair.pointIndex);
+    assignedSerialNo.add(pair.serialNo);
+    if (
+      assignedPointIndex.size >= anchorPoints.length ||
+      assignedSerialNo.size >= serialReferencePoints.length
+    ) {
+      break;
+    }
+  }
+  return result;
 }
 
 function createDefaultAirflowByPointIndex(pointIndex: number): number {
@@ -344,17 +671,31 @@ function createDefaultAirflowByPointIndex(pointIndex: number): number {
 function buildRoadwayPointLabels(
   pointCount: number,
   providedLabels: ReadonlyArray<RoadwayPointAirflowLabel>,
+  autoFillMissing = true,
 ): RoadwayPointAirflowLabel[] {
   const labelsByIndex = new Map<number, RoadwayPointAirflowLabel>();
+  const labelsWithSerialOnly: RoadwayPointAirflowLabel[] = [];
   for (const label of providedLabels) {
-    if (
+    const hasValidPointIndex =
       Number.isInteger(label.pointIndex) &&
       label.pointIndex >= 0 &&
-      label.pointIndex < pointCount &&
-      !labelsByIndex.has(label.pointIndex)
-    ) {
+      label.pointIndex < pointCount;
+    const hasValidSerial = Number.isInteger(label.serialNo) && (label.serialNo ?? 0) > 0;
+    if (!hasValidPointIndex && !hasValidSerial) continue;
+    if (hasValidPointIndex && !labelsByIndex.has(label.pointIndex)) {
       labelsByIndex.set(label.pointIndex, label);
+      continue;
     }
+    if (hasValidSerial) labelsWithSerialOnly.push(label);
+  }
+
+  if (!autoFillMissing) {
+    return [...labelsByIndex.values(), ...labelsWithSerialOnly].sort((a, b) => {
+      const serialA = a.serialNo ?? Number.MAX_SAFE_INTEGER;
+      const serialB = b.serialNo ?? Number.MAX_SAFE_INTEGER;
+      if (serialA !== serialB) return serialA - serialB;
+      return a.pointIndex - b.pointIndex;
+    });
   }
 
   const result: RoadwayPointAirflowLabel[] = [];
@@ -373,6 +714,7 @@ function buildRoadwayPointLabels(
       pointIndex: i,
     });
   }
+  result.push(...labelsWithSerialOnly);
   return result;
 }
 
@@ -389,7 +731,14 @@ export function HomeObjBackground3D({
   routeOverlayColor = "#52c41a",
   airflowLabels = [],
   roadwayPointObjPath,
+  roadwayPointSerialReferenceObjPath,
+  roadwayPointOverlayVisible = false,
   roadwayPointLabels = [],
+  autoFillRoadwayPointLabels = true,
+  roadwayPointSerialNameMap,
+  roadwayPointShowSerial = true,
+  roadwaySerialHighlightObjPath,
+  roadwaySerialHighlightVisible = false,
 }: HomeObjBackground3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const labelLayerRef = useRef<HTMLDivElement | null>(null);
@@ -415,6 +764,19 @@ export function HomeObjBackground3D({
   const roadwayPointOverlayRef = useRef<THREE.Object3D | null>(null);
   const roadwayPointOverlayPathRef = useRef<string | undefined>(undefined);
   const roadwayPointWorldPositionsRef = useRef<THREE.Vector3[]>([]);
+  const roadwayPointIndexBySerialRef = useRef<Map<number, number>>(new Map());
+  const roadwayPointIndexByNormalizedSerialRef = useRef<Map<number, number>>(
+    new Map(),
+  );
+  const roadwayPointNearestSerialByIndexRef = useRef<Map<number, number>>(new Map());
+  const roadwayPointSerialReferencePathRef = useRef<string | undefined>(undefined);
+  const roadwayPointSerialReferencePointsRef = useRef<
+    Array<{ serialNo: number; point: THREE.Vector3 }>
+  >([]);
+  const roadwayPointSerialReferenceLoadingRef = useRef(false);
+  const roadwaySerialHighlightRef = useRef<THREE.Object3D | null>(null);
+  const roadwaySerialHighlightPathRef = useRef<string | undefined>(undefined);
+  const roadwaySerialHighlightLoadingRef = useRef(false);
   const tunnelNormalizationRef = useRef<TunnelNormalization | null>(null);
   const routeOverlayLoadingRef = useRef(false);
   const roadwayPointLoadingRef = useRef(false);
@@ -611,6 +973,8 @@ export function HomeObjBackground3D({
     const updateRoadwayPointLabelPositions = () => {
       const labels = resolvedRoadwayPointLabelsRef.current;
       const points = roadwayPointWorldPositionsRef.current;
+      const indexBySerial = roadwayPointIndexBySerialRef.current;
+      const indexByNormalizedSerial = roadwayPointIndexByNormalizedSerialRef.current;
       const layer = roadwayPointLabelLayerRef.current;
       if (!layer || labels.length === 0 || points.length === 0) {
         return;
@@ -622,7 +986,17 @@ export function HomeObjBackground3D({
       for (const item of labels) {
         const el = roadwayPointLabelElementsRef.current[item.id];
         if (!el) continue;
-        const point = points[item.pointIndex];
+        const hasSerial = Number.isInteger(item.serialNo) && (item.serialNo ?? 0) > 0;
+        const mappedBySerial = hasSerial
+          ? (indexBySerial.get(item.serialNo!) ??
+            indexByNormalizedSerial.get(item.serialNo!))
+          : undefined;
+        const mappedIndex = mappedBySerial ?? item.pointIndex;
+        if (mappedIndex == null) {
+          el.style.opacity = "0";
+          continue;
+        }
+        const point = points[mappedIndex];
         if (!point) {
           el.style.opacity = "0";
           continue;
@@ -709,6 +1083,15 @@ export function HomeObjBackground3D({
       roadwayPointOverlayRef.current = null;
       roadwayPointOverlayPathRef.current = undefined;
       roadwayPointWorldPositionsRef.current = [];
+      roadwayPointIndexBySerialRef.current = new Map();
+      roadwayPointIndexByNormalizedSerialRef.current = new Map();
+      roadwayPointNearestSerialByIndexRef.current = new Map();
+      roadwayPointSerialReferencePathRef.current = undefined;
+      roadwayPointSerialReferencePointsRef.current = [];
+      roadwayPointSerialReferenceLoadingRef.current = false;
+      roadwaySerialHighlightRef.current = null;
+      roadwaySerialHighlightPathRef.current = undefined;
+      roadwaySerialHighlightLoadingRef.current = false;
       tunnelNormalizationRef.current = null;
       routeOverlayLoadingRef.current = false;
       roadwayPointLoadingRef.current = false;
@@ -762,13 +1145,11 @@ export function HomeObjBackground3D({
         }
 
         applyRouteMaterial(overlayObject, routeOverlayColor);
-        const normalization = tunnelNormalizationRef.current;
-        if (normalization) {
-          applyTunnelNormalizationToOverlay(overlayObject, normalization);
-        }
-        if (!isOverlayCloseToTunnel(overlayObject, modelRef.current)) {
-          alignOverlayToTunnel(overlayObject, modelRef.current);
-        }
+        normalizeAndAlignOverlayToTunnel(
+          overlayObject,
+          modelRef.current,
+          tunnelNormalizationRef.current,
+        );
 
         overlayObject.visible = true;
         overlayObject.name = "gas-escape-route-overlay";
@@ -796,6 +1177,110 @@ export function HomeObjBackground3D({
     const scene = sceneRef.current;
     if (!scene) return;
 
+    const shouldPrepare =
+      modelLoaded && !!roadwaySerialHighlightObjPath && !!modelRef.current;
+    const hasVisibleRequest = shouldPrepare && roadwaySerialHighlightVisible;
+
+    if (
+      roadwaySerialHighlightRef.current &&
+      roadwaySerialHighlightPathRef.current === roadwaySerialHighlightObjPath
+    ) {
+      roadwaySerialHighlightRef.current.visible = !!hasVisibleRequest;
+      return;
+    }
+
+    if (roadwaySerialHighlightRef.current) {
+      scene.remove(roadwaySerialHighlightRef.current);
+      disposeObject(roadwaySerialHighlightRef.current);
+      roadwaySerialHighlightRef.current = null;
+      roadwaySerialHighlightPathRef.current = undefined;
+    }
+
+    if (!hasVisibleRequest || roadwaySerialHighlightLoadingRef.current) {
+      return;
+    }
+
+    roadwaySerialHighlightLoadingRef.current = true;
+    let cancelled = false;
+    const loader = new FBXLoader();
+    loader.load(
+      roadwaySerialHighlightObjPath!,
+      (serialObject) => {
+        if (cancelled || !sceneRef.current || !modelRef.current) {
+          disposeObject(serialObject);
+          roadwaySerialHighlightLoadingRef.current = false;
+          return;
+        }
+
+        normalizeAndAlignRoadwayOverlayToTunnel(
+          serialObject,
+          modelRef.current,
+          tunnelNormalizationRef.current,
+        );
+
+        applyRoadwaySerialOverlayStyle(serialObject);
+        serialObject.visible = true;
+        serialObject.name = "roadway-serial-highlight-overlay";
+
+        sceneRef.current.add(serialObject);
+        roadwaySerialHighlightRef.current = serialObject;
+        roadwaySerialHighlightPathRef.current = roadwaySerialHighlightObjPath;
+        roadwaySerialHighlightLoadingRef.current = false;
+      },
+      undefined,
+      () => {
+        roadwaySerialHighlightLoadingRef.current = false;
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [modelLoaded, roadwaySerialHighlightObjPath, roadwaySerialHighlightVisible]);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    const refreshResolvedRoadwayPointLabels = () => {
+      const baseLabels = buildRoadwayPointLabels(
+        roadwayPointWorldPositionsRef.current.length,
+        roadwayPointLabelsRef.current,
+        autoFillRoadwayPointLabels,
+      );
+      const nearestSerialByIndex = roadwayPointNearestSerialByIndexRef.current;
+      if (nearestSerialByIndex.size === 0) {
+        setResolvedRoadwayPointLabels(baseLabels);
+        return;
+      }
+      const patchedLabels = baseLabels.map((label) => {
+        const serialNo = nearestSerialByIndex.get(label.pointIndex);
+        return serialNo != null ? { ...label, serialNo } : label;
+      });
+      setResolvedRoadwayPointLabels(patchedLabels);
+    };
+
+    const rebuildNearestSerialByCachedReference = (): boolean => {
+      if (
+        !roadwayPointSerialReferenceObjPath ||
+        roadwayPointWorldPositionsRef.current.length === 0
+      ) {
+        roadwayPointNearestSerialByIndexRef.current = new Map();
+        return true;
+      }
+      if (
+        roadwayPointSerialReferencePathRef.current !== roadwayPointSerialReferenceObjPath ||
+        roadwayPointSerialReferencePointsRef.current.length === 0
+      ) {
+        return false;
+      }
+      roadwayPointNearestSerialByIndexRef.current = buildNearestSerialAssignmentByPointIndex(
+        roadwayPointWorldPositionsRef.current,
+        roadwayPointSerialReferencePointsRef.current,
+      );
+      return true;
+    };
+
     const shouldLoad =
       modelLoaded &&
       !!roadwayPointObjPath &&
@@ -806,27 +1291,97 @@ export function HomeObjBackground3D({
         roadwayPointOverlayRef.current.visible = false;
       }
       roadwayPointWorldPositionsRef.current = [];
+      roadwayPointIndexBySerialRef.current = new Map();
+      roadwayPointIndexByNormalizedSerialRef.current = new Map();
+      roadwayPointNearestSerialByIndexRef.current = new Map();
       setResolvedRoadwayPointLabels([]);
       return;
     }
+
+    let cancelled = false;
+    const loadSerialReferenceForNearestMapping = () => {
+      if (
+        !roadwayPointSerialReferenceObjPath ||
+        roadwayPointWorldPositionsRef.current.length === 0 ||
+        !modelRef.current ||
+        roadwayPointSerialReferenceLoadingRef.current
+      ) {
+        return;
+      }
+      if (
+        roadwayPointSerialReferencePathRef.current === roadwayPointSerialReferenceObjPath &&
+        roadwayPointSerialReferencePointsRef.current.length > 0
+      ) {
+        roadwayPointNearestSerialByIndexRef.current = buildNearestSerialAssignmentByPointIndex(
+          roadwayPointWorldPositionsRef.current,
+          roadwayPointSerialReferencePointsRef.current,
+        );
+        refreshResolvedRoadwayPointLabels();
+        return;
+      }
+
+      roadwayPointSerialReferenceLoadingRef.current = true;
+      const serialLoader = new FBXLoader();
+      serialLoader.load(
+        roadwayPointSerialReferenceObjPath,
+        (serialObject) => {
+          if (cancelled || !modelRef.current) {
+            disposeObject(serialObject);
+            roadwayPointSerialReferenceLoadingRef.current = false;
+            return;
+          }
+          normalizeAndAlignRoadwayOverlayToTunnel(
+            serialObject,
+            modelRef.current,
+            tunnelNormalizationRef.current,
+          );
+
+          roadwayPointSerialReferencePathRef.current = roadwayPointSerialReferenceObjPath;
+          roadwayPointSerialReferencePointsRef.current =
+            collectNormalizedSerialReferencePoints(serialObject);
+          roadwayPointNearestSerialByIndexRef.current = buildNearestSerialAssignmentByPointIndex(
+            roadwayPointWorldPositionsRef.current,
+            roadwayPointSerialReferencePointsRef.current,
+          );
+          refreshResolvedRoadwayPointLabels();
+          disposeObject(serialObject);
+          roadwayPointSerialReferenceLoadingRef.current = false;
+        },
+        undefined,
+        () => {
+          roadwayPointSerialReferenceLoadingRef.current = false;
+        },
+      );
+    };
 
     if (
       roadwayPointOverlayRef.current &&
       roadwayPointOverlayPathRef.current === roadwayPointObjPath
     ) {
-      roadwayPointOverlayRef.current.visible = false;
+      roadwayPointOverlayRef.current.visible = roadwayPointOverlayVisible;
+      roadwayPointOverlayRef.current.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+          node.visible = roadwayPointOverlayVisible;
+        }
+      });
       if (roadwayPointWorldPositionsRef.current.length === 0) {
-        roadwayPointWorldPositionsRef.current = collectObjectMeshCenters(
+        const collection = collectObjectMeshCenters(
           roadwayPointOverlayRef.current,
+          roadwayPointSerialNameMap,
         );
+        roadwayPointWorldPositionsRef.current = collection.points;
+        roadwayPointIndexBySerialRef.current = collection.indexBySerial;
+        roadwayPointIndexByNormalizedSerialRef.current =
+          collection.indexByNormalizedSerial;
       }
-      setResolvedRoadwayPointLabels(
-        buildRoadwayPointLabels(
-          roadwayPointWorldPositionsRef.current.length,
-          roadwayPointLabelsRef.current,
-        ),
-      );
-      return;
+      const hasCachedNearest = rebuildNearestSerialByCachedReference();
+      refreshResolvedRoadwayPointLabels();
+      if (!hasCachedNearest) {
+        loadSerialReferenceForNearestMapping();
+      }
+      return () => {
+        cancelled = true;
+      };
     }
 
     if (roadwayPointOverlayRef.current) {
@@ -835,13 +1390,15 @@ export function HomeObjBackground3D({
       roadwayPointOverlayRef.current = null;
       roadwayPointOverlayPathRef.current = undefined;
       roadwayPointWorldPositionsRef.current = [];
+      roadwayPointIndexBySerialRef.current = new Map();
+      roadwayPointIndexByNormalizedSerialRef.current = new Map();
+      roadwayPointNearestSerialByIndexRef.current = new Map();
       setResolvedRoadwayPointLabels([]);
     }
 
     if (roadwayPointLoadingRef.current) return;
     roadwayPointLoadingRef.current = true;
 
-    let cancelled = false;
     const loader = new FBXLoader();
     loader.load(
       roadwayPointObjPath!,
@@ -852,32 +1409,37 @@ export function HomeObjBackground3D({
           return;
         }
 
-        const normalization = tunnelNormalizationRef.current;
-        if (normalization) {
-          applyTunnelNormalizationToOverlay(pointObject, normalization);
-        }
-        if (!isOverlayCloseToTunnel(pointObject, modelRef.current)) {
-          alignOverlayToTunnel(pointObject, modelRef.current);
-        }
+        normalizeAndAlignRoadwayOverlayToTunnel(
+          pointObject,
+          modelRef.current,
+          tunnelNormalizationRef.current,
+        );
 
+        const collection = collectObjectMeshCenters(
+          pointObject,
+          roadwayPointSerialNameMap,
+        );
+        applyRoadwaySerialOverlayStyle(pointObject);
         pointObject.traverse((node) => {
           if (node instanceof THREE.Mesh) {
-            node.visible = false;
+            node.visible = roadwayPointOverlayVisible;
           }
         });
-        pointObject.visible = false;
+        pointObject.visible = roadwayPointOverlayVisible;
         pointObject.name = "roadway-point-overlay";
 
         sceneRef.current.add(pointObject);
         roadwayPointOverlayRef.current = pointObject;
         roadwayPointOverlayPathRef.current = roadwayPointObjPath;
-        roadwayPointWorldPositionsRef.current = collectObjectMeshCenters(pointObject);
-        setResolvedRoadwayPointLabels(
-          buildRoadwayPointLabels(
-            roadwayPointWorldPositionsRef.current.length,
-            roadwayPointLabelsRef.current,
-          ),
-        );
+        roadwayPointWorldPositionsRef.current = collection.points;
+        roadwayPointIndexBySerialRef.current = collection.indexBySerial;
+        roadwayPointIndexByNormalizedSerialRef.current =
+          collection.indexByNormalizedSerial;
+        const hasCachedNearest = rebuildNearestSerialByCachedReference();
+        refreshResolvedRoadwayPointLabels();
+        if (!hasCachedNearest) {
+          loadSerialReferenceForNearestMapping();
+        }
         roadwayPointLoadingRef.current = false;
       },
       undefined,
@@ -889,7 +1451,15 @@ export function HomeObjBackground3D({
     return () => {
       cancelled = true;
     };
-  }, [modelLoaded, roadwayPointLabels, roadwayPointObjPath]);
+  }, [
+    modelLoaded,
+    roadwayPointLabels,
+    roadwayPointObjPath,
+    roadwayPointSerialReferenceObjPath,
+    roadwayPointOverlayVisible,
+    autoFillRoadwayPointLabels,
+    roadwayPointSerialNameMap,
+  ]);
 
   return (
     <>
@@ -1023,10 +1593,19 @@ export function HomeObjBackground3D({
           }}
         >
           {resolvedRoadwayPointLabels.map((item) => {
+            const serialText = String(
+              Number.isInteger(item.serialNo) && (item.serialNo ?? 0) > 0
+                ? item.serialNo
+                : item.pointIndex + 1,
+            ).padStart(2, "0");
+            const showSerialBadge = roadwayPointShowSerial;
             const airflowText =
               typeof item.airflow === "number"
                 ? item.airflow.toFixed(1)
                 : item.airflow;
+            const showAirflowText =
+              airflowText != null &&
+              String(airflowText).trim().length > 0;
             return (
               <div
                 key={item.id}
@@ -1040,39 +1619,75 @@ export function HomeObjBackground3D({
                   transform: `translate(-50%, calc(-100% - ${LABEL_LEADER_LENGTH_PX}px)) scale(0.92)`,
                   opacity: 0,
                   transition: "opacity 180ms ease, transform 180ms ease",
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  border: `1px solid ${item.borderColor ?? "rgba(129, 186, 246, 0.72)"}`,
+                  padding: "7px 10px",
+                  borderRadius: 10,
+                  border: `1px solid ${item.borderColor ?? "rgba(132, 220, 255, 0.86)"}`,
                   background:
                     item.background ??
-                    "linear-gradient(180deg, rgba(11, 36, 64, 0.9) 0%, rgba(20, 57, 94, 0.82) 100%)",
+                    "linear-gradient(135deg, rgba(8, 20, 42, 0.92) 0%, rgba(20, 48, 88, 0.9) 45%, rgba(9, 29, 56, 0.94) 100%)",
                   boxShadow:
-                    "0 6px 16px rgba(7, 21, 38, 0.36), inset 0 1px 0 rgba(176, 220, 255, 0.18)",
-                  backdropFilter: "blur(2px)",
+                    "0 10px 24px rgba(3, 11, 25, 0.46), 0 0 20px rgba(77, 168, 255, 0.3), inset 0 1px 0 rgba(210, 240, 255, 0.26)",
+                  backdropFilter: "blur(3px)",
                   whiteSpace: "nowrap",
                   lineHeight: 1.2,
                 }}
               >
                 <div
                   style={{
-                    color: item.color ?? "#cfe9ff",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    marginBottom: 2,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: showSerialBadge ? 6 : 0,
+                    marginBottom: showAirflowText ? 2 : 0,
                   }}
                 >
-                  {item.name}
+                  {showSerialBadge && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 22,
+                        height: 16,
+                        padding: "0 4px",
+                        borderRadius: 8,
+                        color: "#092235",
+                        background:
+                          "linear-gradient(180deg, rgba(161, 241, 255, 0.96) 0%, rgba(106, 210, 255, 0.9) 100%)",
+                        border: "1px solid rgba(205, 247, 255, 0.95)",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 0.2,
+                        boxShadow: "0 0 14px rgba(120, 225, 255, 0.58)",
+                      }}
+                    >
+                      {serialText}
+                    </span>
+                  )}
+                  <span
+                    style={{
+                      color: item.color ?? "#f0fbff",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: 0.2,
+                      textShadow: "0 0 8px rgba(123, 201, 255, 0.42)",
+                    }}
+                  >
+                    {item.name}
+                  </span>
                 </div>
-                <div
-                  style={{
-                    color: "#ffffff",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    letterSpacing: 0.2,
-                  }}
-                >
-                  {airflowText} {item.unit ?? "m³/s"}
-                </div>
+                {showAirflowText && (
+                  <div
+                    style={{
+                      color: "#9ee8ff",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: 0.25,
+                      textShadow: "0 0 10px rgba(78, 205, 255, 0.45)",
+                    }}
+                  >
+                    {airflowText} {item.unit ?? "m³/s"}
+                  </div>
+                )}
                 <div
                   style={{
                     position: "absolute",
@@ -1083,8 +1698,8 @@ export function HomeObjBackground3D({
                     transform: "translateX(-50%)",
                     background:
                       item.leaderColor ??
-                      "linear-gradient(180deg, rgba(124, 196, 255, 0.88) 0%, rgba(95, 170, 242, 0.9) 100%)",
-                    boxShadow: "0 0 10px rgba(118, 188, 255, 0.75)",
+                      "linear-gradient(180deg, rgba(142, 232, 255, 0.92) 0%, rgba(92, 170, 240, 0.88) 100%)",
+                    boxShadow: "0 0 10px rgba(110, 205, 255, 0.6)",
                   }}
                 />
                 <div
@@ -1096,10 +1711,10 @@ export function HomeObjBackground3D({
                     height: 8,
                     borderRadius: "50%",
                     transform: "translate(-50%, -50%)",
-                    background: item.markerColor ?? "#8ed0ff",
-                    border: "1px solid rgba(186, 229, 255, 0.95)",
+                    background: item.markerColor ?? "#74d2ff",
+                    border: "1px solid rgba(223, 239, 255, 0.92)",
                     boxShadow:
-                      "0 0 0 2px rgba(86, 153, 219, 0.28), 0 0 12px rgba(143, 212, 255, 0.85)",
+                      "0 0 0 2px rgba(56, 137, 206, 0.28), 0 0 16px rgba(117, 220, 255, 0.86)",
                   }}
                 />
               </div>

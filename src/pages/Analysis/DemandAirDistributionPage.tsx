@@ -31,6 +31,7 @@ type SuggestionPriority = "high" | "medium" | "low";
 interface RoadwayDemandItem {
   id: string;
   name: string;
+  branchNo: number;
   pointIndex: number;
   currentAirflow: number;
   minAirflow: number;
@@ -45,6 +46,7 @@ interface RoadwayDemandItem {
 
 interface SolveResultRow {
   roadwayId: string;
+  branchNo: number;
   roadwayName: string;
   targetSpecified: boolean;
   solveSource: "target" | "network";
@@ -76,6 +78,7 @@ interface MainFanInfo {
   id: string;
   name: string;
   enabled: boolean;
+  currentAirflow: number;
   frequencyHz: number;
   ratedFrequencyHz: number;
   airflowCapacity: number;
@@ -90,6 +93,15 @@ interface AuxFanInfo {
   ratedFrequencyHz: number;
   maxAssistAirflow: number;
   linkedRoadways: string[];
+}
+
+type RoadwayBranchType = "进风" | "回风";
+
+interface RoadwayExcelReferenceItem {
+  branchNo: number;
+  name: string;
+  branchType: RoadwayBranchType;
+  airflow: number;
 }
 
 interface SolveDeviceContext {
@@ -112,14 +124,21 @@ const PLATFORM_REFERENCE_MODEL_SETTINGS = {
   viewScale: 4.5,
   viewAzimuthDeg: 90,
 } as const;
-
-const ROADWAY_POINT_OBJ_PATH = encodeURI("/models/巷道位置球体.fbx");
+const ROADWAY_LABEL_ANCHOR_MODEL_PATH = encodeURI("/models/巷道序号.FBX");
+const ROADWAY_SERIAL_NAME_MAP: Readonly<Record<string, number>> = Object.freeze(
+  Array.from({ length: 27 }).reduce<Record<string, number>>((acc, _, index) => {
+    const serial = index + 1;
+    acc[`Text${String(serial).padStart(3, "0")}`] = serial;
+    return acc;
+  }, {}),
+);
 
 const MAIN_FAN_BASELINE: MainFanInfo[] = [
   {
     id: "main-fan-1",
     name: "1#主通风机",
     enabled: true,
+    currentAirflow: 93.13,
     frequencyHz: 47.5,
     ratedFrequencyHz: 50,
     airflowCapacity: 128,
@@ -129,6 +148,7 @@ const MAIN_FAN_BASELINE: MainFanInfo[] = [
     id: "main-fan-2",
     name: "2#主通风机",
     enabled: true,
+    currentAirflow: 167.8,
     frequencyHz: 46.8,
     ratedFrequencyHz: 50,
     airflowCapacity: 122,
@@ -229,204 +249,259 @@ const AUX_FAN_BASELINE: AuxFanInfo[] = [
   },
 ];
 
-const ROADWAY_DEMAND_BASELINE: RoadwayDemandItem[] = [
+const ROADWAY_EXCEL_REFERENCE: RoadwayExcelReferenceItem[] = [
   {
-    id: "roadway-01",
-    name: "主进风巷",
-    pointIndex: 0,
-    currentAirflow: 31.8,
-    minAirflow: 30.5,
-    maxAirflow: 35.5,
-    resistance: 0.028,
-    resistanceAdjustable: false,
-    minAdjustableResistance: undefined,
-    deviceId: "main-fan-1",
-    deviceName: "1#主扇变频器",
-    deviceType: "main-fan",
+    branchNo: 1,
+    name: "北一风井",
+    branchType: "回风",
+    airflow: 93.13333333333334,
+  },
+  { branchNo: 2, name: "进风石门", branchType: "进风", airflow: 46 },
+  {
+    branchNo: 3,
+    name: "戊二轨下",
+    branchType: "进风",
+    airflow: 27.033333333333335,
   },
   {
-    id: "roadway-02",
-    name: "北翼回风联络巷",
-    pointIndex: 1,
-    currentAirflow: 24.6,
-    minAirflow: 23.5,
-    maxAirflow: 27.6,
-    resistance: 0.034,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.027,
+    branchNo: 4,
+    name: "丁组煤柱面联络巷",
+    branchType: "回风",
+    airflow: 47.333333333333336,
+  },
+  {
+    branchNo: 5,
+    name: "戊9-10-22220风巷",
+    branchType: "进风",
+    airflow: 27.583333333333332,
+  },
+  {
+    branchNo: 6,
+    name: "戊9-10-22220机巷",
+    branchType: "进风",
+    airflow: 26.633333333333333,
+  },
+  {
+    branchNo: 7,
+    name: "戊9-10-22240风巷",
+    branchType: "进风",
+    airflow: 11.833333333333334,
+  },
+  { branchNo: 8, name: "戊9-1032010风巷", branchType: "进风", airflow: 10.8 },
+  {
+    branchNo: 9,
+    name: "戊8-32010底抽巷",
+    branchType: "回风",
+    airflow: 10.333333333333334,
+  },
+  {
+    branchNo: 10,
+    name: "戊8-32030风巷",
+    branchType: "进风",
+    airflow: 27.466666666666665,
+  },
+  {
+    branchNo: 11,
+    name: "戊9-1032020风巷",
+    branchType: "进风",
+    airflow: 11.416666666666666,
+  },
+  {
+    branchNo: 12,
+    name: "丁5.6-32020风巷",
+    branchType: "进风",
+    airflow: 37.333333333333336,
+  },
+  { branchNo: 13, name: "丁5.6-32020机巷", branchType: "进风", airflow: 35.75 },
+  {
+    branchNo: 14,
+    name: "戊8-32030机巷",
+    branchType: "进风",
+    airflow: 26.333333333333332,
+  },
+  {
+    branchNo: 15,
+    name: "戊8-32050辅助措施巷",
+    branchType: "进风",
+    airflow: 14.416666666666666,
+  },
+  {
+    branchNo: 16,
+    name: "三水平戊二轨道上山",
+    branchType: "进风",
+    airflow: 27.7,
+  },
+  {
+    branchNo: 17,
+    name: "三水平戊二皮上下段",
+    branchType: "进风",
+    airflow: 24.55,
+  },
+  {
+    branchNo: 18,
+    name: "三水平戊二行人上山",
+    branchType: "进风",
+    airflow: 81.86666666666666,
+  },
+  {
+    branchNo: 19,
+    name: "戊组东翼总回",
+    branchType: "回风",
+    airflow: 108.56666666666666,
+  },
+  {
+    branchNo: 20,
+    name: "三水平丁二行人巷",
+    branchType: "回风",
+    airflow: 8.333333333333334,
+  },
+  { branchNo: 21, name: "三水平丁二轨上", branchType: "回风", airflow: 37.75 },
+  {
+    branchNo: 22,
+    name: "三水平戊二回风下山",
+    branchType: "回风",
+    airflow: 19.516666666666666,
+  },
+  { branchNo: 23, name: "三水平丁二皮上", branchType: "回风", airflow: 9.1 },
+  {
+    branchNo: 24,
+    name: "北二副井",
+    branchType: "进风",
+    airflow: 105.86666666666666,
+  },
+  { branchNo: 25, name: "北二风井", branchType: "回风", airflow: 167.8 },
+  {
+    branchNo: 26,
+    name: "丁组总回",
+    branchType: "回风",
+    airflow: 65.08333333333333,
+  },
+  { branchNo: 27, name: "戊组西翼总回", branchType: "回风", airflow: 117 },
+];
+
+type RoadwayDeviceAssignment = Pick<
+  RoadwayDemandItem,
+  "deviceId" | "deviceName" | "deviceType"
+>;
+
+const ROADWAY_ADJUSTABLE_DEVICE_CYCLE: RoadwayDeviceAssignment[] = [
+  {
     deviceId: "air-door-d12",
     deviceName: "D-12联络风门",
     deviceType: "air-door",
   },
   {
-    id: "roadway-03",
-    name: "东翼运输巷",
-    pointIndex: 2,
-    currentAirflow: 27.3,
-    minAirflow: 25.8,
-    maxAirflow: 30.1,
-    resistance: 0.031,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.024,
     deviceId: "air-window-w08",
     deviceName: "W-08调节风窗",
     deviceType: "air-window",
   },
   {
-    id: "roadway-04",
-    name: "3105工作面回风巷",
-    pointIndex: 3,
-    currentAirflow: 19.4,
-    minAirflow: 18.6,
-    maxAirflow: 22.4,
-    resistance: 0.043,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.035,
     deviceId: "aux-fan-3105",
     deviceName: "3105局扇联控",
     deviceType: "aux-fan",
   },
   {
-    id: "roadway-05",
-    name: "中央回风上山",
-    pointIndex: 4,
-    currentAirflow: 22.1,
-    minAirflow: 21.2,
-    maxAirflow: 25.1,
-    resistance: 0.038,
-    resistanceAdjustable: false,
-    minAdjustableResistance: undefined,
-    deviceId: "main-fan-1",
-    deviceName: "1#主扇变频器",
-    deviceType: "main-fan",
-  },
-  {
-    id: "roadway-06",
-    name: "采区回风大巷",
-    pointIndex: 5,
-    currentAirflow: 25.7,
-    minAirflow: 24.5,
-    maxAirflow: 28.8,
-    resistance: 0.036,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.029,
-    deviceId: "air-window-w08",
-    deviceName: "W-08调节风窗",
-    deviceType: "air-window",
-  },
-  {
-    id: "roadway-07",
-    name: "东翼进风联巷",
-    pointIndex: 6,
-    currentAirflow: 20.9,
-    minAirflow: 19.8,
-    maxAirflow: 23.8,
-    resistance: 0.041,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.033,
-    deviceId: "air-door-d12",
-    deviceName: "D-12联络风门",
-    deviceType: "air-door",
-  },
-  {
-    id: "roadway-08",
-    name: "西翼回风上山",
-    pointIndex: 7,
-    currentAirflow: 18.6,
-    minAirflow: 17.7,
-    maxAirflow: 21.2,
-    resistance: 0.045,
-    resistanceAdjustable: false,
-    minAdjustableResistance: undefined,
-    deviceId: "aux-fan-3105",
-    deviceName: "3105局扇联控",
-    deviceType: "aux-fan",
-  },
-  {
-    id: "roadway-09",
-    name: "南翼运输联巷",
-    pointIndex: 8,
-    currentAirflow: 21.7,
-    minAirflow: 20.5,
-    maxAirflow: 24.4,
-    resistance: 0.039,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.031,
-    deviceId: "air-door-d12",
-    deviceName: "D-12联络风门",
-    deviceType: "air-door",
-  },
-  {
-    id: "roadway-10",
-    name: "西翼进风联巷",
-    pointIndex: 9,
-    currentAirflow: 23.4,
-    minAirflow: 22.1,
-    maxAirflow: 26.0,
-    resistance: 0.035,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.028,
-    deviceId: "air-window-w08",
-    deviceName: "W-08调节风窗",
-    deviceType: "air-window",
-  },
-  {
-    id: "roadway-11",
-    name: "轨道上山",
-    pointIndex: 10,
-    currentAirflow: 17.9,
-    minAirflow: 16.8,
-    maxAirflow: 20.6,
-    resistance: 0.047,
-    resistanceAdjustable: false,
-    minAdjustableResistance: undefined,
-    deviceId: "main-fan-2",
-    deviceName: "2#主扇变频器",
-    deviceType: "main-fan",
-  },
-  {
-    id: "roadway-12",
-    name: "采区联络回风巷",
-    pointIndex: 11,
-    currentAirflow: 20.3,
-    minAirflow: 19.2,
-    maxAirflow: 23.1,
-    resistance: 0.042,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.034,
     deviceId: "aux-fan-central-1",
     deviceName: "中央局扇1#联控",
     deviceType: "aux-fan",
   },
-  {
-    id: "roadway-13",
-    name: "南翼回风联络巷",
-    pointIndex: 12,
-    currentAirflow: 22.8,
-    minAirflow: 21.6,
-    maxAirflow: 25.4,
-    resistance: 0.037,
-    resistanceAdjustable: true,
-    minAdjustableResistance: 0.030,
-    deviceId: "air-door-d12",
-    deviceName: "D-12联络风门",
-    deviceType: "air-door",
-  },
-  {
-    id: "roadway-14",
-    name: "东翼回风上山",
-    pointIndex: 13,
-    currentAirflow: 19.1,
-    minAirflow: 18.2,
-    maxAirflow: 21.9,
-    resistance: 0.044,
-    resistanceAdjustable: false,
-    minAdjustableResistance: undefined,
-    deviceId: "aux-fan-3105",
-    deviceName: "3105局扇联控",
-    deviceType: "aux-fan",
-  },
 ];
+
+const ADJUSTABLE_BRANCH_NO_SET = new Set<number>([4, 5, 6, 10, 11, 12, 13, 14, 15]);
+
+function isRoadwayAdjustable(
+  row: RoadwayExcelReferenceItem,
+  _index: number,
+): boolean {
+  // Narrow adjustable scope to key modulation roadways only,
+  // so the "可调" rows are not excessively dense in the target table.
+  if (!ADJUSTABLE_BRANCH_NO_SET.has(row.branchNo)) {
+    return false;
+  }
+
+  if (
+    row.name.includes("风井") ||
+    row.name.includes("总回") ||
+    row.name.includes("副井")
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function resolveRoadwayDeviceAssignment(
+  row: RoadwayExcelReferenceItem,
+  index: number,
+  adjustable: boolean,
+): RoadwayDeviceAssignment {
+  if (
+    !adjustable ||
+    row.name.includes("风井") ||
+    row.name.includes("总回") ||
+    row.name.includes("副井")
+  ) {
+    return index % 2 === 0
+      ? {
+          deviceId: "main-fan-1",
+          deviceName: "1#主扇变频器",
+          deviceType: "main-fan",
+        }
+      : {
+          deviceId: "main-fan-2",
+          deviceName: "2#主扇变频器",
+          deviceType: "main-fan",
+        };
+  }
+  return ROADWAY_ADJUSTABLE_DEVICE_CYCLE[
+    index % ROADWAY_ADJUSTABLE_DEVICE_CYCLE.length
+  ];
+}
+
+function resolveRoadwayResistance(airflow: number, index: number): number {
+  const estimatedResistance = 0.058 - airflow * 0.00022 + (index % 4) * 0.0015;
+  const boundedResistance = Math.min(
+    0.065,
+    Math.max(0.018, estimatedResistance),
+  );
+  return Number(boundedResistance.toFixed(3));
+}
+
+// Base roadway data references `public/models/巷道信息.xlsx`:
+// branchNo / branch name / branch type / airflow come from the table.
+// Other fields are derived defaults for demand-solve interaction.
+const ROADWAY_DEMAND_BASELINE: RoadwayDemandItem[] =
+  ROADWAY_EXCEL_REFERENCE.map((row, index) => {
+    const currentAirflow = Number(row.airflow.toFixed(1));
+    const minFactor = row.branchType === "进风" ? 0.9 : 0.88;
+    const maxFactor = row.branchType === "进风" ? 1.12 : 1.15;
+    const minAirflow = Number((currentAirflow * minFactor).toFixed(1));
+    const maxAirflow = Number((currentAirflow * maxFactor).toFixed(1));
+    const resistance = resolveRoadwayResistance(currentAirflow, index);
+    const resistanceAdjustable = isRoadwayAdjustable(row, index);
+    const minAdjustableResistance = resistanceAdjustable
+      ? Number((resistance * (0.78 + (index % 3) * 0.02)).toFixed(3))
+      : undefined;
+    const device = resolveRoadwayDeviceAssignment(
+      row,
+      index,
+      resistanceAdjustable,
+    );
+
+    return {
+      id: `roadway-${String(row.branchNo).padStart(2, "0")}`,
+      name: row.name,
+      branchNo: row.branchNo,
+      pointIndex: row.branchNo - 1,
+      currentAirflow,
+      minAirflow,
+      maxAirflow,
+      resistance,
+      resistanceAdjustable,
+      minAdjustableResistance,
+      ...device,
+    };
+  });
 
 const AIRFLOW_RESPONSE_FACTOR: Record<DeviceType, number> = {
   "main-fan": 0.9,
@@ -435,7 +510,10 @@ const AIRFLOW_RESPONSE_FACTOR: Record<DeviceType, number> = {
   "air-window": 0.72,
 };
 
-const PRIORITY_META: Record<SuggestionPriority, { color: string; label: string; weight: number }> = {
+const PRIORITY_META: Record<
+  SuggestionPriority,
+  { color: string; label: string; weight: number }
+> = {
   high: { color: "error", label: "高优先", weight: 3 },
   medium: { color: "warning", label: "中优先", weight: 2 },
   low: { color: "processing", label: "低优先", weight: 1 },
@@ -448,7 +526,10 @@ const DECISION_LAYER_OPTIONS = [
   { value: "chief-engineer", label: "总工决策组" },
 ] as const;
 
-const DECISION_RECIPIENT_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
+const DECISION_RECIPIENT_OPTIONS: Record<
+  string,
+  Array<{ value: string; label: string }>
+> = {
   "dispatch-center": [
     { value: "duty-dispatcher", label: "值班调度长" },
     { value: "production-dispatcher", label: "生产调度员" },
@@ -472,7 +553,8 @@ const DECISION_RECIPIENT_OPTIONS: Record<string, Array<{ value: string; label: s
 };
 
 const formatAirflow = (value: number) => value.toFixed(1);
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 const roundToTenth = (value: number) => Number(value.toFixed(1));
 const roundToThousandth = (value: number) => Number(value.toFixed(3));
 
@@ -506,15 +588,19 @@ function buildResistanceProjection(
   let adjustedResistance = baseResistance;
 
   if (airflowDelta > 0) {
-    const minResistance = roadway.minAdjustableResistance ?? baseResistance * 0.82;
-    adjustedResistance = baseResistance - (baseResistance - minResistance) * intensity;
+    const minResistance =
+      roadway.minAdjustableResistance ?? baseResistance * 0.82;
+    adjustedResistance =
+      baseResistance - (baseResistance - minResistance) * intensity;
   } else {
     adjustedResistance = baseResistance * (1 + 0.18 * intensity);
   }
 
   const roundedResistance = roundToThousandth(adjustedResistance);
   const adjustmentRatio =
-    baseResistance <= 0 ? 0 : (roundedResistance - baseResistance) / baseResistance;
+    baseResistance <= 0
+      ? 0
+      : (roundedResistance - baseResistance) / baseResistance;
 
   return {
     baseResistance,
@@ -528,7 +614,9 @@ function buildSolveResults(
   targetAirflowMap: Partial<Record<string, number>>,
   context: SolveDeviceContext,
 ): SolveResultRow[] {
-  const roadwayById = ROADWAY_DEMAND_BASELINE.reduce<Record<string, RoadwayDemandItem>>((acc, item) => {
+  const roadwayById = ROADWAY_DEMAND_BASELINE.reduce<
+    Record<string, RoadwayDemandItem>
+  >((acc, item) => {
     acc[item.id] = item;
     return acc;
   }, {});
@@ -542,19 +630,24 @@ function buildSolveResults(
     if (roadway.deviceType === "main-fan") {
       responseFactor *= context.mainFanResponseFactor;
     } else if (roadway.deviceType === "aux-fan") {
-      responseFactor *= context.auxFanResponseByDevice[roadway.deviceId] ?? 0.62;
+      responseFactor *=
+        context.auxFanResponseByDevice[roadway.deviceId] ?? 0.62;
     } else {
       responseFactor *= 0.92 + context.mainFanResponseFactor * 0.08;
     }
-    const damping = Math.abs(delta) > 1.5 ? 0.15 * Math.sign(delta) : 0;
-    const solvedAirflow = clamp(
-      roadway.currentAirflow + delta * responseFactor + damping,
-      roadway.minAirflow - 0.8,
-      roadway.maxAirflow + 0.8,
-    );
+    const solvedAirflow = targetSpecified
+      ? clamp(targetAirflow, roadway.minAirflow, roadway.maxAirflow)
+      : clamp(
+          roadway.currentAirflow +
+            delta * responseFactor +
+            (Math.abs(delta) > 1.5 ? 0.15 * Math.sign(delta) : 0),
+          roadway.minAirflow - 0.8,
+          roadway.maxAirflow + 0.8,
+        );
     const roundedSolved = roundToTenth(solvedAirflow);
     return {
       roadwayId: roadway.id,
+      branchNo: roadway.branchNo,
       roadwayName: roadway.name,
       targetSpecified,
       solveSource: targetSpecified ? ("target" as const) : ("network" as const),
@@ -578,10 +671,13 @@ function buildSolveResults(
       const auxResponseValues = Object.values(context.auxFanResponseByDevice);
       const auxAverage =
         auxResponseValues.length > 0
-          ? auxResponseValues.reduce((sum, value) => sum + value, 0) / auxResponseValues.length
+          ? auxResponseValues.reduce((sum, value) => sum + value, 0) /
+            auxResponseValues.length
           : 0.7;
       const couplingStrength = clamp(
-        0.2 + (context.mainFanResponseFactor - 0.9) * 0.18 + (auxAverage - 0.7) * 0.1,
+        0.2 +
+          (context.mainFanResponseFactor - 0.9) * 0.18 +
+          (auxAverage - 0.7) * 0.1,
         0.12,
         0.42,
       );
@@ -617,23 +713,130 @@ function buildSolveResults(
     }
   }
 
-  const solvedTotal = preliminary.reduce((sum, item) => sum + item.solvedAirflow, 0);
-  if (solvedTotal <= context.networkCapacityLimit || context.networkCapacityLimit <= 0) {
+  const solvedTotal = preliminary.reduce(
+    (sum, item) => sum + item.solvedAirflow,
+    0,
+  );
+  if (
+    solvedTotal <= context.networkCapacityLimit ||
+    context.networkCapacityLimit <= 0
+  ) {
     return preliminary;
   }
 
-  const overloadRatio = context.networkCapacityLimit / solvedTotal;
-  return preliminary.map((row) => {
-    const roadway = roadwayById[row.roadwayId];
-    if (!roadway) {
-      return row;
+  let remainingExcess = solvedTotal - context.networkCapacityLimit;
+  const capacityAdjusted = preliminary.map((row) => ({ ...row }));
+
+  const reduceGroupByCapacity = (
+    targetSpecified: boolean,
+    strategy: "proportional" | "balanced",
+    minBoundResolver: (row: SolveResultRow, roadway: RoadwayDemandItem) => number,
+  ) => {
+    if (remainingExcess <= 0) return;
+
+    const candidates = capacityAdjusted
+      .map((row, index) => {
+        if (row.targetSpecified !== targetSpecified) {
+          return null;
+        }
+        const roadway = roadwayById[row.roadwayId];
+        if (!roadway) {
+          return null;
+        }
+        const minBound = minBoundResolver(row, roadway);
+        const maxBound = roadway.maxAirflow + 0.8;
+        const reducible = Math.max(0, row.solvedAirflow - minBound);
+        if (reducible <= 0) {
+          return null;
+        }
+        return { index, reducible, minBound, maxBound };
+      })
+      .filter(
+        (
+          item,
+        ): item is { index: number; reducible: number; minBound: number; maxBound: number } =>
+          item != null,
+      );
+
+    if (candidates.length === 0) return;
+
+    const totalReducible = candidates.reduce((sum, item) => sum + item.reducible, 0);
+    if (totalReducible <= 0) return;
+
+    const reductionBudget = Math.min(remainingExcess, totalReducible);
+    let consumedReduction = 0;
+
+    if (strategy === "balanced") {
+      // Keep specified-target rows close to target by sharing reduction evenly.
+      let active = candidates.map((item) => ({ ...item }));
+      let remainingBudget = reductionBudget;
+      while (remainingBudget > 1e-6 && active.length > 0) {
+        const equalShare = remainingBudget / active.length;
+        let roundConsumed = 0;
+        const nextActive: typeof active = [];
+
+        active.forEach((item) => {
+          const row = capacityAdjusted[item.index];
+          const currentReducible = Math.max(0, row.solvedAirflow - item.minBound);
+          if (currentReducible <= 1e-6) {
+            return;
+          }
+          const actualReduction = Math.min(equalShare, currentReducible);
+          row.solvedAirflow = clamp(
+            row.solvedAirflow - actualReduction,
+            item.minBound,
+            item.maxBound,
+          );
+          roundConsumed += actualReduction;
+          if (currentReducible - actualReduction > 1e-6) {
+            nextActive.push(item);
+          }
+        });
+
+        if (roundConsumed <= 1e-6) {
+          break;
+        }
+        consumedReduction += roundConsumed;
+        remainingBudget -= roundConsumed;
+        active = nextActive;
+      }
+    } else {
+      candidates.forEach((item) => {
+        const row = capacityAdjusted[item.index];
+        const reduceAmount = reductionBudget * (item.reducible / totalReducible);
+        const before = row.solvedAirflow;
+        row.solvedAirflow = clamp(
+          row.solvedAirflow - reduceAmount,
+          item.minBound,
+          item.maxBound,
+        );
+        consumedReduction += before - row.solvedAirflow;
+      });
     }
-    const compressedSolved = clamp(
-      row.solvedAirflow * overloadRatio,
-      roadway.minAirflow - 0.8,
-      roadway.maxAirflow + 0.8,
-    );
-    const roundedSolved = roundToTenth(compressedSolved);
+
+    remainingExcess = Math.max(0, remainingExcess - consumedReduction);
+  };
+
+  // Priority: keep specified-target roadways close to target as much as possible.
+  reduceGroupByCapacity(
+    false,
+    "proportional",
+    (_, roadway) => roadway.minAirflow - 0.8,
+  );
+  reduceGroupByCapacity(
+    true,
+    "balanced",
+    (row, roadway) => Math.max(roadway.minAirflow, row.targetAirflow - 0.3),
+  );
+  // If still overloaded, release protection band and consume remaining budget.
+  reduceGroupByCapacity(
+    true,
+    "balanced",
+    (_, roadway) => roadway.minAirflow - 0.8,
+  );
+
+  return capacityAdjusted.map((row) => {
+    const roundedSolved = roundToTenth(row.solvedAirflow);
     return {
       ...row,
       solvedAirflow: roundedSolved,
@@ -643,7 +846,9 @@ function buildSolveResults(
 }
 
 function buildDeviceSuggestions(results: SolveResultRow[]): DeviceSuggestion[] {
-  const roadwayIndex = new Map(ROADWAY_DEMAND_BASELINE.map((item) => [item.id, item]));
+  const roadwayIndex = new Map(
+    ROADWAY_DEMAND_BASELINE.map((item) => [item.id, item]),
+  );
 
   const suggestions: DeviceSuggestion[] = [];
 
@@ -652,19 +857,29 @@ function buildDeviceSuggestions(results: SolveResultRow[]): DeviceSuggestion[] {
     if (!roadway) {
       return;
     }
-    if (roadway.deviceType !== "air-door" && roadway.deviceType !== "air-window") {
+    if (
+      roadway.deviceType !== "air-door" &&
+      roadway.deviceType !== "air-window"
+    ) {
       return;
     }
 
-    const projection = buildResistanceProjection(roadway, row.solvedAirflow, row.currentAirflow);
+    const projection = buildResistanceProjection(
+      roadway,
+      row.solvedAirflow,
+      row.currentAirflow,
+    );
     if (!projection.changed) {
       return;
     }
 
-    const openingIncrease = projection.adjustedResistance < projection.baseResistance;
+    const openingIncrease =
+      projection.adjustedResistance < projection.baseResistance;
     const openingStep = Math.round(
       clamp(
-        Math.abs(projection.adjustmentRatio) * 100 * (roadway.deviceType === "air-window" ? 1.05 : 0.92),
+        Math.abs(projection.adjustmentRatio) *
+          100 *
+          (roadway.deviceType === "air-window" ? 1.05 : 0.92),
         2,
         18,
       ),
@@ -702,7 +917,10 @@ function buildDeviceSuggestions(results: SolveResultRow[]): DeviceSuggestion[] {
     });
   });
 
-  suggestions.sort((a, b) => PRIORITY_META[b.priority].weight - PRIORITY_META[a.priority].weight);
+  suggestions.sort(
+    (a, b) =>
+      PRIORITY_META[b.priority].weight - PRIORITY_META[a.priority].weight,
+  );
 
   if (suggestions.length > 0) {
     return suggestions;
@@ -714,7 +932,8 @@ function buildDeviceSuggestions(results: SolveResultRow[]): DeviceSuggestion[] {
       deviceName: "当前设备组合",
       relatedRoadways: "全网",
       actionText: "维持现有设定",
-      expectedImpact: "当前风阻变化较小，目标与解算结果偏差可接受，无需额外动作。",
+      expectedImpact:
+        "当前风阻变化较小，目标与解算结果偏差可接受，无需额外动作。",
       decisionNote: "建议将本次解算结果上传决策层备案。",
       priority: "low",
     },
@@ -722,18 +941,28 @@ function buildDeviceSuggestions(results: SolveResultRow[]): DeviceSuggestion[] {
 }
 
 export default function DemandAirDistributionPage() {
-  const initialTargetMap = useMemo<Partial<Record<string, number>>>(() => ({}), []);
+  const initialTargetMap = useMemo<Partial<Record<string, number>>>(
+    () => ({}),
+    [],
+  );
 
-  const [targetAirflowMap, setTargetAirflowMap] = useState<Partial<Record<string, number>>>(initialTargetMap);
+  const [targetAirflowMap, setTargetAirflowMap] =
+    useState<Partial<Record<string, number>>>(initialTargetMap);
   const mainFans = MAIN_FAN_BASELINE;
   const auxFans = AUX_FAN_BASELINE;
   const [solving, setSolving] = useState(false);
   const [solveResults, setSolveResults] = useState<SolveResultRow[]>([]);
-  const [deviceSuggestions, setDeviceSuggestions] = useState<DeviceSuggestion[]>([]);
+  const [deviceSuggestions, setDeviceSuggestions] = useState<
+    DeviceSuggestion[]
+  >([]);
   const [decisionLayer, setDecisionLayer] = useState<string>();
-  const [selectedDecisionRecipients, setSelectedDecisionRecipients] = useState<string[]>([]);
+  const [selectedDecisionRecipients, setSelectedDecisionRecipients] = useState<
+    string[]
+  >([]);
   const [reportSubmitting, setReportSubmitting] = useState(false);
-  const [reportRecords, setReportRecords] = useState<SuggestionReportRecord[]>([]);
+  const [reportRecords, setReportRecords] = useState<SuggestionReportRecord[]>(
+    [],
+  );
   const solvingTimerRef = useRef<number | null>(null);
   const reportTimerRef = useRef<number | null>(null);
 
@@ -749,53 +978,56 @@ export default function DemandAirDistributionPage() {
     [],
   );
 
-  const activeAirflowMap = useMemo(() => {
-    if (solveResults.length === 0) {
-      return ROADWAY_DEMAND_BASELINE.reduce<Record<string, number>>((acc, item) => {
-        acc[item.id] = item.currentAirflow;
-        return acc;
-      }, {});
-    }
-    return solveResults.reduce<Record<string, number>>((acc, item) => {
-      acc[item.roadwayId] = item.solvedAirflow;
-      return acc;
-    }, {});
-  }, [solveResults]);
-
-  const roadwayPointLabels = useMemo(
+  const roadwayModelLabels = useMemo(
     () =>
       ROADWAY_DEMAND_BASELINE.map((item) => ({
         id: item.id,
         name: item.name,
-        airflow: activeAirflowMap[item.id] ?? item.currentAirflow,
+        serialNo: item.branchNo,
         pointIndex: item.pointIndex,
+        airflow: roundToTenth(targetAirflowMap[item.id] ?? item.currentAirflow),
+        unit: "m³/s",
       })),
-    [activeAirflowMap],
+    [targetAirflowMap],
   );
 
   const roadwayMetaMap = useMemo(
     () =>
-      ROADWAY_DEMAND_BASELINE.reduce<Record<string, RoadwayDemandItem>>((acc, item) => {
-        acc[item.id] = item;
-        return acc;
-      }, {}),
+      ROADWAY_DEMAND_BASELINE.reduce<Record<string, RoadwayDemandItem>>(
+        (acc, item) => {
+          acc[item.id] = item;
+          return acc;
+        },
+        {},
+      ),
     [],
   );
 
   const targetAdjustedRoadwayCount = useMemo(
-    () => ROADWAY_DEMAND_BASELINE.filter((item) => targetAirflowMap[item.id] != null).length,
+    () =>
+      ROADWAY_DEMAND_BASELINE.filter(
+        (item) => targetAirflowMap[item.id] != null,
+      ).length,
     [targetAirflowMap],
   );
 
-  const enabledMainFans = useMemo(() => mainFans.filter((fan) => fan.enabled), [mainFans]);
-  const enabledAuxFans = useMemo(() => auxFans.filter((fan) => fan.enabled), [auxFans]);
+  const enabledMainFans = useMemo(
+    () => mainFans.filter((fan) => fan.enabled),
+    [mainFans],
+  );
+  const enabledAuxFans = useMemo(
+    () => auxFans.filter((fan) => fan.enabled),
+    [auxFans],
+  );
   const auxFanTotalCount = auxFans.length;
 
   const mainFanResponseFactor = useMemo(() => {
     if (enabledMainFans.length === 0) return 0.55;
     const averageRatio =
-      enabledMainFans.reduce((sum, fan) => sum + fan.frequencyHz / fan.ratedFrequencyHz, 0) /
-      enabledMainFans.length;
+      enabledMainFans.reduce(
+        (sum, fan) => sum + fan.frequencyHz / fan.ratedFrequencyHz,
+        0,
+      ) / enabledMainFans.length;
     return clamp(0.65 + averageRatio * 0.55, 0.55, 1.2);
   }, [enabledMainFans]);
 
@@ -803,9 +1035,19 @@ export default function DemandAirDistributionPage() {
     () =>
       roundToTenth(
         enabledMainFans.reduce(
-          (sum, fan) => sum + fan.airflowCapacity * (fan.frequencyHz / fan.ratedFrequencyHz),
+          (sum, fan) =>
+            sum +
+            fan.airflowCapacity * (fan.frequencyHz / fan.ratedFrequencyHz),
           0,
         ),
+      ),
+    [enabledMainFans],
+  );
+
+  const mainFanTotalAirflow = useMemo(
+    () =>
+      roundToTenth(
+        enabledMainFans.reduce((sum, fan) => sum + fan.currentAirflow, 0),
       ),
     [enabledMainFans],
   );
@@ -814,7 +1056,9 @@ export default function DemandAirDistributionPage() {
     () =>
       roundToTenth(
         enabledAuxFans.reduce(
-          (sum, fan) => sum + fan.maxAssistAirflow * (fan.frequencyHz / fan.ratedFrequencyHz),
+          (sum, fan) =>
+            sum +
+            fan.maxAssistAirflow * (fan.frequencyHz / fan.ratedFrequencyHz),
           0,
         ),
       ),
@@ -829,13 +1073,13 @@ export default function DemandAirDistributionPage() {
   const averageMainFanPressure = useMemo(() => {
     if (enabledMainFans.length === 0) return 0;
     return roundToTenth(
-      enabledMainFans.reduce((sum, fan) => sum + fan.pressurePa, 0) / enabledMainFans.length,
+      enabledMainFans.reduce((sum, fan) => sum + fan.pressurePa, 0) /
+        enabledMainFans.length,
     );
   }, [enabledMainFans]);
 
   const linkedAuxRoadwayCount = useMemo(
-    () =>
-      new Set(enabledAuxFans.flatMap((fan) => fan.linkedRoadways)).size,
+    () => new Set(enabledAuxFans.flatMap((fan) => fan.linkedRoadways)).size,
     [enabledAuxFans],
   );
 
@@ -855,18 +1099,29 @@ export default function DemandAirDistributionPage() {
         ...fan,
         displayFrequencyHz: fan.enabled ? fan.frequencyHz : null,
         currentAssistAirflow: fan.enabled
-          ? roundToTenth(fan.maxAssistAirflow * (fan.frequencyHz / fan.ratedFrequencyHz))
+          ? roundToTenth(
+              fan.maxAssistAirflow * (fan.frequencyHz / fan.ratedFrequencyHz),
+            )
           : 0,
       })),
     [auxFans],
   );
 
-  const highPriorityCount = deviceSuggestions.filter((item) => item.priority === "high").length;
-  const decisionReceiverOptions = decisionLayer ? (DECISION_RECIPIENT_OPTIONS[decisionLayer] ?? []) : [];
+  const highPriorityCount = deviceSuggestions.filter(
+    (item) => item.priority === "high",
+  ).length;
+  const decisionReceiverOptions = decisionLayer
+    ? (DECISION_RECIPIENT_OPTIONS[decisionLayer] ?? [])
+    : [];
   const decisionLayerLabel =
-    DECISION_LAYER_OPTIONS.find((item) => item.value === decisionLayer)?.label ?? "未指定决策层";
+    DECISION_LAYER_OPTIONS.find((item) => item.value === decisionLayer)
+      ?.label ?? "未指定决策层";
 
-  const handleTargetChange = (roadwayId: string, value: number | null, fallback: number) => {
+  const handleTargetChange = (
+    roadwayId: string,
+    value: number | null,
+    fallback: number,
+  ) => {
     if (value == null) {
       setTargetAirflowMap((prev) => {
         const next = { ...prev };
@@ -933,7 +1188,10 @@ export default function DemandAirDistributionPage() {
     setReportSubmitting(true);
     reportTimerRef.current = window.setTimeout(() => {
       const recipientNameMap = new Map(
-        (DECISION_RECIPIENT_OPTIONS[decisionLayer] ?? []).map((item) => [item.value, item.label]),
+        (DECISION_RECIPIENT_OPTIONS[decisionLayer] ?? []).map((item) => [
+          item.value,
+          item.label,
+        ]),
       );
       const recipientLabels = selectedDecisionRecipients.map(
         (recipient) => recipientNameMap.get(recipient) ?? recipient,
@@ -967,43 +1225,59 @@ export default function DemandAirDistributionPage() {
 
   const targetColumns: ColumnsType<RoadwayDemandItem> = [
     {
+      title: "编号",
+      dataIndex: "branchNo",
+      key: "branchNo",
+      width: 50,
+      align: "center",
+      fixed: "left",
+      render: (value: number) => (
+        <span className="demand-air-branch-no-cell">{String(value)}</span>
+      ),
+    },
+    {
       title: "巷道",
       dataIndex: "name",
       key: "name",
-      width: 128,
+      width: 116,
       ellipsis: true,
     },
     {
       title: "当前风量(m³/s)",
       dataIndex: "currentAirflow",
       key: "currentAirflow",
-      width: 96,
+      width: 90,
       align: "right",
       render: (value: number) => formatAirflow(value),
     },
     {
       title: "风量范围(m³/s)",
       key: "airflowRange",
-      width: 128,
+      width: 118,
       align: "center",
-      render: (_, row) => `${formatAirflow(row.minAirflow)} ~ ${formatAirflow(row.maxAirflow)}`,
+      render: (_, row) =>
+        `${formatAirflow(row.minAirflow)} ~ ${formatAirflow(row.maxAirflow)}`,
     },
     {
       title: "风阻",
       dataIndex: "resistance",
       key: "resistance",
-      width: 78,
+      width: 70,
       align: "right",
-      render: (value: number) => <span className="demand-air-resistance-value">{value.toFixed(3)}</span>,
+      render: (value: number) => (
+        <span className="demand-air-resistance-value">{value.toFixed(3)}</span>
+      ),
     },
     {
       title: "最小风阻",
       key: "minAdjustableResistance",
-      width: 88,
+      width: 80,
       align: "center",
       render: (_, row) =>
         row.resistanceAdjustable && row.minAdjustableResistance != null ? (
-          <span className="demand-air-min-resistance">{row.minAdjustableResistance.toFixed(3)}</span>
+          <span className="demand-air-min-resistance">
+            {row.minAdjustableResistance.toFixed(3)}
+          </span>
         ) : (
           <span className="demand-air-min-resistance--na">--</span>
         ),
@@ -1012,7 +1286,7 @@ export default function DemandAirDistributionPage() {
       title: "风阻可调",
       dataIndex: "resistanceAdjustable",
       key: "resistanceAdjustable",
-      width: 82,
+      width: 74,
       align: "center",
       render: (value: boolean) =>
         value ? (
@@ -1024,7 +1298,7 @@ export default function DemandAirDistributionPage() {
     {
       title: "目标风量(m³/s)",
       key: "targetAirflow",
-      width: 118,
+      width: 106,
       fixed: "right",
       align: "center",
       render: (_, row) => (
@@ -1036,7 +1310,9 @@ export default function DemandAirDistributionPage() {
           step={0.1}
           placeholder="未指定"
           controls={false}
-          onChange={(value) => handleTargetChange(row.id, value, row.currentAirflow)}
+          onChange={(value) =>
+            handleTargetChange(row.id, value, row.currentAirflow)
+          }
         />
       ),
     },
@@ -1044,24 +1320,35 @@ export default function DemandAirDistributionPage() {
 
   const resultColumns: ColumnsType<SolveResultRow> = [
     {
+      title: "编号",
+      dataIndex: "branchNo",
+      key: "branchNo",
+      width: 52,
+      align: "center",
+      fixed: "left",
+      render: (value: number) => (
+        <span className="demand-air-branch-no-cell">{String(value)}</span>
+      ),
+    },
+    {
       title: "巷道",
       dataIndex: "roadwayName",
       key: "roadwayName",
-      width: 150,
+      width: 132,
       ellipsis: true,
     },
     {
       title: "当前风量(m³/s)",
       dataIndex: "currentAirflow",
       key: "currentAirflow",
-      width: 116,
+      width: 102,
       align: "right",
       render: (value: number) => formatAirflow(value),
     },
     {
       title: "风量范围(m³/s)",
       key: "airflowRange",
-      width: 152,
+      width: 128,
       align: "center",
       render: (_, row) => {
         const roadway = roadwayMetaMap[row.roadwayId];
@@ -1072,19 +1359,28 @@ export default function DemandAirDistributionPage() {
     {
       title: "风阻",
       key: "resistance",
-      width: 132,
+      width: 126,
       align: "right",
       render: (_, row) => {
         const roadway = roadwayMetaMap[row.roadwayId];
         if (!roadway) return "--";
-        const projection = buildResistanceProjection(roadway, row.solvedAirflow, row.currentAirflow);
+        const projection = buildResistanceProjection(
+          roadway,
+          row.solvedAirflow,
+          row.currentAirflow,
+        );
         if (!projection.changed) {
-          return <span className="demand-air-resistance-value">{projection.baseResistance.toFixed(3)}</span>;
+          return (
+            <span className="demand-air-resistance-value">
+              {projection.baseResistance.toFixed(3)}
+            </span>
+          );
         }
 
         return (
           <span className="demand-air-resistance-modified">
-            {projection.baseResistance.toFixed(3)} → {projection.adjustedResistance.toFixed(3)}
+            {projection.baseResistance.toFixed(3)} →{" "}
+            {projection.adjustedResistance.toFixed(3)}
           </span>
         );
       },
@@ -1092,13 +1388,16 @@ export default function DemandAirDistributionPage() {
     {
       title: "最小风阻",
       key: "minAdjustableResistance",
-      width: 98,
+      width: 86,
       align: "center",
       render: (_, row) => {
         const roadway = roadwayMetaMap[row.roadwayId];
         if (!roadway) return "--";
-        return roadway.resistanceAdjustable && roadway.minAdjustableResistance != null ? (
-          <span className="demand-air-min-resistance">{roadway.minAdjustableResistance.toFixed(3)}</span>
+        return roadway.resistanceAdjustable &&
+          roadway.minAdjustableResistance != null ? (
+          <span className="demand-air-min-resistance">
+            {roadway.minAdjustableResistance.toFixed(3)}
+          </span>
         ) : (
           <span className="demand-air-min-resistance--na">--</span>
         );
@@ -1108,23 +1407,33 @@ export default function DemandAirDistributionPage() {
       title: "目标风量(m³/s)",
       dataIndex: "targetAirflow",
       key: "targetAirflow",
-      width: 116,
+      width: 102,
       align: "right",
-      render: (value: number, row) => (row.targetSpecified ? formatAirflow(value) : "--"),
+      render: (value: number, row) =>
+        row.targetSpecified ? formatAirflow(value) : "--",
     },
     {
       title: "解算风量(m³/s)",
       dataIndex: "solvedAirflow",
       key: "solvedAirflow",
-      width: 116,
+      width: 102,
       align: "right",
-      render: (value: number) => formatAirflow(value),
+      render: (value: number, row) => {
+        const matched =
+          row.targetSpecified && Math.abs(value - row.targetAirflow) <= 0.2;
+        const className = matched
+          ? "demand-air-solved-airflow demand-air-solved-airflow--matched"
+          : row.targetSpecified
+            ? "demand-air-solved-airflow demand-air-solved-airflow--target"
+            : undefined;
+        return <span className={className}>{formatAirflow(value)}</span>;
+      },
     },
     {
       title: "偏差(m³/s)",
       dataIndex: "deviation",
       key: "deviation",
-      width: 118,
+      width: 100,
       align: "center",
       render: (value: number, row) => {
         const abs = Math.abs(value);
@@ -1156,7 +1465,10 @@ export default function DemandAirDistributionPage() {
   ];
 
   const auxFanColumns: ColumnsType<
-    AuxFanInfo & { displayFrequencyHz: number | null; currentAssistAirflow: number }
+    AuxFanInfo & {
+      displayFrequencyHz: number | null;
+      currentAssistAirflow: number;
+    }
   > = [
     {
       title: "局扇",
@@ -1180,7 +1492,8 @@ export default function DemandAirDistributionPage() {
       key: "displayFrequencyHz",
       width: 84,
       align: "right",
-      render: (value: number | null) => (value == null ? "--" : value.toFixed(1)),
+      render: (value: number | null) =>
+        value == null ? "--" : value.toFixed(1),
     },
     {
       title: "额定(Hz)",
@@ -1202,7 +1515,13 @@ export default function DemandAirDistributionPage() {
   return (
     <div className="demand-air-page">
       <div className="demand-air-page__background">
-        <Suspense fallback={<div className="demand-air-page__bg-loading">正在加载巷道三维模型...</div>}>
+        <Suspense
+          fallback={
+            <div className="demand-air-page__bg-loading">
+              正在加载巷道三维模型...
+            </div>
+          }
+        >
           <LazyHomeObjBackground
             paused={PLATFORM_REFERENCE_MODEL_SETTINGS.paused}
             rotationSpeed={PLATFORM_REFERENCE_MODEL_SETTINGS.rotationSpeed}
@@ -1211,8 +1530,12 @@ export default function DemandAirDistributionPage() {
             disableRotation={PLATFORM_REFERENCE_MODEL_SETTINGS.disableRotation}
             viewScale={PLATFORM_REFERENCE_MODEL_SETTINGS.viewScale}
             viewAzimuthDeg={PLATFORM_REFERENCE_MODEL_SETTINGS.viewAzimuthDeg}
-            roadwayPointObjPath={ROADWAY_POINT_OBJ_PATH}
-            roadwayPointLabels={roadwayPointLabels}
+            roadwayPointObjPath={ROADWAY_LABEL_ANCHOR_MODEL_PATH}
+            roadwayPointOverlayVisible={false}
+            roadwayPointLabels={roadwayModelLabels}
+            autoFillRoadwayPointLabels={false}
+            roadwayPointSerialNameMap={ROADWAY_SERIAL_NAME_MAP}
+            roadwayPointShowSerial={false}
           />
         </Suspense>
       </div>
@@ -1236,8 +1559,8 @@ export default function DemandAirDistributionPage() {
                   <strong>{enabledMainFans.length} 台</strong>
                 </div>
                 <div className="demand-air-fan-summary-item">
-                  <span>主扇能力</span>
-                  <strong>{mainFanCapacity.toFixed(1)} m³/s</strong>
+                  <span>主扇总风量</span>
+                  <strong>{mainFanTotalAirflow.toFixed(2)} m³/s</strong>
                 </div>
                 <div className="demand-air-fan-summary-item">
                   <span>平均风压</span>
@@ -1254,11 +1577,21 @@ export default function DemandAirDistributionPage() {
                         {fan.enabled ? "运行" : "待机"}
                       </Tag>
                     </div>
-                    <div className="demand-air-fan-item__body">
-                      <span>频率 {fan.frequencyHz.toFixed(1)} / {fan.ratedFrequencyHz.toFixed(0)} Hz</span>
-                      <span>风压 {fan.pressurePa.toFixed(0)} Pa</span>
-                      <span className="demand-air-fan-item__meta">
-                        能力 {(fan.airflowCapacity * (fan.frequencyHz / fan.ratedFrequencyHz)).toFixed(1)} m³/s
+                    <div className="demand-air-fan-item__body demand-air-fan-item__body--main">
+                      <span className="demand-air-fan-item__metric">
+                        <em>频率</em>
+                        <strong>
+                          {fan.frequencyHz.toFixed(1)} /{" "}
+                          {fan.ratedFrequencyHz.toFixed(0)} Hz
+                        </strong>
+                      </span>
+                      <span className="demand-air-fan-item__metric">
+                        <em>风量</em>
+                        <strong>{fan.currentAirflow.toFixed(2)} m³/s</strong>
+                      </span>
+                      <span className="demand-air-fan-item__metric">
+                        <em>风压</em>
+                        <strong>{fan.pressurePa.toFixed(0)} Pa</strong>
                       </span>
                     </div>
                   </div>
@@ -1348,7 +1681,7 @@ export default function DemandAirDistributionPage() {
                 size="small"
                 pagination={false}
                 tableLayout="fixed"
-                scroll={{ x: 820, y: 330 }}
+                scroll={{ x: 740, y: 330 }}
               />
             </Card>
 
@@ -1368,7 +1701,10 @@ export default function DemandAirDistributionPage() {
                     value={decisionLayer}
                     className="demand-air-report-select demand-air-report-select--layer"
                     placeholder="请选择决策层"
-                    options={DECISION_LAYER_OPTIONS.map((item) => ({ value: item.value, label: item.label }))}
+                    options={DECISION_LAYER_OPTIONS.map((item) => ({
+                      value: item.value,
+                      label: item.label,
+                    }))}
                     onChange={handleDecisionLayerChange}
                   />
                   <Select
@@ -1396,7 +1732,10 @@ export default function DemandAirDistributionPage() {
               {reportRecords.length > 0 && (
                 <div className="demand-air-report-history">
                   {reportRecords.slice(0, 2).map((record) => (
-                    <div key={record.id} className="demand-air-report-history__item">
+                    <div
+                      key={record.id}
+                      className="demand-air-report-history__item"
+                    >
                       <div className="demand-air-report-history__head">
                         <Tag color="blue">已上报</Tag>
                         <span>{record.reportAt}</span>
@@ -1467,13 +1806,13 @@ export default function DemandAirDistributionPage() {
               />
             ) : (
               <Table
-                className="demand-air-table"
+                className="demand-air-table demand-air-table--result"
                 columns={resultColumns}
                 dataSource={solveResults}
                 rowKey="roadwayId"
                 size="small"
                 pagination={false}
-                scroll={{ x: 1060, y: 250 }}
+                scroll={{ x: 980, y: 250 }}
               />
             )}
           </Card>

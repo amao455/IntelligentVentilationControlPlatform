@@ -11,15 +11,16 @@ import {
 } from 'antd';
 import {
   AlertOutlined,
+  AppstoreOutlined,
   AreaChartOutlined,
   ApartmentOutlined,
   BarChartOutlined,
   BellOutlined,
+  ClockCircleOutlined,
   ControlOutlined,
   DeploymentUnitOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
-  QuestionCircleOutlined,
   UserOutlined,
   WifiOutlined,
 } from '@ant-design/icons';
@@ -51,6 +52,9 @@ export function TopNav() {
   const currentModule = resolveModuleByPath(location.pathname);
   const [api, contextHolder] = message.useMessage();
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [currentTimeText, setCurrentTimeText] = useState(() =>
+    new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+  );
 
   const businessMenus = topMenuList.filter((item) => item.key !== 'home');
   const splitIndex = Math.ceil(businessMenus.length / 2);
@@ -64,6 +68,16 @@ export function TopNav() {
 
     return () => {
       document.removeEventListener('fullscreenchange', onChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrentTimeText(new Date().toLocaleTimeString('zh-CN', { hour12: false }));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -297,17 +311,13 @@ export function TopNav() {
             <Button className="top-nav-action" type="text" icon={<BellOutlined />} />
           </Badge>
         </Tooltip>
-        <Tag
-          icon={<WifiOutlined />}
-          style={{
-            marginInlineEnd: 0,
-            color: '#eaf3ff',
-            borderColor: 'rgba(143, 194, 255, 0.45)',
-            background: 'rgba(90, 170, 255, 0.18)',
-          }}
-        >
+        <Tag className="top-nav-status-tag" icon={<WifiOutlined />}>
           系统在线
         </Tag>
+        <span className="top-nav-time" aria-label="当前时间">
+          <ClockCircleOutlined />
+          <span>{currentTimeText}</span>
+        </span>
         <Tooltip title="全屏切换">
           <Button
             className="top-nav-action"
@@ -316,13 +326,13 @@ export function TopNav() {
             onClick={() => void handleToggleFullscreen()}
           />
         </Tooltip>
-        <Tooltip title="帮助说明">
-          <Button className="top-nav-action" type="text" icon={<QuestionCircleOutlined />} />
+        <Tooltip title="工作台">
+          <Button className="top-nav-action" type="text" icon={<AppstoreOutlined />} />
         </Tooltip>
 
         <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
           <Button className="top-nav-action top-nav-user" type="text" icon={<UserOutlined />}>
-            <Typography.Text>调度员A</Typography.Text>
+            <Typography.Text>李志强</Typography.Text>
           </Button>
         </Dropdown>
       </Space>

@@ -2979,3 +2979,18 @@
 .status-stack-column > .status-card--integrated .status-roadway-table--integrated .ant-table-sticky-scroll {
   display: none !important;
 }
+
+/* 实时分风解算：收敛底部留白，减小结果卡片与页面底部间距 */
+.natural-air-content-shell.natural-air-content-shell--tri {
+  padding: 12px 14px 6px !important;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+  height: 100% !important;
+}
+
+@media (max-width: 1200px) {
+  .natural-air-content-shell.natural-air-content-shell--tri > .natural-air-top-row {
+    height: auto !important;
+  }
+}

@@ -435,6 +435,47 @@ body {
   gap: 10px;
 }
 
+.top-nav-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 88px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(143, 194, 255, 0.44);
+  border-radius: 8px;
+  background: rgba(90, 170, 255, 0.18);
+  color: #eaf3ff;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.top-nav-time .anticon {
+  color: #c6e2ff;
+  font-size: 12px;
+}
+
+.top-nav-status-tag.ant-tag {
+  margin-inline-end: 0;
+  height: 24px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  border-color: rgba(143, 194, 255, 0.44);
+  background: rgba(90, 170, 255, 0.18);
+  color: #eaf3ff;
+  line-height: 1;
+}
+
+.top-nav-status-tag.ant-tag .anticon {
+  color: #c6e2ff;
+  font-size: 12px;
+}
+
 .top-nav-action.ant-btn-text {
   color: var(--header-text-muted);
   border-radius: 8px;
