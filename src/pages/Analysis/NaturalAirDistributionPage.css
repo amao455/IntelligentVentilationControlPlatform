@@ -2994,3 +2994,143 @@
     height: auto !important;
   }
 }
+
+/* Industrial cockpit alignment with demand-air distribution page */
+.natural-air-distribution-page.platform-tunnel-bg-page {
+  border-radius: 8px;
+  border: 1px solid rgba(33, 214, 198, 0.34);
+  box-shadow:
+    inset 0 0 0 1px rgba(202, 255, 248, 0.04),
+    0 0 0 1px rgba(7, 17, 17, 0.8);
+}
+
+.natural-air-distribution-page .natural-air-bg-layer {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(26, 96, 92, 0.48) 0%, rgba(8, 21, 22, 0.32) 42%, rgba(4, 10, 10, 0.62) 100%),
+    linear-gradient(120deg, rgba(5, 12, 12, 0.88), rgba(12, 35, 34, 0.5) 45%, rgba(5, 10, 8, 0.88)) !important;
+}
+
+.natural-air-distribution-page .natural-air-bg-mask {
+  background:
+    linear-gradient(90deg, rgba(33, 214, 198, 0.13) 1px, transparent 1px),
+    linear-gradient(rgba(33, 214, 198, 0.09) 1px, transparent 1px),
+    radial-gradient(ellipse at center, transparent 0%, rgba(2, 6, 6, 0.18) 66%, rgba(2, 5, 5, 0.74) 100%) !important;
+  background-size: 96px 96px, 96px 96px, auto !important;
+  opacity: 0.26;
+}
+
+.natural-air-content-shell.natural-air-content-shell--tri {
+  padding: 12px 12px 6px !important;
+  gap: 12px;
+}
+
+.natural-air-distribution-page .natural-panel-card,
+.natural-air-distribution-page .boundary-metrics-card,
+.natural-air-distribution-page .status-roadway-table-card,
+.natural-air-distribution-page .fan-curve-panel,
+.natural-air-distribution-page .control-card,
+.natural-air-distribution-page .result-card {
+  border: 1px solid rgba(83, 135, 137, 0.58) !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(180deg, rgba(13, 28, 29, 0.82) 0%, rgba(8, 18, 19, 0.72) 100%) !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(202, 255, 248, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.natural-air-distribution-page .natural-panel-card:hover,
+.natural-air-distribution-page .boundary-metrics-card:hover,
+.natural-air-distribution-page .status-roadway-table-card:hover,
+.natural-air-distribution-page .fan-curve-panel:hover,
+.natural-air-distribution-page .control-card:hover,
+.natural-air-distribution-page .result-card:hover {
+  border-color: rgba(33, 214, 198, 0.72) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.46),
+    0 0 24px rgba(33, 214, 198, 0.16) !important;
+  transform: none !important;
+}
+
+.natural-air-distribution-page .ant-card-head,
+.natural-air-distribution-page .natural-panel-card .ant-card-head,
+.natural-air-distribution-page .boundary-metrics-card .ant-card-head {
+  min-height: 46px !important;
+  border-bottom: 1px solid rgba(83, 135, 137, 0.56) !important;
+  background:
+    linear-gradient(90deg, rgba(33, 214, 198, 0.18) 0%, rgba(14, 36, 38, 0.84) 52%, rgba(255, 184, 77, 0.08) 100%) !important;
+}
+
+.natural-air-distribution-page .ant-card-head-title,
+.natural-air-distribution-page .ant-card-body,
+.natural-air-distribution-page .ant-typography,
+.natural-air-distribution-page .ant-table {
+  color: #e9fbf8 !important;
+}
+
+.natural-air-distribution-page .boundary-metric-item,
+.natural-air-distribution-page .control-ready-item,
+.natural-air-distribution-page .control-side-value,
+.natural-air-distribution-page .result-focus-item,
+.natural-air-distribution-page .control-panel,
+.natural-air-distribution-page .status-curve-brief-item {
+  border: 1px solid rgba(83, 135, 137, 0.5) !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(135deg, rgba(12, 31, 33, 0.74), rgba(9, 21, 22, 0.58)) !important;
+  box-shadow: inset 0 1px 0 rgba(202, 255, 248, 0.06);
+}
+
+.natural-air-distribution-page .boundary-metric-label,
+.natural-air-distribution-page .control-side-label,
+.natural-air-distribution-page .result-focus-item span,
+.natural-air-distribution-page .status-curve-brief-item span,
+.natural-air-distribution-page .ant-table-thead > tr > th {
+  color: #9bbfbd !important;
+}
+
+.natural-air-distribution-page .boundary-metric-value,
+.natural-air-distribution-page .control-side-value strong,
+.natural-air-distribution-page .result-focus-item strong,
+.natural-air-distribution-page .status-curve-brief-item strong {
+  color: #e9fbf8 !important;
+  text-shadow: 0 0 14px rgba(33, 214, 198, 0.22);
+}
+
+.natural-air-distribution-page .ant-table,
+.natural-air-distribution-page .ant-table-container,
+.natural-air-distribution-page .ant-table-content,
+.natural-air-distribution-page .ant-table-body {
+  background: transparent !important;
+}
+
+.natural-air-distribution-page .ant-table-thead > tr > th {
+  border-bottom: 1px solid rgba(33, 214, 198, 0.38) !important;
+  background: rgba(19, 50, 52, 0.86) !important;
+}
+
+.natural-air-distribution-page .ant-table-tbody > tr > td {
+  border-color: rgba(83, 135, 137, 0.25) !important;
+  background: rgba(7, 18, 19, 0.42) !important;
+  color: #d8efec !important;
+}
+
+.natural-air-distribution-page .ant-table-tbody > tr:hover > td {
+  background: rgba(33, 214, 198, 0.12) !important;
+}
+
+.natural-air-distribution-page .ant-btn-primary {
+  border-color: rgba(33, 214, 198, 0.82) !important;
+  background: linear-gradient(180deg, #21d6c6 0%, #0fa899 100%) !important;
+  color: #05100f !important;
+  box-shadow: 0 0 18px rgba(33, 214, 198, 0.28) !important;
+}
+
+.natural-air-distribution-page .ant-btn-default,
+.natural-air-distribution-page .ant-select-selector,
+.natural-air-distribution-page .ant-input-number {
+  border-color: rgba(83, 135, 137, 0.52) !important;
+  background: rgba(7, 18, 19, 0.78) !important;
+  color: #e9fbf8 !important;
+}

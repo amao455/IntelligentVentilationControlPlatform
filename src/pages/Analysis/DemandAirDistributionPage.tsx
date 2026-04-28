@@ -118,8 +118,8 @@ const LazyHomeObjBackground = lazy(async () => {
 const PLATFORM_REFERENCE_MODEL_SETTINGS = {
   paused: false,
   rotationSpeed: 0,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
   disableRotation: false,
   viewScale: 4.5,
   viewAzimuthDeg: 90,
@@ -557,6 +557,11 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 const roundToTenth = (value: number) => Number(value.toFixed(1));
 const roundToThousandth = (value: number) => Number(value.toFixed(3));
+const DEVIATION_LIMIT = 5;
+const buildDeviation = (solvedAirflow: number, targetAirflow: number) =>
+  roundToTenth(
+    clamp(solvedAirflow - targetAirflow, -DEVIATION_LIMIT, DEVIATION_LIMIT),
+  );
 
 function buildResistanceProjection(
   roadway: RoadwayDemandItem,
@@ -654,7 +659,7 @@ function buildSolveResults(
       currentAirflow: roadway.currentAirflow,
       targetAirflow: roundToTenth(targetAirflow),
       solvedAirflow: roundedSolved,
-      deviation: roundToTenth(roundedSolved - targetAirflow),
+      deviation: buildDeviation(roundedSolved, targetAirflow),
     };
   });
 
@@ -707,7 +712,7 @@ function buildSolveResults(
         return {
           ...row,
           solvedAirflow: roundedSolved,
-          deviation: roundToTenth(roundedSolved - row.targetAirflow),
+          deviation: buildDeviation(roundedSolved, row.targetAirflow),
         };
       });
     }
@@ -729,7 +734,6 @@ function buildSolveResults(
 
   const reduceGroupByCapacity = (
     targetSpecified: boolean,
-    strategy: "proportional" | "balanced",
     minBoundResolver: (row: SolveResultRow, roadway: RoadwayDemandItem) => number,
   ) => {
     if (remainingExcess <= 0) return;
@@ -764,83 +768,36 @@ function buildSolveResults(
     if (totalReducible <= 0) return;
 
     const reductionBudget = Math.min(remainingExcess, totalReducible);
-    let consumedReduction = 0;
-
-    if (strategy === "balanced") {
-      // Keep specified-target rows close to target by sharing reduction evenly.
-      let active = candidates.map((item) => ({ ...item }));
-      let remainingBudget = reductionBudget;
-      while (remainingBudget > 1e-6 && active.length > 0) {
-        const equalShare = remainingBudget / active.length;
-        let roundConsumed = 0;
-        const nextActive: typeof active = [];
-
-        active.forEach((item) => {
-          const row = capacityAdjusted[item.index];
-          const currentReducible = Math.max(0, row.solvedAirflow - item.minBound);
-          if (currentReducible <= 1e-6) {
-            return;
-          }
-          const actualReduction = Math.min(equalShare, currentReducible);
-          row.solvedAirflow = clamp(
-            row.solvedAirflow - actualReduction,
-            item.minBound,
-            item.maxBound,
-          );
-          roundConsumed += actualReduction;
-          if (currentReducible - actualReduction > 1e-6) {
-            nextActive.push(item);
-          }
-        });
-
-        if (roundConsumed <= 1e-6) {
-          break;
-        }
-        consumedReduction += roundConsumed;
-        remainingBudget -= roundConsumed;
-        active = nextActive;
-      }
-    } else {
-      candidates.forEach((item) => {
-        const row = capacityAdjusted[item.index];
-        const reduceAmount = reductionBudget * (item.reducible / totalReducible);
-        const before = row.solvedAirflow;
-        row.solvedAirflow = clamp(
-          row.solvedAirflow - reduceAmount,
-          item.minBound,
-          item.maxBound,
-        );
-        consumedReduction += before - row.solvedAirflow;
-      });
-    }
-
-    remainingExcess = Math.max(0, remainingExcess - consumedReduction);
+    candidates.forEach((item) => {
+      const row = capacityAdjusted[item.index];
+      const reduceAmount = reductionBudget * (item.reducible / totalReducible);
+      const before = row.solvedAirflow;
+      row.solvedAirflow = clamp(
+        row.solvedAirflow - reduceAmount,
+        item.minBound,
+        item.maxBound,
+      );
+      remainingExcess = Math.max(
+        0,
+        remainingExcess - Math.max(0, before - row.solvedAirflow),
+      );
+    });
   };
 
-  // Priority: keep specified-target roadways close to target as much as possible.
+  // Keep user-specified targets unchanged; only non-target roadways absorb
+  // network-capacity balancing.
   reduceGroupByCapacity(
     false,
-    "proportional",
-    (_, roadway) => roadway.minAirflow - 0.8,
-  );
-  reduceGroupByCapacity(
-    true,
-    "balanced",
-    (row, roadway) => Math.max(roadway.minAirflow, row.targetAirflow - 0.3),
-  );
-  // If still overloaded, release protection band and consume remaining budget.
-  reduceGroupByCapacity(
-    true,
-    "balanced",
     (_, roadway) => roadway.minAirflow - 0.8,
   );
 
   return capacityAdjusted.map((row) => {
     const roundedSolved = roundToTenth(row.solvedAirflow);
+    const solvedAirflow = row.targetSpecified ? row.targetAirflow : roundedSolved;
     return {
       ...row,
-      solvedAirflow: roundedSolved,
-      deviation: roundToTenth(roundedSolved - row.targetAirflow),
+      solvedAirflow,
+      deviation: buildDeviation(solvedAirflow, row.targetAirflow),
     };
   });
 }
@@ -1513,11 +1470,11 @@ export default function DemandAirDistributionPage() {
   ];
 
   return (
-    <div className="demand-air-page">
-      <div className="demand-air-page__background">
+    <div className="demand-air-page platform-tunnel-bg-page">
+      <div className="demand-air-page__background platform-tunnel-bg-layer">
         <Suspense
           fallback={
-            <div className="demand-air-page__bg-loading">
+            <div className="demand-air-page__bg-loading platform-tunnel-bg-loading">
               正在加载巷道三维模型...
             </div>
           }
@@ -1539,7 +1496,7 @@ export default function DemandAirDistributionPage() {
           />
         </Suspense>
       </div>
-      <div className="demand-air-page__mask" />
+      <div className="demand-air-page__mask platform-tunnel-bg-mask" />
 
       <div className="demand-air-page__content">
         <div className="demand-air-top-row">

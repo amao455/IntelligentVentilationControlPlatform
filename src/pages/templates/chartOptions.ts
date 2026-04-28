@@ -1,4 +1,4 @@
-﻿import type { EChartsOption } from 'echarts';
+import type { EChartsOption } from 'echarts';
 
 export function buildLineOption(labels: string[], values: number[], title = '趋势') : EChartsOption {
   return {
@@ -7,14 +7,14 @@ export function buildLineOption(labels: string[], values: number[], title = '趋
     xAxis: {
       type: 'category',
       data: labels,
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      axisLabel: { color: '#4e6a86' },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      axisLabel: { color: '#9bbfbd' },
     },
     yAxis: {
       type: 'value',
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      splitLine: { lineStyle: { color: '#dce7f3' } },
-      axisLabel: { color: '#4e6a86' },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      splitLine: { lineStyle: { color: 'rgba(83, 135, 137, 0.26)' } },
+      axisLabel: { color: '#9bbfbd' },
     },
     series: [
       {
@@ -23,8 +23,8 @@ export function buildLineOption(labels: string[], values: number[], title = '趋
         smooth: true,
         data: values,
         symbolSize: 6,
-        lineStyle: { color: '#2f7fd2', width: 2 },
-        itemStyle: { color: '#2f7fd2' },
+        lineStyle: { color: '#21d6c6', width: 2 },
+        itemStyle: { color: '#21d6c6' },
         areaStyle: {
           color: {
             type: 'linear',
@@ -50,13 +50,13 @@ export function buildBarOption(categories: string[], values: number[], title = '
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      axisLabel: { color: '#4e6a86', interval: 0, rotate: 20 },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      axisLabel: { color: '#9bbfbd', interval: 0, rotate: 20 },
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#4e6a86' },
-      splitLine: { lineStyle: { color: '#dce7f3' } },
+      axisLabel: { color: '#9bbfbd' },
+      splitLine: { lineStyle: { color: 'rgba(83, 135, 137, 0.26)' } },
     },
     series: [
       {
@@ -66,7 +66,7 @@ export function buildBarOption(categories: string[], values: number[], title = '
         barWidth: 18,
         itemStyle: {
           borderRadius: [4, 4, 0, 0],
-          color: '#4d8ed4',
+          color: '#21d6c6',
         },
       },
     ],
@@ -76,7 +76,7 @@ export function buildBarOption(categories: string[], values: number[], title = '
 export function buildPieOption(data: Array<{ name: string; value: number }>): EChartsOption {
   return {
     tooltip: { trigger: 'item' },
-    legend: { bottom: 0, textStyle: { color: '#4e6a86' } },
+    legend: { bottom: 0, textStyle: { color: '#9bbfbd' } },
     series: [
       {
         type: 'pie',
@@ -85,12 +85,12 @@ export function buildPieOption(data: Array<{ name: string; value: number }>): EC
         label: { show: false },
         data,
         itemStyle: {
-          borderColor: '#fff',
+          borderColor: '#0d1a1b',
           borderWidth: 2,
         },
       },
     ],
-    color: ['#2f7fd2', '#63a0df', '#8bb8e8', '#b7cde7'],
+    color: ['#21d6c6', '#35b9ff', '#63e6a5', '#ffb84d'],
   };
 }
 
@@ -108,31 +108,31 @@ export function buildGasBarOption(): EChartsOption {
     legend: {
       data: ['甲烷 (CH₄)', '一氧化碳 (CO)'],
       top: 0,
-      textStyle: { color: '#4e6a86', fontSize: 11 },
+      textStyle: { color: '#9bbfbd', fontSize: 11 },
     },
     grid: { left: 45, right: 18, top: 35, bottom: 30 },
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      axisLabel: { color: '#4e6a86', interval: 0, rotate: 15, fontSize: 11 },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      axisLabel: { color: '#9bbfbd', interval: 0, rotate: 15, fontSize: 11 },
     },
     yAxis: [
       {
         type: 'value',
         name: 'CH₄ (%)',
         position: 'left',
-        axisLabel: { color: '#4e6a86', fontSize: 10 },
-        splitLine: { lineStyle: { color: '#dce7f3' } },
-        nameTextStyle: { color: '#4e6a86', fontSize: 11 },
+        axisLabel: { color: '#9bbfbd', fontSize: 10 },
+        splitLine: { lineStyle: { color: 'rgba(83, 135, 137, 0.26)' } },
+        nameTextStyle: { color: '#9bbfbd', fontSize: 11 },
       },
       {
         type: 'value',
         name: 'CO (ppm)',
         position: 'right',
-        axisLabel: { color: '#4e6a86', fontSize: 10 },
+        axisLabel: { color: '#9bbfbd', fontSize: 10 },
         splitLine: { show: false },
-        nameTextStyle: { color: '#4e6a86', fontSize: 11 },
+        nameTextStyle: { color: '#9bbfbd', fontSize: 11 },
       },
     ],
     series: [
@@ -176,18 +176,18 @@ export function buildEnvironmentPieOption(): EChartsOption {
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      axisLabel: { color: '#4e6a86', fontSize: 12 },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      axisLabel: { color: '#9bbfbd', fontSize: 12 },
     },
     yAxis: {
       type: 'value',
       max: 100,
       axisLabel: {
-        color: '#4e6a86',
+        color: '#9bbfbd',
         fontSize: 11,
         formatter: '{value}%',
       },
-      splitLine: { lineStyle: { color: '#dce7f3' } },
+      splitLine: { lineStyle: { color: 'rgba(83, 135, 137, 0.26)' } },
     },
     series: [
       {
@@ -214,7 +214,7 @@ export function buildEnvironmentPieOption(): EChartsOption {
           show: true,
           position: 'top',
           formatter: '{c}%',
-          color: '#4e6a86',
+          color: '#9bbfbd',
           fontSize: 12,
           fontWeight: 'bold',
         },
@@ -280,7 +280,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '井下总人数',
               fontSize: 15,
               fontWeight: 700,
-              fill: '#4e6a86',
+              fill: '#9bbfbd',
               textShadow: '0 0 8px rgba(78, 106, 134, 0.3)',
             } as any,
           },
@@ -339,7 +339,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '人',
               fontSize: 18,
               fontWeight: 600,
-              fill: '#8ca4be',
+              fill: 'rgba(155, 191, 189, 0.58)',
             },
           },
         ],
@@ -387,7 +387,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '在线',
               fontSize: 12,
               fontWeight: 600,
-              fill: '#4e6a86',
+              fill: '#9bbfbd',
             },
           },
           {
@@ -431,7 +431,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '离线',
               fontSize: 12,
               fontWeight: 600,
-              fill: '#4e6a86',
+              fill: '#9bbfbd',
             },
           },
           {
@@ -475,7 +475,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '告警',
               fontSize: 12,
               fontWeight: 600,
-              fill: '#4e6a86',
+              fill: '#9bbfbd',
             },
           },
           {
@@ -519,7 +519,7 @@ export function buildPersonnelOverviewOption(): EChartsOption {
               text: '在线率',
               fontSize: 12,
               fontWeight: 600,
-              fill: '#4e6a86',
+              fill: '#9bbfbd',
             },
           },
           {
@@ -555,17 +555,17 @@ export function buildPersonnelBarOption(): EChartsOption {
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: '#8ca4be' } },
-      axisLabel: { color: '#4e6a86', interval: 0, rotate: 15, fontSize: 11 },
+      axisLine: { lineStyle: { color: 'rgba(155, 191, 189, 0.58)' } },
+      axisLabel: { color: '#9bbfbd', interval: 0, rotate: 15, fontSize: 11 },
     },
     yAxis: {
       type: 'value',
       axisLabel: {
-        color: '#4e6a86',
+        color: '#9bbfbd',
         fontSize: 11,
         formatter: '{value}人',
       },
-      splitLine: { lineStyle: { color: '#dce7f3' } },
+      splitLine: { lineStyle: { color: 'rgba(83, 135, 137, 0.26)' } },
     },
     series: [
       {
@@ -592,7 +592,7 @@ export function buildPersonnelBarOption(): EChartsOption {
           show: true,
           position: 'top',
           formatter: '{c}人',
-          color: '#4e6a86',
+          color: '#9bbfbd',
           fontSize: 12,
           fontWeight: 'bold',
         },
@@ -600,4 +600,5 @@ export function buildPersonnelBarOption(): EChartsOption {
     ],
   };
 }
+
 

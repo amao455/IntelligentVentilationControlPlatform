@@ -2,16 +2,10 @@
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  DashboardOutlined,
-  CompressOutlined,
-  WarningOutlined,
-  ApiOutlined,
-  AlertOutlined,
-  SafetyOutlined,
-  ControlOutlined
 } from '@ant-design/icons';
 import type { KpiItem } from '../../mock/mockData';
 import { StatusTag } from '../common/StatusTag';
+import { IndustrialIcon } from '../icons/IndustrialIcon';
 
 interface KpiCardProps {
   item: KpiItem;
@@ -20,16 +14,16 @@ interface KpiCardProps {
 // 根据KPI类型返回对应的图标
 const getKpiIcon = (key: string) => {
   const iconMap: Record<string, React.ReactNode> = {
-    inlet: <DashboardOutlined />,
-    return: <DashboardOutlined />,
-    lowAirflowRoadways: <WarningOutlined />,
-    totalResistance: <ControlOutlined />,
-    totalPressure: <CompressOutlined />,
-    onlinePoints: <ApiOutlined />,
-    exceptions: <WarningOutlined />,
-    emergencyState: <AlertOutlined />
+    inlet: <IndustrialIcon name="airflow-in" size={18} title="总进风量" />,
+    return: <IndustrialIcon name="airflow-return" size={18} title="总回风量" />,
+    lowAirflowRoadways: <IndustrialIcon name="roadway-warning" size={18} title="风量不足巷道" />,
+    totalResistance: <IndustrialIcon name="resistance-duct" size={18} title="总风阻" />,
+    totalPressure: <IndustrialIcon name="pressure-gauge" size={18} title="总风压" />,
+    onlinePoints: <IndustrialIcon name="sensor-node" size={18} title="在线测点" />,
+    exceptions: <IndustrialIcon name="gas-sensor" size={18} title="异常测点" />,
+    emergencyState: <IndustrialIcon name="emergency-siren" size={18} title="应急等级" />
   };
-  return iconMap[key] || <SafetyOutlined />;
+  return iconMap[key] || <IndustrialIcon name="safety-helmet" size={18} />;
 };
 
 export function KpiCard({ item }: KpiCardProps) {
@@ -93,31 +87,31 @@ export function KpiCard({ item }: KpiCardProps) {
   const iconBg = isLowAirflowCard
     ? 'linear-gradient(135deg, rgba(250, 173, 20, 0.35) 0%, rgba(255, 120, 117, 0.22) 100%)'
     : isResistanceCard
-      ? 'linear-gradient(135deg, rgba(64, 156, 255, 0.3) 0%, rgba(250, 173, 20, 0.2) 100%)'
+      ? 'linear-gradient(135deg, rgba(33, 214, 198, 0.28) 0%, rgba(255, 184, 77, 0.18) 100%)'
       : isPressureCard
-        ? 'linear-gradient(135deg, rgba(24, 144, 255, 0.34) 0%, rgba(82, 196, 26, 0.18) 100%)'
-      : 'linear-gradient(135deg, rgba(74, 157, 232, 0.3) 0%, rgba(107, 181, 240, 0.2) 100%)';
+        ? 'linear-gradient(135deg, rgba(53, 185, 255, 0.26) 0%, rgba(99, 230, 165, 0.16) 100%)'
+      : 'linear-gradient(135deg, rgba(33, 214, 198, 0.26) 0%, rgba(53, 185, 255, 0.14) 100%)';
   const iconBorder = isLowAirflowCard
     ? '1.5px solid rgba(255, 169, 64, 0.62)'
     : isResistanceCard
-      ? '1.5px solid rgba(145, 213, 255, 0.62)'
+      ? '1.5px solid rgba(33, 214, 198, 0.62)'
       : isPressureCard
-        ? '1.5px solid rgba(145, 213, 255, 0.68)'
-      : '1.5px solid rgba(150, 205, 255, 0.5)';
+        ? '1.5px solid rgba(53, 185, 255, 0.62)'
+      : '1.5px solid rgba(83, 135, 137, 0.72)';
   const iconShadow = isLowAirflowCard
     ? '0 0 15px rgba(255, 169, 64, 0.4), 0 0 25px rgba(255, 120, 117, 0.22), inset 0 1px 0 rgba(255, 236, 214, 0.2)'
     : isResistanceCard
-      ? '0 0 15px rgba(100, 181, 246, 0.38), 0 0 25px rgba(250, 173, 20, 0.2), inset 0 1px 0 rgba(220, 238, 255, 0.2)'
+      ? '0 0 15px rgba(33, 214, 198, 0.32), 0 0 25px rgba(255, 184, 77, 0.16), inset 0 1px 0 rgba(202, 255, 248, 0.16)'
       : isPressureCard
-        ? '0 0 15px rgba(24, 144, 255, 0.38), 0 0 25px rgba(82, 196, 26, 0.2), inset 0 1px 0 rgba(220, 238, 255, 0.2)'
-      : '0 0 15px rgba(74, 157, 232, 0.4), 0 0 25px rgba(74, 157, 232, 0.2), inset 0 1px 0 rgba(196, 225, 255, 0.2)';
+        ? '0 0 15px rgba(53, 185, 255, 0.32), 0 0 25px rgba(99, 230, 165, 0.14), inset 0 1px 0 rgba(202, 255, 248, 0.16)'
+      : '0 0 15px rgba(33, 214, 198, 0.32), 0 0 25px rgba(33, 214, 198, 0.14), inset 0 1px 0 rgba(202, 255, 248, 0.14)';
   const iconColor = isLowAirflowCard
     ? '#ffc069'
     : isResistanceCard
-      ? '#91d5ff'
+      ? '#8ff8ee'
       : isPressureCard
-        ? '#69c0ff'
-        : '#9cd0ff';
+        ? '#80d7ff'
+        : '#9ff8ee';
 
   // 根据进度百分比动态确定颜色
   const getProgressColor = () => {
@@ -127,8 +121,8 @@ export function KpiCard({ item }: KpiCardProps) {
 
     // 对于正常状态，根据进度值使用渐变色
     if (progressPercent >= 80) return '#52c41a';
-    if (progressPercent >= 60) return '#2f7fd2';
-    return '#69c0ff';
+    if (progressPercent >= 60) return '#21d6c6';
+    return '#35b9ff';
   };
 
   return (
@@ -137,10 +131,10 @@ export function KpiCard({ item }: KpiCardProps) {
       className="page-card kpi-card"
       styles={{ body: { padding: 16 } }}
       style={{
-        background: 'linear-gradient(135deg, rgba(17, 54, 94, 0.75) 0%, rgba(15, 47, 83, 0.85) 100%)',
-        border: '2px solid rgba(150, 205, 255, 0.65)',
+        background: 'linear-gradient(135deg, rgba(13, 28, 29, 0.9) 0%, rgba(8, 18, 19, 0.86) 100%)',
+        border: '1px solid rgba(83, 135, 137, 0.62)',
         backdropFilter: 'blur(14px)',
-        boxShadow: '0 4px 18px rgba(11, 35, 62, 0.55), 0 0 25px rgba(74, 157, 232, 0.3), 0 0 40px rgba(74, 157, 232, 0.15), inset 0 1px 0 rgba(196, 225, 255, 0.18), inset 0 0 30px rgba(74, 157, 232, 0.08)',
+        boxShadow: '0 12px 26px rgba(0, 0, 0, 0.36), 0 0 24px rgba(33, 214, 198, 0.12), inset 0 1px 0 rgba(202, 255, 248, 0.1)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'hidden',
         position: 'relative'
@@ -178,7 +172,7 @@ export function KpiCard({ item }: KpiCardProps) {
             </div>
             <Typography.Text
               style={{
-                color: '#b8d9ff',
+                color: '#9bbfbd',
                 fontSize: 12,
                 fontWeight: 500,
                 overflow: 'hidden',
@@ -199,10 +193,10 @@ export function KpiCard({ item }: KpiCardProps) {
           level={4}
           style={{
             margin: 0,
-            color: '#ffffff',
+            color: '#e9fbf8',
             fontSize: 16,
             fontWeight: 700,
-            textShadow: '0 0 12px rgba(156, 208, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3)',
+            textShadow: '0 0 12px rgba(33, 214, 198, 0.34), 0 2px 4px rgba(0, 0, 0, 0.3)',
             lineHeight: 1.3,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -212,7 +206,7 @@ export function KpiCard({ item }: KpiCardProps) {
           {item.value.toLocaleString()}{' '}
           <Typography.Text
             style={{
-              color: '#b8d9ff',
+              color: '#9bbfbd',
               fontSize: 11,
               fontWeight: 500
             }}
@@ -247,7 +241,7 @@ export function KpiCard({ item }: KpiCardProps) {
                 '0%': getProgressColor(),
                 '100%': progressPercent >= 80 ? '#73d13d' : progressPercent >= 60 ? '#69c0ff' : '#91d5ff'
               }}
-              trailColor="rgba(150, 205, 255, 0.2)"
+              trailColor="rgba(83, 135, 137, 0.24)"
               strokeWidth={7}
               style={{ width: '100%' }}
             />

@@ -1076,3 +1076,93 @@
     flex: 1;
   }
 }
+
+/* Industrial cockpit refresh */
+.gas-disaster-page::before {
+  background:
+    radial-gradient(circle at 50% 36%, rgba(33, 214, 198, 0.14), transparent 58%),
+    radial-gradient(circle at 15% 20%, rgba(255, 184, 77, 0.08), transparent 32%),
+    linear-gradient(rgba(61, 112, 111, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 112, 111, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(7, 16, 15, 0.26), rgba(7, 16, 15, 0.56)) !important;
+  background-size: auto, auto, 28px 28px, 28px 28px, auto !important;
+}
+
+.gas-disaster-page .page-card {
+  border: 1px solid rgba(83, 135, 137, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(13, 28, 29, 0.82) 0%, rgba(8, 18, 19, 0.72) 100%) !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(202, 255, 248, 0.08) !important;
+}
+
+.gas-disaster-page .page-card:hover {
+  border-color: rgba(33, 214, 198, 0.72) !important;
+  background:
+    linear-gradient(180deg, rgba(15, 34, 35, 0.88) 0%, rgba(8, 18, 19, 0.78) 100%) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.46),
+    0 0 24px rgba(33, 214, 198, 0.16) !important;
+}
+
+.gas-disaster-page .ant-card-head {
+  border-bottom: 1px solid rgba(83, 135, 137, 0.56) !important;
+  background:
+    linear-gradient(90deg, rgba(33, 214, 198, 0.18) 0%, rgba(14, 36, 38, 0.84) 52%, rgba(255, 184, 77, 0.08) 100%) !important;
+}
+
+.gas-disaster-page .ant-card-head-title,
+.gas-disaster-page .ant-card-body,
+.gas-disaster-page .ant-typography {
+  color: #e9fbf8 !important;
+}
+
+.gas-disaster-page .gas-filter-item--vertical,
+.gas-disaster-page .gas-filter-item--type,
+.gas-disaster-page .gas-overview-grid .ant-statistic,
+.gas-disaster-page .gas-overview-grid-compact .ant-statistic,
+.gas-disaster-page .gas-person-stats .ant-statistic,
+.gas-disaster-page .gas-suggestion-meta-line,
+.gas-disaster-page .gas-suggestion-summary,
+.gas-disaster-page .gas-suggestion-list,
+.gas-disaster-page .gas-suggestion-item {
+  border-color: rgba(83, 135, 137, 0.42) !important;
+  background: rgba(8, 18, 19, 0.58) !important;
+}
+
+.gas-disaster-page .ant-table-thead > tr > th {
+  background: rgba(19, 50, 52, 0.86) !important;
+  border-bottom-color: rgba(33, 214, 198, 0.38) !important;
+}
+
+.gas-disaster-page .ant-table-tbody > tr > td {
+  border-bottom-color: rgba(83, 135, 137, 0.24) !important;
+  color: #d4edeb !important;
+}
+
+.gas-disaster-page .ant-table-tbody > tr:hover > td,
+.gas-disaster-page .gas-person-row-active td {
+  background: rgba(33, 214, 198, 0.12) !important;
+}
+
+.gas-disaster-page .ant-btn-primary {
+  border-color: rgba(33, 214, 198, 0.82) !important;
+  background: linear-gradient(180deg, #21d6c6 0%, #0fa899 100%) !important;
+  color: #05100f !important;
+  box-shadow: 0 0 18px rgba(33, 214, 198, 0.28) !important;
+}
+
+.gas-disaster-page .ant-btn-default,
+.gas-disaster-page .ant-select-selector,
+.gas-disaster-page .ant-input-number {
+  border-color: rgba(83, 135, 137, 0.52) !important;
+  background: rgba(7, 18, 19, 0.78) !important;
+  color: #e9fbf8 !important;
+}
+
+.gas-disaster-page .ant-typography-secondary,
+.gas-disaster-page .gas-suggestion-row span,
+.gas-disaster-page .gas-suggestion-section-title {
+  color: #9bbfbd !important;
+}

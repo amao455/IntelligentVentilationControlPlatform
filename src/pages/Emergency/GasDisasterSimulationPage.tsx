@@ -264,8 +264,8 @@ const distanceOf = (a: [number, number], b: [number, number]): number => {
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
   paused: false,
   rotationSpeed: 0.06,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
@@ -734,13 +734,13 @@ export default function GasDisasterSimulationPage() {
   ]);
 
   return (
-    <div className="gas-disaster-page page-container">
+    <div className="gas-disaster-page page-container platform-tunnel-bg-page">
       {/* 3D背景层 */}
-      <div className="gas-background-layer">
+      <div className="gas-background-layer platform-tunnel-bg-layer">
         {backgroundReady ? (
           <Suspense
             fallback={
-              <div className="gas-background-placeholder">3D背景载入中</div>
+              <div className="gas-background-placeholder platform-tunnel-bg-loading">3D背景载入中</div>
             }
           >
             <LazyHomeObjBackground
@@ -759,7 +759,7 @@ export default function GasDisasterSimulationPage() {
             />
           </Suspense>
         ) : (
-          <div className="gas-background-placeholder">
+          <div className="gas-background-placeholder platform-tunnel-bg-loading">
             正在准备巷道模型背景
           </div>
         )}

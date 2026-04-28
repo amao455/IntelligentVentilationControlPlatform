@@ -10,10 +10,10 @@ interface BackgroundSettings {
 }
 
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
-  paused: false,
-  rotationSpeed: 0.06,
-  opacity: 0.55,
-  brightness: 1.4,
+  paused: true,
+  rotationSpeed: 0,
+  opacity: 0.74,
+  brightness: 1.22,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
@@ -36,7 +36,7 @@ export default function AirflowRealtimePage() {
   }, []);
 
   return (
-    <div style={{
+    <div className="platform-tunnel-bg-page" style={{
       position: 'relative',
       height: 'calc(100vh - 80px)',
       display: 'flex',
@@ -45,6 +45,7 @@ export default function AirflowRealtimePage() {
     }}>
       {/* 背景三维模型 */}
       <div
+        className="platform-tunnel-bg-layer"
         style={{
           position: 'absolute',
           inset: 0,
@@ -56,12 +57,12 @@ export default function AirflowRealtimePage() {
         {backgroundReady ? (
           <Suspense
             fallback={
-              <div style={{ padding: '20px', color: '#999' }}>3D背景载入中</div>
+              <div className="platform-tunnel-bg-loading">3D背景载入中</div>
             }
           >
             <LazyHomeObjBackground
-              paused
-              rotationSpeed={0}
+              paused={bgSettings.paused}
+              rotationSpeed={bgSettings.rotationSpeed}
               opacity={bgSettings.opacity}
               brightness={bgSettings.brightness}
               disableRotation={false}
@@ -70,12 +71,12 @@ export default function AirflowRealtimePage() {
             />
           </Suspense>
         ) : (
-          <div style={{ padding: '20px', color: '#999' }}>正在准备巷道模型背景</div>
+          <div className="platform-tunnel-bg-loading">正在准备巷道模型背景</div>
         )}
       </div>
 
       {/* 内容层 */}
-      <div style={{ position: 'relative', zIndex: 1, flex: 1, overflow: 'hidden' }}>
+      <div className="platform-tunnel-bg-content realtime-monitor-content" style={{ flex: 1, overflow: 'hidden' }}>
         <StandardIndustrialPage
           moduleName="实时监测"
           title="风流实时监测"
@@ -85,4 +86,3 @@ export default function AirflowRealtimePage() {
     </div>
   );
 }
-

@@ -1220,6 +1220,63 @@
   font-size: 16px;
 }
 
+.industrial-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.home-transparent-card .ant-card-head-title .industrial-icon,
+.home-sensor-card-title .industrial-icon {
+  color: #35b9ff;
+  filter: drop-shadow(0 0 8px rgba(53, 185, 255, 0.42));
+}
+
+.home-left-fan-card .ant-card-head-title .industrial-icon {
+  color: #ffb84d;
+  filter: drop-shadow(0 0 8px rgba(255, 184, 77, 0.46));
+}
+
+.home-left-sensor-card .industrial-icon {
+  color: #63e6a5;
+  filter: drop-shadow(0 0 8px rgba(99, 230, 165, 0.38));
+}
+
+.home-right-status-card .ant-card-head-title .industrial-icon,
+.home-monitor-card .ant-card-head-title .industrial-icon {
+  color: #21d6c6;
+  filter: drop-shadow(0 0 8px rgba(33, 214, 198, 0.44));
+}
+
+.home-right-trend-card .industrial-icon {
+  color: #35b9ff;
+  filter: drop-shadow(0 0 8px rgba(53, 185, 255, 0.4));
+}
+
+.home-alert-card .industrial-icon {
+  color: #ff5f5f;
+  filter: drop-shadow(0 0 8px rgba(255, 95, 95, 0.42));
+}
+
+.home-status-device-icon--normal {
+  color: #73d13d;
+  filter: drop-shadow(0 0 8px rgba(82, 196, 26, 0.55));
+}
+
+.home-status-device-icon--warn {
+  color: #ffc069;
+  filter: drop-shadow(0 0 8px rgba(250, 173, 20, 0.55));
+}
+
+.home-status-device-icon--info {
+  color: #69c0ff;
+  filter: drop-shadow(0 0 8px rgba(105, 192, 255, 0.5));
+}
+
+.home-monitor-item__icon .industrial-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .home-monitor-item__content {
   min-width: 0;
   display: flex;
@@ -1265,9 +1322,11 @@
 }
 
 .home-monitor-item.is-normal .home-monitor-item__icon .anticon,
+.home-monitor-item.is-normal .home-monitor-item__icon .industrial-icon,
 .home-monitor-item.is-normal .home-monitor-item__value strong {
   color: #73d13d;
   text-shadow: 0 0 8px rgba(82, 196, 26, 0.45);
+  filter: drop-shadow(0 0 8px rgba(82, 196, 26, 0.45));
 }
 
 .home-monitor-item.is-warn {
@@ -1280,15 +1339,19 @@
 }
 
 .home-monitor-item.is-warn .home-monitor-item__icon .anticon,
+.home-monitor-item.is-warn .home-monitor-item__icon .industrial-icon,
 .home-monitor-item.is-warn .home-monitor-item__value strong {
   color: #ffc069;
   text-shadow: 0 0 8px rgba(250, 173, 20, 0.45);
+  filter: drop-shadow(0 0 8px rgba(250, 173, 20, 0.45));
 }
 
 .home-monitor-item.is-info .home-monitor-item__icon .anticon,
+.home-monitor-item.is-info .home-monitor-item__icon .industrial-icon,
 .home-monitor-item.is-info .home-monitor-item__value strong {
   color: #69c0ff;
   text-shadow: 0 0 8px rgba(105, 192, 255, 0.45);
+  filter: drop-shadow(0 0 8px rgba(105, 192, 255, 0.42));
 }
 
 .home-monitor-item.is-info .home-monitor-item__icon {
@@ -1529,6 +1592,46 @@
   padding: 0 8px;
 }
 
+.home-right-sensor-card .ant-card-head-wrapper {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+
+.home-right-sensor-card .ant-card-head-title {
+  min-width: 66px;
+  max-width: none;
+  overflow: visible;
+  padding-inline-end: 0;
+}
+
+.home-right-sensor-card .ant-card-head-extra {
+  min-width: 0;
+  max-width: 100%;
+  margin-inline-start: 0;
+  overflow: hidden;
+}
+
+.home-right-sensor-card__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 66px;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  color: #e9fbf8;
+}
+
+.home-right-sensor-card__title span {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  line-height: 1;
+}
+
 .home-right-sensor-card .ant-card-body {
   flex: 1;
   min-height: 0;
@@ -1542,6 +1645,13 @@
   font-size: var(--card-chip-size) !important;
   color: #b9daff !important;
   font-weight: 600;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
 }
 
 .home-right-sensor-select-all {
@@ -2791,4 +2901,120 @@
   .home-alert-item {
     padding: 2px 4px;
   }
+}
+
+/* Industrial cockpit refresh */
+.home-cockpit {
+  background:
+    radial-gradient(circle at 52% 38%, rgba(33, 214, 198, 0.16), transparent 36%),
+    radial-gradient(circle at 76% 72%, rgba(255, 184, 77, 0.1), transparent 28%),
+    linear-gradient(rgba(61, 112, 111, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 112, 111, 0.08) 1px, transparent 1px),
+    linear-gradient(145deg, #071111 0%, #0a1718 42%, #0d1612 100%);
+  background-size: auto, auto, 28px 28px, 28px 28px, auto;
+}
+
+.home-background-layer {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(26, 96, 92, 0.48) 0%, rgba(8, 21, 22, 0.32) 42%, rgba(4, 10, 10, 0.62) 100%),
+    linear-gradient(120deg, rgba(5, 12, 12, 0.88), rgba(12, 35, 34, 0.5) 45%, rgba(5, 10, 8, 0.88));
+}
+
+.home-background-layer canvas {
+  filter:
+    saturate(1.18)
+    hue-rotate(10deg)
+    brightness(1.12)
+    contrast(1.28)
+    drop-shadow(0 0 28px rgba(33, 214, 198, 0.34));
+}
+
+.home-background-layer::before {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(33, 214, 198, 0.04), transparent 44%),
+    radial-gradient(circle at 18% 20%, rgba(255, 184, 77, 0.08), transparent 32%),
+    radial-gradient(ellipse at center, transparent 0%, rgba(2, 6, 6, 0.18) 66%, rgba(2, 5, 5, 0.74) 100%),
+    linear-gradient(180deg, rgba(7, 16, 15, 0.08), rgba(7, 16, 15, 0.58)) !important;
+}
+
+.home-background-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(33, 214, 198, 0.13) 1px, transparent 1px),
+    linear-gradient(rgba(33, 214, 198, 0.09) 1px, transparent 1px),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.025) 0,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+  background-size: 96px 96px, 96px 96px, auto;
+  mask-image: radial-gradient(ellipse at 50% 48%, black 0%, black 52%, transparent 82%);
+  opacity: 0.26;
+}
+
+.home-transparent-card.page-card,
+.home-sensor-ratio-card.page-card,
+.home-kpi-row .page-card {
+  border: 1px solid rgba(83, 135, 137, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(13, 28, 29, 0.82) 0%, rgba(8, 18, 19, 0.72) 100%) !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(202, 255, 248, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.home-transparent-card.page-card:hover,
+.home-sensor-ratio-card.page-card:hover,
+.home-kpi-row .page-card:hover {
+  border-color: rgba(33, 214, 198, 0.72) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.46),
+    0 0 24px rgba(33, 214, 198, 0.16) !important;
+}
+
+.home-transparent-card .ant-card-head,
+.home-sensor-ratio-card .ant-card-head {
+  border-bottom: 1px solid rgba(83, 135, 137, 0.56) !important;
+  background:
+    linear-gradient(90deg, rgba(33, 214, 198, 0.18) 0%, rgba(14, 36, 38, 0.84) 52%, rgba(255, 184, 77, 0.08) 100%) !important;
+}
+
+.home-transparent-card .ant-card-head::after,
+.home-transparent-card .ant-table-thead > tr > th::after {
+  background: linear-gradient(90deg, transparent, rgba(33, 214, 198, 0.9), transparent) !important;
+}
+
+.home-transparent-card .ant-card-head-title,
+.home-transparent-card .ant-card-body,
+.home-transparent-card .ant-typography,
+.home-transparent-card .ant-list-item {
+  color: #e9fbf8 !important;
+}
+
+.home-transparent-card .ant-typography-secondary,
+.home-alert-item__meta,
+.home-alert-item__time {
+  color: #9bbfbd !important;
+}
+
+.home-transparent-card .ant-table-thead > tr > th {
+  background: rgba(19, 50, 52, 0.86) !important;
+  border-bottom-color: rgba(33, 214, 198, 0.38) !important;
+}
+
+.home-transparent-card .ant-table-tbody > tr > td {
+  border-color: rgba(83, 135, 137, 0.25) !important;
+}
+
+.home-alert-item,
+.home-monitor-item,
+.home-alert-summary-item {
+  border-color: rgba(83, 135, 137, 0.42) !important;
+  background: rgba(8, 18, 19, 0.58) !important;
 }

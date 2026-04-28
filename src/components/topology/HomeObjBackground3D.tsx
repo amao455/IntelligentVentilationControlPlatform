@@ -72,6 +72,12 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
 const LABEL_LEADER_LENGTH_PX = 20;
+const INDUSTRIAL_SCENE_CLEAR = 0x071111;
+const INDUSTRIAL_LIGHT_CYAN = 0x28e6d2;
+const INDUSTRIAL_LIGHT_BLUE = 0x35b9ff;
+const INDUSTRIAL_LIGHT_AMBER = 0xffb84d;
+const TUNNEL_SURFACE_COLOR = 0x7fc6c1;
+const TUNNEL_EDGE_COLOR = 0x39f7df;
 
 function centerObjectAtOrigin(object: THREE.Object3D): THREE.Vector3 {
   object.updateMatrixWorld(true);
@@ -127,6 +133,15 @@ function disposeObject(object: THREE.Object3D) {
         sceneObject.material?.dispose();
       }
     }
+
+    if (sceneObject instanceof THREE.LineSegments) {
+      sceneObject.geometry?.dispose();
+      if (Array.isArray(sceneObject.material)) {
+        sceneObject.material.forEach((material) => material.dispose());
+      } else {
+        sceneObject.material?.dispose();
+      }
+    }
   });
 }
 
@@ -146,15 +161,15 @@ function createConcreteTextureSet() {
   };
 
   const map = makeTexture((ctx) => {
-    ctx.fillStyle = "#8a9aa8";
+    ctx.fillStyle = "#243334";
     ctx.fillRect(0, 0, 512, 512);
     for (let i = 0; i < 8000; i += 1) {
       const x = Math.random() * 512;
       const y = Math.random() * 512;
       const size = Math.random() * 2 + 0.5;
-      const brightness = Math.random() * 60 - 30;
-      const gray = 138 + brightness;
-      ctx.fillStyle = `rgb(${gray}, ${gray + 10}, ${gray + 18})`;
+      const brightness = Math.random() * 34 - 17;
+      const gray = 47 + brightness;
+      ctx.fillStyle = `rgb(${gray}, ${gray + 12}, ${gray + 11})`;
       ctx.fillRect(x, y, size, size);
     }
   });
@@ -175,14 +190,14 @@ function createConcreteTextureSet() {
   });
 
   const roughnessMap = makeTexture((ctx) => {
-    ctx.fillStyle = "rgb(220, 220, 220)";
+    ctx.fillStyle = "rgb(185, 198, 194)";
     ctx.fillRect(0, 0, 512, 512);
     for (let i = 0; i < 2000; i += 1) {
       const x = Math.random() * 512;
       const y = Math.random() * 512;
       const size = Math.random() * 4 + 1;
-      const gray = 180 + Math.random() * 60;
-      ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
+      const gray = 122 + Math.random() * 72;
+      ctx.fillStyle = `rgb(${gray}, ${gray + 8}, ${gray + 6})`;
       ctx.fillRect(x, y, size, size);
     }
   });
@@ -200,30 +215,48 @@ function applyTunnelMaterial(
     normalMap: textures.normalMap,
     normalScale: new THREE.Vector2(0.5, 0.5),
     roughnessMap: textures.roughnessMap,
-    roughness: 0.9,
-    metalness: 0.08,
-    color: 0xb0c0d0,
+    roughness: 0.82,
+    metalness: 0.22,
+    color: TUNNEL_SURFACE_COLOR,
     transparent: true,
-    opacity,
+    opacity: Math.min(0.92, opacity + 0.12),
     side: THREE.DoubleSide,
-    emissive: 0x3a7db8,
-    emissiveIntensity: 0.15,
-    envMapIntensity: 0.4,
+    emissive: 0x166f68,
+    emissiveIntensity: 0.42,
+    envMapIntensity: 0.65,
     aoMapIntensity: 0.5,
   });
 
+  const meshes: THREE.Mesh[] = [];
   object.traverse((child) => {
     if (child instanceof THREE.Mesh) {
-      const material = base.clone();
-      const randomVariation = Math.random();
-      material.roughness = 0.85 + randomVariation * 0.1;
-      material.metalness = 0.05 + randomVariation * 0.07;
-      material.emissiveIntensity = 0.12 + randomVariation * 0.08;
-      material.color.multiplyScalar(1 - randomVariation * 0.08);
-      child.material = material;
-      child.castShadow = true;
-      child.receiveShadow = true;
+      meshes.push(child);
     }
+  });
+
+  meshes.forEach((child) => {
+    const material = base.clone();
+    const randomVariation = Math.random();
+    material.roughness = 0.74 + randomVariation * 0.12;
+    material.metalness = 0.18 + randomVariation * 0.08;
+    material.emissiveIntensity = 0.34 + randomVariation * 0.18;
+    material.color.multiplyScalar(0.98 + randomVariation * 0.16);
+    child.material = material;
+    child.castShadow = true;
+    child.receiveShadow = true;
+
+    const edgeGeometry = new THREE.EdgesGeometry(child.geometry, 14);
+    const edgeMaterial = new THREE.LineBasicMaterial({
+      color: TUNNEL_EDGE_COLOR,
+      transparent: true,
+      opacity: 0.42,
+      depthWrite: false,
+      depthTest: true,
+      toneMapped: false,
+    });
+    const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+    edgeLines.renderOrder = 8;
+    child.add(edgeLines);
   });
 }
 
@@ -825,7 +858,10 @@ export function HomeObjBackground3D({
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x11365e, 1);
+    renderer.setClearColor(INDUSTRIAL_SCENE_CLEAR, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -849,35 +885,35 @@ export function HomeObjBackground3D({
     controls.addEventListener("start", handleControlStart);
     controls.addEventListener("end", handleControlEnd);
 
-    scene.add(new THREE.AmbientLight(0x6bb5f0, brightness * 1.2));
+    scene.add(new THREE.AmbientLight(INDUSTRIAL_LIGHT_CYAN, brightness * 0.82));
 
     const directionalLight1 = new THREE.DirectionalLight(
-      0x9cd0ff,
-      brightness * 1.5,
+      INDUSTRIAL_LIGHT_CYAN,
+      brightness * 2.1,
     );
     directionalLight1.position.set(50000, 50000, 50000);
     scene.add(directionalLight1);
 
     const directionalLight2 = new THREE.DirectionalLight(
-      0x4a9de8,
-      brightness,
+      INDUSTRIAL_LIGHT_BLUE,
+      brightness * 1.26,
     );
     directionalLight2.position.set(-50000, 30000, -50000);
     scene.add(directionalLight2);
 
-    const backLight = new THREE.DirectionalLight(0x5a8fc7, brightness * 0.8);
+    const backLight = new THREE.DirectionalLight(INDUSTRIAL_LIGHT_AMBER, brightness * 0.62);
     backLight.position.set(0, -30000, -50000);
     scene.add(backLight);
 
-    const pointLight = new THREE.PointLight(0x9cd0ff, brightness * 3, 200000);
+    const pointLight = new THREE.PointLight(INDUSTRIAL_LIGHT_CYAN, brightness * 3.2, 200000);
     pointLight.position.set(0, 30000, 0);
     scene.add(pointLight);
 
-    const accentLight1 = new THREE.PointLight(0x4a9de8, brightness * 2, 150000);
+    const accentLight1 = new THREE.PointLight(INDUSTRIAL_LIGHT_BLUE, brightness * 2.05, 150000);
     accentLight1.position.set(40000, 20000, 40000);
     scene.add(accentLight1);
 
-    const accentLight2 = new THREE.PointLight(0x6bb5f0, brightness * 2, 150000);
+    const accentLight2 = new THREE.PointLight(INDUSTRIAL_LIGHT_AMBER, brightness * 0.95, 150000);
     accentLight2.position.set(-40000, 20000, -40000);
     scene.add(accentLight2);
 

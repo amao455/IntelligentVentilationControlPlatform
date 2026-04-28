@@ -11,14 +11,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     locale={zhCN}
     theme={{
       token: {
-        colorPrimary: '#1f5f9f',
-        colorInfo: '#1f5f9f',
-        colorBgLayout: '#eaf0f7',
-        colorBgContainer: '#ffffff',
-        colorBgElevated: '#f8fbff',
-        colorText: '#16324f',
-        colorTextSecondary: '#4e6a86',
-        colorBorder: '#c7d6e6',
+        colorPrimary: '#21d6c6',
+        colorInfo: '#35b9ff',
+        colorBgLayout: '#07100f',
+        colorBgContainer: '#0d1a1b',
+        colorBgElevated: '#122427',
+        colorText: '#e9fbf8',
+        colorTextSecondary: '#9bbfbd',
+        colorBorder: 'rgba(83, 135, 137, 0.46)',
         borderRadius: 8,
       },
     }}

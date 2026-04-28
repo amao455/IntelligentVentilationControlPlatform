@@ -50,8 +50,8 @@ interface BackgroundSettings {
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
   paused: false,
   rotationSpeed: 0.0,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
@@ -107,6 +107,7 @@ export default function LocalFanControlPage() {
 
   return (
     <div
+      className="platform-tunnel-bg-page"
       style={{
         position: "relative",
         height: "calc(100vh - 120px)",
@@ -119,6 +120,7 @@ export default function LocalFanControlPage() {
 
       {/* 背景三维模型 */}
       <div
+        className="platform-tunnel-bg-layer"
         style={{
           position: "absolute",
           inset: 0,
@@ -131,7 +133,7 @@ export default function LocalFanControlPage() {
         {backgroundReady ? (
           <Suspense
             fallback={
-              <div style={{ padding: "20px", color: "#999" }}>3D背景载入中</div>
+              <div className="platform-tunnel-bg-loading">3D背景载入中</div>
             }
           >
             <LazyHomeObjBackground
@@ -145,7 +147,7 @@ export default function LocalFanControlPage() {
             />
           </Suspense>
         ) : (
-          <div style={{ padding: "20px", color: "#999" }}>
+          <div className="platform-tunnel-bg-loading">
             正在准备巷道模型背景
           </div>
         )}
@@ -153,7 +155,7 @@ export default function LocalFanControlPage() {
 
       {/* 内容层 */}
       <div
-        className="page-wrapper"
+        className="page-wrapper platform-tunnel-bg-content"
         style={{
           position: "relative",
           zIndex: 2,

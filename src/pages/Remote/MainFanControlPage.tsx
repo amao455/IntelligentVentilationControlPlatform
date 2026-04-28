@@ -125,8 +125,8 @@ interface OperationRecord {
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
   paused: false,
   rotationSpeed: 0,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
@@ -1015,6 +1015,7 @@ export default function MainFanControlPage() {
   const speedDisabled = currentFan.status !== "运行";
   return (
     <div
+      className="platform-tunnel-bg-page"
       style={{
         position: "relative",
         height: "calc(100vh - 120px)",
@@ -1027,6 +1028,7 @@ export default function MainFanControlPage() {
       <style>{hiddenScrollbarStyle}</style>
 
       <div
+        className="platform-tunnel-bg-layer"
         style={{
           position: "absolute",
           inset: 0,
@@ -1039,7 +1041,7 @@ export default function MainFanControlPage() {
         {backgroundReady ? (
           <Suspense
             fallback={
-              <div style={{ padding: 20, color: "#999" }}>3D背景载入中</div>
+              <div className="platform-tunnel-bg-loading">3D背景载入中</div>
             }
           >
             <LazyHomeObjBackground
@@ -1053,14 +1055,14 @@ export default function MainFanControlPage() {
             />
           </Suspense>
         ) : (
-          <div style={{ padding: 20, color: "#999" }}>
+          <div className="platform-tunnel-bg-loading">
             正在准备主通风机 3D 背景模型
           </div>
         )}
       </div>
 
       <div
-        className="page-wrapper"
+        className="page-wrapper platform-tunnel-bg-content"
         style={{
           position: "relative",
           zIndex: 2,

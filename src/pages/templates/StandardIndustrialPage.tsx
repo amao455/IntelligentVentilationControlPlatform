@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -371,7 +371,10 @@ export function StandardIndustrialPage({
             }}
           >
             {/* 左侧空白区域 - 显示三维模型 */}
-            <div style={{ flex: "1", minWidth: 0, position: "relative" }}>
+            <div
+              className="realtime-monitor-model-hit-area"
+              style={{ flex: "1", minWidth: 0, position: "relative", pointerEvents: "none" }}
+            >
               {showAirflowRealtime && (
                 <Card
                   className="page-card home-transparent-card"
@@ -858,198 +861,249 @@ export function StandardIndustrialPage({
                     box-shadow: 0 0 6px rgba(250, 140, 22, 0.3);
                   }
                 `}</style>
-                <Timeline
-                  className="alert-timeline"
-                  style={{ padding: "12px 0" }}
-                  items={[
-                    {
-                      color: "red",
-                      dot: (
-                        <div
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            background: "#ff4d4f",
-                            boxShadow:
-                              "0 0 0 3px rgba(255, 77, 79, 0.2), 0 0 8px rgba(255, 77, 79, 0.6)",
-                          }}
-                        />
-                      ),
-                      children: (
-                        <div className="alert-card-item critical">
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              marginBottom: 6,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#8ca4be" }}
-                            >
-                              2026-04-07 14:22
-                            </Typography.Text>
-                            <span className="alert-badge critical">危急</span>
-                          </div>
-                          <Typography.Text
-                            strong
-                            style={{
-                              fontSize: 14,
-                              color: "#ff7875",
-                              display: "block",
-                              marginBottom: 6,
-                            }}
-                          >
-                            人员 P-012 离线超时
-                          </Typography.Text>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              📍 3105工作面
-                            </Typography.Text>
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              ⏱ 离线 15 分钟
-                            </Typography.Text>
-                          </div>
+                {showAirflowRealtime ? (
+                  <div className="realtime-context-panel realtime-context-panel--pressure">
+                    {[
+                      { area: "东翼回风巷", point: "FP-07", pressure: "1,985 Pa", diff: "-7 Pa", status: "低压预警", level: "warning" },
+                      { area: "主运输大巷", point: "FP-11", pressure: "2,016 Pa", diff: "+4 Pa", status: "稳定", level: "normal" },
+                      { area: "3105工作面", point: "FP-16", pressure: "2,068 Pa", diff: "+12 Pa", status: "稳定", level: "normal" },
+                      { area: "回风上山", point: "FP-22", pressure: "1,960 Pa", diff: "-18 Pa", status: "需复核", level: "warning" },
+                    ].map((item) => (
+                      <div key={item.point} className={`realtime-context-item ${item.level}`}>
+                        <div className="realtime-context-item__head">
+                          <Typography.Text className="realtime-context-item__area">{item.area}</Typography.Text>
+                          <span className={`realtime-context-badge ${item.level}`}>{item.status}</span>
                         </div>
-                      ),
-                    },
-                    {
-                      color: "orange",
-                      dot: (
-                        <div
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            background: "#fa8c16",
-                            boxShadow:
-                              "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
-                          }}
-                        />
-                      ),
-                      children: (
-                        <div className="alert-card-item warning">
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              marginBottom: 6,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#8ca4be" }}
-                            >
-                              2026-04-07 13:15
-                            </Typography.Text>
-                            <span className="alert-badge warning">警告</span>
-                          </div>
-                          <Typography.Text
-                            strong
-                            style={{
-                              fontSize: 14,
-                              color: "#ffc069",
-                              display: "block",
-                              marginBottom: 6,
-                            }}
-                          >
-                            人员 P-008 进入禁区
-                          </Typography.Text>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              📍 西翼联络巷
-                            </Typography.Text>
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              🚫 未授权区域
-                            </Typography.Text>
-                          </div>
+                        <div className="realtime-context-metrics">
+                          <span><b>{item.pressure}</b><em>当前风压</em></span>
+                          <span><b>{item.diff}</b><em>较均值偏差</em></span>
+                          <span><b>{item.point}</b><em>监测点</em></span>
                         </div>
-                      ),
-                    },
-                    {
-                      color: "orange",
-                      dot: (
-                        <div
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            background: "#fa8c16",
-                            boxShadow:
-                              "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
-                          }}
-                        />
-                      ),
-                      children: (
-                        <div className="alert-card-item warning">
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              marginBottom: 6,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#8ca4be" }}
-                            >
-                              2026-04-07 12:08
-                            </Typography.Text>
-                            <span className="alert-badge warning">警告</span>
-                          </div>
-                          <Typography.Text
-                            strong
-                            style={{
-                              fontSize: 14,
-                              color: "#ffc069",
-                              display: "block",
-                              marginBottom: 6,
-                            }}
-                          >
-                            人员 P-015 心率异常
-                          </Typography.Text>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              💓 心率 128 bpm
-                            </Typography.Text>
-                            <Typography.Text
-                              style={{ fontSize: 12, color: "#6b8199" }}
-                            >
-                              📈 超出正常范围
-                            </Typography.Text>
-                          </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : showGasRealtime ? (
+                  <div className="realtime-context-panel realtime-context-panel--gas">
+                    {[
+                      { name: "甲烷 CH4", value: 96, current: "0.42%", limit: "< 1.00%", status: "达标", level: "normal" },
+                      { name: "一氧化碳 CO", value: 92, current: "18 ppm", limit: "< 24 ppm", status: "达标", level: "normal" },
+                      { name: "氧气 O2", value: 88, current: "20.1%", limit: "≥ 19.5%", status: "达标", level: "normal" },
+                      { name: "粉尘浓度", value: 76, current: "8.6 mg/m³", limit: "< 10 mg/m³", status: "临界", level: "warning" },
+                    ].map((item) => (
+                      <div key={item.name} className={`realtime-context-item ${item.level}`}>
+                        <div className="realtime-context-item__head">
+                          <Typography.Text className="realtime-context-item__area">{item.name}</Typography.Text>
+                          <span className={`realtime-context-badge ${item.level}`}>{item.status}</span>
                         </div>
-                      ),
-                    },
-                  ]}
-                />
+                        <Progress
+                          percent={item.value}
+                          size="small"
+                          showInfo={false}
+                          strokeColor={item.level === "warning" ? "#ffb84d" : "#21d6c6"}
+                          trailColor="rgba(83, 135, 137, 0.24)"
+                        />
+                        <div className="realtime-context-metrics">
+                          <span><b>{item.current}</b><em>当前值</em></span>
+                          <span><b>{item.limit}</b><em>控制限</em></span>
+                          <span><b>{item.value}%</b><em>达标率</em></span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Timeline
+                    className="alert-timeline"
+                    style={{ padding: "12px 0" }}
+                    items={[
+                      {
+                        color: "red",
+                        dot: (
+                          <div
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              background: "#ff4d4f",
+                              boxShadow:
+                                "0 0 0 3px rgba(255, 77, 79, 0.2), 0 0 8px rgba(255, 77, 79, 0.6)",
+                            }}
+                          />
+                        ),
+                        children: (
+                          <div className="alert-card-item critical">
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginBottom: 6,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#8ca4be" }}
+                              >
+                                2026-04-07 14:22
+                              </Typography.Text>
+                              <span className="alert-badge critical">危急</span>
+                            </div>
+                            <Typography.Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                color: "#ff7875",
+                                display: "block",
+                                marginBottom: 6,
+                              }}
+                            >
+                              人员 P-012 离线超时
+                            </Typography.Text>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                位置：3105工作面
+                              </Typography.Text>
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                离线 15 分钟
+                              </Typography.Text>
+                            </div>
+                          </div>
+                        ),
+                      },
+                      {
+                        color: "orange",
+                        dot: (
+                          <div
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              background: "#fa8c16",
+                              boxShadow:
+                                "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
+                            }}
+                          />
+                        ),
+                        children: (
+                          <div className="alert-card-item warning">
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginBottom: 6,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#8ca4be" }}
+                              >
+                                2026-04-07 13:15
+                              </Typography.Text>
+                              <span className="alert-badge warning">警告</span>
+                            </div>
+                            <Typography.Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                color: "#ffc069",
+                                display: "block",
+                                marginBottom: 6,
+                              }}
+                            >
+                              人员 P-008 进入禁区
+                            </Typography.Text>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                位置：西翼联络巷
+                              </Typography.Text>
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                未授权区域
+                              </Typography.Text>
+                            </div>
+                          </div>
+                        ),
+                      },
+                      {
+                        color: "orange",
+                        dot: (
+                          <div
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              background: "#fa8c16",
+                              boxShadow:
+                                "0 0 0 3px rgba(250, 140, 22, 0.2), 0 0 8px rgba(250, 140, 22, 0.6)",
+                            }}
+                          />
+                        ),
+                        children: (
+                          <div className="alert-card-item warning">
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginBottom: 6,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#8ca4be" }}
+                              >
+                                2026-04-07 12:08
+                              </Typography.Text>
+                              <span className="alert-badge warning">警告</span>
+                            </div>
+                            <Typography.Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                color: "#ffc069",
+                                display: "block",
+                                marginBottom: 6,
+                              }}
+                            >
+                              人员 P-015 心率异常
+                            </Typography.Text>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                心率 128 bpm
+                              </Typography.Text>
+                              <Typography.Text
+                                style={{ fontSize: 12, color: "#6b8199" }}
+                              >
+                                超出正常范围
+                              </Typography.Text>
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                  />
+                )}
               </Card>
             </div>
           </div>

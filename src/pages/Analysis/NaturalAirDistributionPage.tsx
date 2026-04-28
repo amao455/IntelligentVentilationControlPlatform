@@ -168,8 +168,8 @@ const PLATFORM_REFERENCE_MODEL_SETTINGS = {
   // 保持可交互（OrbitControls 生效），但模型不自行旋转
   paused: false,
   rotationSpeed: 0,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
   disableRotation: false,
   viewScale: 4.5,
   viewAzimuthDeg: 90,
@@ -416,10 +416,10 @@ export default function NaturalAirDistributionPage() {
   ];
 
   return (
-    <div className="natural-air-distribution-page natural-air-layout">
-      <div className="natural-air-bg-layer">
+    <div className="natural-air-distribution-page natural-air-layout platform-tunnel-bg-page">
+      <div className="natural-air-bg-layer platform-tunnel-bg-layer">
         {backgroundReady ? (
-          <Suspense fallback={<div className="natural-air-bg-loading">3D背景加载中...</div>}>
+          <Suspense fallback={<div className="natural-air-bg-loading platform-tunnel-bg-loading">3D背景加载中...</div>}>
             <LazyHomeObjBackground
               paused={PLATFORM_REFERENCE_MODEL_SETTINGS.paused}
               rotationSpeed={PLATFORM_REFERENCE_MODEL_SETTINGS.rotationSpeed}
@@ -431,10 +431,10 @@ export default function NaturalAirDistributionPage() {
             />
           </Suspense>
         ) : (
-          <div className="natural-air-bg-loading">正在准备巷道三维模型...</div>
+          <div className="natural-air-bg-loading platform-tunnel-bg-loading">正在准备巷道三维模型...</div>
         )}
       </div>
-      <div className="natural-air-bg-mask" />
+      <div className="natural-air-bg-mask platform-tunnel-bg-mask" />
 
       <div className="natural-air-content-shell natural-air-content-shell--tri">
         <div className="natural-air-top-row">

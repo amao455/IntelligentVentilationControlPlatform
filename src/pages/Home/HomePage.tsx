@@ -1,21 +1,12 @@
 ﻿import { lazy, Suspense, useEffect, useState } from "react";
 import { Card, Checkbox, Col, Progress, Row, Tabs, Typography } from "antd";
 import {
-  ThunderboltOutlined,
   CheckCircleOutlined,
-  LineChartOutlined,
-  AlertOutlined,
-  DesktopOutlined,
-  DashboardOutlined,
-  ApiOutlined,
-  GatewayOutlined,
-  ControlOutlined,
-  SafetyOutlined,
-  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { KpiCard } from "../../components/cards/KpiCard";
 import { ChartPanel } from "../../components/charts/ChartPanel";
 import { StatusTag } from "../../components/common/StatusTag";
+import { IndustrialIcon } from "../../components/icons/IndustrialIcon";
 import { createPageDataset } from "../../mock/mockData";
 import "./home.css";
 
@@ -29,8 +20,8 @@ interface BackgroundSettings {
 const DEFAULT_BG_SETTINGS: BackgroundSettings = {
   paused: false,
   rotationSpeed: 0.06,
-  opacity: 0.55,
-  brightness: 1.4,
+  opacity: 0.74,
+  brightness: 1.22,
 };
 
 const LazyHomeObjBackground = lazy(async () => {
@@ -440,9 +431,7 @@ export default function HomePage() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 6 }}
                   >
-                    <ThunderboltOutlined
-                      style={{ fontSize: 15, color: "#ffc069" }}
-                    />
+                    <IndustrialIcon name="fan-main" size={18} />
                     <span>主通风机运行状态</span>
                   </div>
                 }
@@ -1091,9 +1080,7 @@ export default function HomePage() {
               <ChartPanel
                 title={
                   <div className="home-sensor-card-title">
-                    <EnvironmentOutlined
-                      style={{ fontSize: 15, color: "#95de64" }}
-                    />
+                    <IndustrialIcon name="airflow-point" size={18} />
                     <span>关键用风点风量</span>
                   </div>
                 }
@@ -1126,9 +1113,7 @@ export default function HomePage() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <DashboardOutlined
-                      style={{ fontSize: 15, color: "#69c0ff" }}
-                    />
+                    <IndustrialIcon name="monitor-grid" size={18} />
                     <span>综合监测</span>
                   </div>
                 }
@@ -1151,7 +1136,7 @@ export default function HomePage() {
                 <div className="home-monitor-grid">
                   <div className="home-monitor-item is-normal">
                     <div className="home-monitor-item__icon">
-                      <SafetyOutlined />
+                      <IndustrialIcon name="safety-helmet" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1166,7 +1151,7 @@ export default function HomePage() {
 
                   <div className="home-monitor-item is-warn">
                     <div className="home-monitor-item__icon">
-                      <ThunderboltOutlined />
+                      <IndustrialIcon name="coal-fire" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1181,7 +1166,7 @@ export default function HomePage() {
 
                   <div className="home-monitor-item is-info">
                     <div className="home-monitor-item__icon">
-                      <ApiOutlined />
+                      <IndustrialIcon name="battery-charger" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1196,7 +1181,7 @@ export default function HomePage() {
 
                   <div className="home-monitor-item is-normal">
                     <div className="home-monitor-item__icon">
-                      <DashboardOutlined />
+                      <IndustrialIcon name="anemometer" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1211,7 +1196,7 @@ export default function HomePage() {
 
                   <div className="home-monitor-item is-info">
                     <div className="home-monitor-item__icon">
-                      <EnvironmentOutlined />
+                      <IndustrialIcon name="personnel-beacon" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1226,7 +1211,7 @@ export default function HomePage() {
 
                   <div className="home-monitor-item is-normal">
                     <div className="home-monitor-item__icon">
-                      <GatewayOutlined />
+                      <IndustrialIcon name="dispatch-radio" size={20} />
                     </div>
                     <div className="home-monitor-item__content">
                       <Typography.Text className="home-monitor-item__name">
@@ -1263,8 +1248,8 @@ export default function HomePage() {
                   className="page-card home-transparent-card home-right-sensor-card"
                   size="small"
                   title={
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <ApiOutlined style={{ fontSize: 15, color: "#69c0ff" }} />
+                    <div className="home-right-sensor-card__title">
+                      <IndustrialIcon name="sensor-node" size={18} />
                       <span>传感器</span>
                     </div>
                   }
@@ -1327,9 +1312,7 @@ export default function HomePage() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <DesktopOutlined
-                      style={{ fontSize: 15, color: "#95de64" }}
-                    />
+                    <IndustrialIcon name="equipment-rack" size={18} />
                     <span>设备运行状态</span>
                   </div>
                 }
@@ -1393,13 +1376,7 @@ export default function HomePage() {
                         boxShadow: "0 0 15px rgba(82, 196, 26, 0.4)",
                       }}
                     >
-                      <DashboardOutlined
-                        style={{
-                          fontSize: 16,
-                          color: "#52c41a",
-                          filter: "drop-shadow(0 0 6px rgba(82, 196, 26, 0.8))",
-                        }}
-                      />
+                      <IndustrialIcon name="fan-main" size={20} className="home-status-device-icon--normal" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div
@@ -1497,14 +1474,7 @@ export default function HomePage() {
                         boxShadow: "0 0 15px rgba(250, 173, 20, 0.4)",
                       }}
                     >
-                      <ApiOutlined
-                        style={{
-                          fontSize: 16,
-                          color: "#faad14",
-                          filter:
-                            "drop-shadow(0 0 6px rgba(250, 173, 20, 0.8))",
-                        }}
-                      />
+                      <IndustrialIcon name="fan-local" size={20} className="home-status-device-icon--warn" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div
@@ -1602,14 +1572,7 @@ export default function HomePage() {
                         boxShadow: "0 0 15px rgba(89, 154, 221, 0.4)",
                       }}
                     >
-                      <GatewayOutlined
-                        style={{
-                          fontSize: 16,
-                          color: "#69c0ff",
-                          filter:
-                            "drop-shadow(0 0 6px rgba(105, 192, 255, 0.8))",
-                        }}
-                      />
+                      <IndustrialIcon name="vent-door" size={20} className="home-status-device-icon--info" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div
@@ -1707,14 +1670,7 @@ export default function HomePage() {
                         boxShadow: "0 0 15px rgba(89, 154, 221, 0.4)",
                       }}
                     >
-                      <ControlOutlined
-                        style={{
-                          fontSize: 16,
-                          color: "#69c0ff",
-                          filter:
-                            "drop-shadow(0 0 6px rgba(105, 192, 255, 0.8))",
-                        }}
-                      />
+                      <IndustrialIcon name="louver" size={20} className="home-status-device-icon--info" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div
@@ -1780,9 +1736,7 @@ export default function HomePage() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <LineChartOutlined
-                      style={{ fontSize: 15, color: "#91d5ff" }}
-                    />
+                    <IndustrialIcon name="airflow-trend" size={18} />
                     <span>24h 总进/回风量趋势</span>
                   </div>
                 }
@@ -1804,7 +1758,7 @@ export default function HomePage() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
-                    <AlertOutlined style={{ fontSize: 15, color: "#ff7875" }} />
+                    <IndustrialIcon name="emergency-siren" size={18} />
                     <span>预警报警</span>
                   </div>
                 }
