@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useEffect, useState } from "react";
+﻿import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Card, Checkbox, Col, Progress, Row, Tabs, Typography } from "antd";
 import {
   CheckCircleOutlined,
@@ -42,18 +42,44 @@ export default function HomePage() {
   });
   const [bgSettings] = useState<BackgroundSettings>(DEFAULT_BG_SETTINGS);
   const [backgroundReady, setBackgroundReady] = useState(false);
-  const sensorTypeOptions = [
-    { key: "ch4", label: "甲烷", count: 24 },
-    { key: "co", label: "一氧化碳", count: 16 },
-    { key: "co2", label: "二氧化碳", count: 12 },
-    { key: "o2", label: "氧气", count: 14 },
-    { key: "temp", label: "温度", count: 19 },
-    { key: "humidity", label: "湿度", count: 19 },
-    { key: "windSpeed", label: "风速", count: 22 },
-    { key: "dust", label: "粉尘", count: 15 },
-    { key: "smoke", label: "烟雾", count: 10 },
-    { key: "h2", label: "氢气", count: 8 },
-  ];
+  const sensorTypeOptions = useMemo(
+    () => [
+      { key: "ch4", label: "甲烷", count: 24, color: "#ff6b6b" },
+      { key: "co", label: "一氧化碳", count: 16, color: "#ffb84d" },
+      { key: "co2", label: "二氧化碳", count: 12, color: "#7cdbff" },
+      { key: "o2", label: "氧气", count: 14, color: "#52c41a" },
+      { key: "temp", label: "温度", count: 19, color: "#ff7a45" },
+      { key: "humidity", label: "湿度", count: 19, color: "#2dd4bf" },
+      { key: "windSpeed", label: "风速", count: 22, color: "#69c0ff" },
+      { key: "dust", label: "粉尘", count: 15, color: "#ffd666" },
+      { key: "smoke", label: "烟雾", count: 10, color: "#b37feb" },
+      { key: "h2", label: "氢气", count: 8, color: "#91d5ff" },
+    ],
+    [],
+  );
+  const sensorStationAnchors = useMemo(
+    () => [
+      { x: 0.16, y: 0.49, z: 0.68 },
+      { x: 0.22, y: 0.57, z: 0.3 },
+      { x: 0.3, y: 0.5, z: 0.45 },
+      { x: 0.36, y: 0.55, z: 0.64 },
+      { x: 0.42, y: 0.61, z: 0.73 },
+      { x: 0.48, y: 0.48, z: 0.34 },
+      { x: 0.52, y: 0.56, z: 0.52 },
+      { x: 0.58, y: 0.54, z: 0.56 },
+      { x: 0.62, y: 0.5, z: 0.22 },
+      { x: 0.67, y: 0.59, z: 0.43 },
+      { x: 0.72, y: 0.5, z: 0.61 },
+      { x: 0.78, y: 0.46, z: 0.36 },
+      { x: 0.82, y: 0.47, z: 0.28 },
+      { x: 0.38, y: 0.47, z: 0.25 },
+      { x: 0.56, y: 0.45, z: 0.72 },
+      { x: 0.74, y: 0.58, z: 0.48 },
+      { x: 0.28, y: 0.6, z: 0.56 },
+      { x: 0.64, y: 0.62, z: 0.67 },
+    ],
+    [],
+  );
   const [selectedSensorTypes, setSelectedSensorTypes] = useState<string[]>(
     sensorTypeOptions.map((item) => item.key),
   );
@@ -72,6 +98,51 @@ export default function HomePage() {
   const selectedSensorCount = sensorTypeOptions
     .filter((item) => selectedSensorTypes.includes(item.key))
     .reduce((sum, item) => sum + item.count, 0);
+  const sensorMarkers = useMemo(
+    () =>
+      sensorTypeOptions
+        .flatMap((item, typeIndex) =>
+          Array.from({ length: item.count }, (_, index) => {
+            const sequence = index + 1;
+            const station = sensorStationAnchors[index % sensorStationAnchors.length];
+            const repeatIndex = Math.floor(index / sensorStationAnchors.length);
+            const typeAngle = (typeIndex / sensorTypeOptions.length) * Math.PI * 2;
+            const repeatAngle = ((repeatIndex * 5 + typeIndex) / 12) * Math.PI * 2;
+            const typeRadius = 0.009 + (typeIndex % 3) * 0.002;
+            const repeatRadius = repeatIndex * 0.006;
+            const clampAnchor = (value: number) =>
+              Math.min(0.92, Math.max(0.08, value));
+
+            return {
+              id: `${item.key}-${sequence}`,
+              typeKey: item.key,
+              label: `${item.label}-${String(sequence).padStart(2, "0")}`,
+              anchor: {
+                x: clampAnchor(
+                  station.x +
+                    Math.cos(typeAngle) * typeRadius +
+                    Math.cos(repeatAngle) * repeatRadius,
+                ),
+                y: clampAnchor(station.y + ((typeIndex % 4) - 1.5) * 0.006),
+                z: clampAnchor(
+                  station.z +
+                    Math.sin(typeAngle) * typeRadius +
+                    Math.sin(repeatAngle) * repeatRadius,
+                ),
+              },
+              color: item.color,
+            };
+          }),
+        ),
+    [sensorStationAnchors, sensorTypeOptions],
+  );
+  const visibleSensorMarkerIds = useMemo(
+    () =>
+      sensorMarkers
+        .filter((item) => selectedSensorTypes.includes(item.typeKey))
+        .map((item) => item.id),
+    [selectedSensorTypes, sensorMarkers],
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -395,6 +466,8 @@ export default function HomePage() {
               disableRotation={false}
               viewScale={4.5}
               viewAzimuthDeg={90}
+              sensorMarkers={sensorMarkers}
+              visibleSensorMarkerIds={visibleSensorMarkerIds}
             />
           </Suspense>
         ) : (

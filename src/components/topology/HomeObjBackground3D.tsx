@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
@@ -25,6 +25,8 @@ interface HomeObjBackground3DProps {
   roadwayPointShowSerial?: boolean;
   roadwaySerialHighlightObjPath?: string;
   roadwaySerialHighlightVisible?: boolean;
+  sensorMarkers?: ReadonlyArray<TunnelSensorMarker>;
+  visibleSensorMarkerIds?: ReadonlyArray<string>;
 }
 
 interface TunnelAirflowLabel {
@@ -61,6 +63,22 @@ interface RoadwayPointAirflowLabel {
   markerColor?: string;
 }
 
+interface TunnelSensorMarker {
+  id: string;
+  label: string;
+  count?: number;
+  unit?: string;
+  anchor: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  lift?: number;
+  color?: string;
+  background?: string;
+  borderColor?: string;
+}
+
 interface TunnelNormalization {
   rotateX: number;
   rotateY: number;
@@ -72,6 +90,9 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
 const LABEL_LEADER_LENGTH_PX = 20;
+const SENSOR_LABEL_LEADER_OFFSET_PX = 8;
+const SENSOR_LABEL_WIDTH_PX = 82;
+const SENSOR_LABEL_HEIGHT_PX = 22;
 const INDUSTRIAL_SCENE_CLEAR = 0x071111;
 const INDUSTRIAL_LIGHT_CYAN = 0x28e6d2;
 const INDUSTRIAL_LIGHT_BLUE = 0x35b9ff;
@@ -394,7 +415,7 @@ function isOverlayCloseToTunnel(
 
 function getLabelWorldPosition(
   bounds: THREE.Box3,
-  anchor: TunnelAirflowLabel["anchor"],
+  anchor: TunnelAirflowLabel["anchor"] | TunnelSensorMarker["anchor"],
   lift?: number,
 ) {
   const clamped = {
@@ -411,6 +432,160 @@ function getLabelWorldPosition(
   );
   world.y += lift ?? size.y * 0.035;
   return world;
+}
+
+function collectMeshes(object: THREE.Object3D): THREE.Mesh[] {
+  const meshes: THREE.Mesh[] = [];
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.geometry) {
+      meshes.push(child);
+    }
+  });
+  return meshes;
+}
+
+function getClosestVertexOnMeshes(
+  meshes: ReadonlyArray<THREE.Mesh>,
+  target: THREE.Vector3,
+): THREE.Vector3 | null {
+  let closestPoint: THREE.Vector3 | null = null;
+  let closestDistanceSq = Number.POSITIVE_INFINITY;
+
+  for (const mesh of meshes) {
+    const position = mesh.geometry.getAttribute("position");
+    if (!position) continue;
+
+    const candidate = new THREE.Vector3();
+    for (let index = 0; index < position.count; index += 1) {
+      candidate.fromBufferAttribute(position, index).applyMatrix4(mesh.matrixWorld);
+      const distanceSq = candidate.distanceToSquared(target);
+      if (distanceSq < closestDistanceSq) {
+        closestDistanceSq = distanceSq;
+        closestPoint = candidate.clone();
+      }
+    }
+  }
+
+  return closestPoint;
+}
+
+function snapPointToModelSurface(
+  model: THREE.Object3D,
+  target: THREE.Vector3,
+  searchDistance: number,
+): THREE.Vector3 {
+  const meshes = collectMeshes(model);
+  if (meshes.length === 0) {
+    return target.clone();
+  }
+
+  const directions = [
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(-1, 0, 0),
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, -1, 0),
+    new THREE.Vector3(0, 0, 1),
+    new THREE.Vector3(0, 0, -1),
+    new THREE.Vector3(1, 0.35, 1).normalize(),
+    new THREE.Vector3(-1, 0.35, 1).normalize(),
+    new THREE.Vector3(1, 0.35, -1).normalize(),
+    new THREE.Vector3(-1, 0.35, -1).normalize(),
+  ];
+  const raycaster = new THREE.Raycaster();
+  let closestIntersection: THREE.Intersection | null = null;
+  let closestDistanceSq = Number.POSITIVE_INFINITY;
+
+  for (const direction of directions) {
+    const origin = target.clone().addScaledVector(direction, searchDistance);
+    raycaster.set(origin, direction.clone().multiplyScalar(-1));
+    raycaster.far = searchDistance * 2.2;
+    const hits = raycaster.intersectObjects(meshes, false);
+    for (const hit of hits) {
+      const distanceSq = hit.point.distanceToSquared(target);
+      if (distanceSq < closestDistanceSq) {
+        closestDistanceSq = distanceSq;
+        closestIntersection = hit;
+      }
+    }
+  }
+
+  if (closestIntersection) {
+    return closestIntersection.point.clone();
+  }
+
+  return getClosestVertexOnMeshes(meshes, target) ?? target.clone();
+}
+
+function createSensorMarkerNode(
+  marker: TunnelSensorMarker,
+  markerSize: number,
+): { root: THREE.Group; labelAnchor: THREE.Object3D } {
+  const color = new THREE.Color(marker.color ?? "#28e6d2");
+  const root = new THREE.Group();
+  root.name = `sensor-marker-${marker.id}`;
+
+  const mastMaterial = new THREE.MeshBasicMaterial({
+    color: color.clone().multiplyScalar(0.85),
+    transparent: true,
+    opacity: 0.9,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const mast = new THREE.Mesh(
+    new THREE.CylinderGeometry(markerSize * 0.045, markerSize * 0.07, markerSize * 1.1, 12),
+    mastMaterial,
+  );
+  mast.position.y = markerSize * 0.55;
+  mast.renderOrder = 24;
+  root.add(mast);
+
+  const coreMaterial = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.98,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(markerSize * 0.24, 20, 16),
+    coreMaterial,
+  );
+  core.position.y = markerSize * 1.18;
+  core.renderOrder = 26;
+  root.add(core);
+
+  const haloMaterial = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.34,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  });
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(markerSize * 0.42, markerSize * 0.035, 10, 36),
+    haloMaterial,
+  );
+  halo.rotation.x = Math.PI / 2;
+  halo.position.y = markerSize * 1.18;
+  halo.renderOrder = 25;
+  root.add(halo);
+
+  const base = new THREE.Mesh(
+    new THREE.TorusGeometry(markerSize * 0.3, markerSize * 0.025, 8, 28),
+    haloMaterial.clone(),
+  );
+  base.rotation.x = Math.PI / 2;
+  base.position.y = markerSize * 0.04;
+  base.renderOrder = 23;
+  root.add(base);
+
+  const labelAnchor = new THREE.Object3D();
+  labelAnchor.name = `sensor-label-anchor-${marker.id}`;
+  labelAnchor.position.y = markerSize * 1.78;
+  root.add(labelAnchor);
+
+  return { root, labelAnchor };
 }
 
 interface RoadwayPointCollection {
@@ -772,11 +947,16 @@ export function HomeObjBackground3D({
   roadwayPointShowSerial = true,
   roadwaySerialHighlightObjPath,
   roadwaySerialHighlightVisible = false,
+  sensorMarkers = [],
+  visibleSensorMarkerIds,
 }: HomeObjBackground3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const labelLayerRef = useRef<HTMLDivElement | null>(null);
   const labelElementsRef = useRef<Record<string, HTMLDivElement | null>>({});
+  const sensorMarkerLabelLayerRef = useRef<HTMLDivElement | null>(null);
+  const sensorMarkerLabelElementsRef = useRef<Record<string, HTMLDivElement | null>>({});
   const airflowLabelsRef = useRef<ReadonlyArray<TunnelAirflowLabel>>(airflowLabels);
+  const sensorMarkersRef = useRef<ReadonlyArray<TunnelSensorMarker>>(sensorMarkers);
   const roadwayPointLabelLayerRef = useRef<HTMLDivElement | null>(null);
   const roadwayPointLabelElementsRef = useRef<Record<string, HTMLDivElement | null>>(
     {},
@@ -794,6 +974,17 @@ export function HomeObjBackground3D({
   const modelRef = useRef<THREE.Group | null>(null);
   const modelBoundsRef = useRef<THREE.Box3 | null>(null);
   const routeOverlayRef = useRef<THREE.Group | null>(null);
+  const sensorMarkerGroupRef = useRef<THREE.Group | null>(null);
+  const sensorMarkerLabelAnchorsRef = useRef<Record<string, THREE.Object3D | undefined>>({});
+  const sensorMarkerNodesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
+  const sensorMarkerSnapCacheRef = useRef<Record<string, THREE.Vector3 | undefined>>({});
+  const visibleSensorMarkerIdsRef = useRef<ReadonlyArray<string> | undefined>(
+    visibleSensorMarkerIds,
+  );
+  const visibleSensorMarkerIdSetRef = useRef<Set<string> | null>(
+    visibleSensorMarkerIds ? new Set(visibleSensorMarkerIds) : null,
+  );
+  const sensorMarkerBaseRotationYRef = useRef(0);
   const roadwayPointOverlayRef = useRef<THREE.Object3D | null>(null);
   const roadwayPointOverlayPathRef = useRef<string | undefined>(undefined);
   const roadwayPointWorldPositionsRef = useRef<THREE.Vector3[]>([]);
@@ -826,6 +1017,17 @@ export function HomeObjBackground3D({
   useEffect(() => {
     airflowLabelsRef.current = airflowLabels;
   }, [airflowLabels]);
+
+  useEffect(() => {
+    sensorMarkersRef.current = sensorMarkers;
+  }, [sensorMarkers]);
+
+  useEffect(() => {
+    visibleSensorMarkerIdsRef.current = visibleSensorMarkerIds;
+    visibleSensorMarkerIdSetRef.current = visibleSensorMarkerIds
+      ? new Set(visibleSensorMarkerIds)
+      : null;
+  }, [visibleSensorMarkerIds]);
 
   useEffect(() => {
     roadwayPointLabelsRef.current = roadwayPointLabels;
@@ -1006,6 +1208,134 @@ export function HomeObjBackground3D({
       }
     };
 
+    const updateSensorMarkerLabelPositions = () => {
+      const layer = sensorMarkerLabelLayerRef.current;
+      const markers = sensorMarkersRef.current;
+      const labelAnchors = sensorMarkerLabelAnchorsRef.current;
+      const markerNodes = sensorMarkerNodesRef.current;
+      const visibleIdSet = visibleSensorMarkerIdSetRef.current;
+      if (!layer || markers.length === 0) {
+        return;
+      }
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      const projectedItems: Array<{
+        marker: TunnelSensorMarker;
+        element: HTMLDivElement;
+        x: number;
+        y: number;
+        sequence: number;
+      }> = [];
+
+      for (const marker of markers) {
+        const el = sensorMarkerLabelElementsRef.current[marker.id];
+        const anchor = labelAnchors[marker.id];
+        const node = markerNodes[marker.id];
+        if (!el || !anchor || !node) continue;
+        if (visibleIdSet && !visibleIdSet.has(marker.id)) {
+          el.style.opacity = "0";
+          continue;
+        }
+        if (!node.visible) {
+          el.style.opacity = "0";
+          continue;
+        }
+
+        const world = anchor.getWorldPosition(new THREE.Vector3());
+        const projected = world.clone().project(camera);
+        const visible =
+          projected.z >= -1 &&
+          projected.z <= 1 &&
+          projected.x >= -1.05 &&
+          projected.x <= 1.05 &&
+          projected.y >= -1.05 &&
+          projected.y <= 1.05;
+
+        if (!visible) {
+          el.style.opacity = "0";
+          el.style.transform = "translate(-50%, -100%) scale(0.92)";
+          continue;
+        }
+
+        const x = (projected.x * 0.5 + 0.5) * width;
+        const y = (-projected.y * 0.5 + 0.5) * height;
+        const sequenceMatched = marker.id.match(/-(\d+)$/);
+        const sequence = sequenceMatched
+          ? Number.parseInt(sequenceMatched[1], 10)
+          : projectedItems.length + 1;
+
+        projectedItems.push({
+          marker,
+          element: el,
+          x,
+          y,
+          sequence: Number.isFinite(sequence) ? sequence : projectedItems.length + 1,
+        });
+      }
+
+      projectedItems.sort((a, b) => a.y - b.y || a.x - b.x);
+      const placed: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+      for (const item of projectedItems) {
+        const side = item.sequence % 2 === 0 ? 1 : -1;
+        const tier = Math.floor(((item.sequence - 1) % 12) / 2);
+        const baseOffsetX = side * (24 + (tier % 3) * 12);
+        const baseOffsetY = -SENSOR_LABEL_LEADER_OFFSET_PX - 8 - Math.floor(tier / 3) * 10;
+        let labelX = clamp(item.x + baseOffsetX, 40, width - 40);
+        let labelY = clamp(item.y + baseOffsetY, 30, height - 20);
+        let rect = {
+          left: labelX - SENSOR_LABEL_WIDTH_PX / 2,
+          right: labelX + SENSOR_LABEL_WIDTH_PX / 2,
+          top: labelY - SENSOR_LABEL_HEIGHT_PX,
+          bottom: labelY,
+        };
+
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          const overlaps = placed.some(
+            (placedRect) =>
+              rect.left < placedRect.right + 4 &&
+              rect.right > placedRect.left - 4 &&
+              rect.top < placedRect.bottom + 4 &&
+              rect.bottom > placedRect.top - 4,
+          );
+          if (!overlaps) break;
+
+          labelY = clamp(labelY - 10, 28, height - 20);
+          if (labelY <= 30 && attempt > 2) {
+            labelX = clamp(labelX + side * 14, 40, width - 40);
+          }
+          rect = {
+            left: labelX - SENSOR_LABEL_WIDTH_PX / 2,
+            right: labelX + SENSOR_LABEL_WIDTH_PX / 2,
+            top: labelY - SENSOR_LABEL_HEIGHT_PX,
+            bottom: labelY,
+          };
+        }
+
+        placed.push(rect);
+
+        const leaderDx = item.x - labelX;
+        const leaderDy = item.y - labelY;
+        const leaderLength = Math.max(
+          6,
+          Math.sqrt(leaderDx * leaderDx + leaderDy * leaderDy),
+        );
+        const leaderAngle = Math.atan2(leaderDy, leaderDx) * (180 / Math.PI);
+
+        item.element.style.left = `${labelX}px`;
+        item.element.style.top = `${labelY}px`;
+        item.element.style.opacity = "1";
+        item.element.style.transform = "translate(-50%, -100%) scale(1)";
+        item.element.style.setProperty("--sensor-leader-width", `${leaderLength}px`);
+        item.element.style.setProperty("--sensor-leader-angle", `${leaderAngle}deg`);
+        item.element.style.setProperty("--sensor-leader-color", item.marker.color ?? "#28e6d2");
+        item.element.style.setProperty(
+          "--sensor-leader-opacity",
+          leaderLength > 8 ? "0.72" : "0",
+        );
+      }
+    };
+
     const updateRoadwayPointLabelPositions = () => {
       const labels = resolvedRoadwayPointLabelsRef.current;
       const points = roadwayPointWorldPositionsRef.current;
@@ -1075,8 +1405,13 @@ export function HomeObjBackground3D({
         if (routeOverlayRef.current) {
           routeOverlayRef.current.rotation.y = modelRef.current.rotation.y;
         }
+        if (sensorMarkerGroupRef.current) {
+          sensorMarkerGroupRef.current.rotation.y =
+            modelRef.current.rotation.y - sensorMarkerBaseRotationYRef.current;
+        }
       }
       updateAirflowLabelPositions();
+      updateSensorMarkerLabelPositions();
       updateRoadwayPointLabelPositions();
       renderer.render(scene, camera);
       animationIdRef.current = requestAnimationFrame(animate);
@@ -1116,6 +1451,11 @@ export function HomeObjBackground3D({
       modelRef.current = null;
       modelBoundsRef.current = null;
       routeOverlayRef.current = null;
+      sensorMarkerGroupRef.current = null;
+      sensorMarkerLabelAnchorsRef.current = {};
+      sensorMarkerNodesRef.current = {};
+      sensorMarkerSnapCacheRef.current = {};
+      sensorMarkerBaseRotationYRef.current = 0;
       roadwayPointOverlayRef.current = null;
       roadwayPointOverlayPathRef.current = undefined;
       roadwayPointWorldPositionsRef.current = [];
@@ -1208,6 +1548,96 @@ export function HomeObjBackground3D({
       cancelled = true;
     };
   }, [modelLoaded, routeOverlayObjPath, routeOverlayColor, showRouteOverlay]);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    if (sensorMarkerGroupRef.current) {
+      scene.remove(sensorMarkerGroupRef.current);
+      disposeObject(sensorMarkerGroupRef.current);
+      sensorMarkerGroupRef.current = null;
+      sensorMarkerLabelAnchorsRef.current = {};
+      sensorMarkerNodesRef.current = {};
+      sensorMarkerBaseRotationYRef.current = 0;
+    }
+
+    if (
+      !modelLoaded ||
+      sensorMarkers.length === 0 ||
+      !modelBoundsRef.current ||
+      !modelRef.current
+    ) {
+      return;
+    }
+
+    const bounds = modelBoundsRef.current;
+    const boundsSize = bounds.getSize(new THREE.Vector3());
+    const markerSize = Math.max(boundsSize.length() * 0.0024, 150);
+    const surfaceSearchDistance = Math.max(boundsSize.length() * 0.42, markerSize * 24);
+    const markerGroup = new THREE.Group();
+    markerGroup.name = "tunnel-sensor-markers";
+    markerGroup.renderOrder = 24;
+
+    const nextLabelAnchors: Record<string, THREE.Object3D | undefined> = {};
+    const nextMarkerNodes: Record<string, THREE.Object3D | undefined> = {};
+    const visibleIdSet = visibleSensorMarkerIdSetRef.current;
+    for (const marker of sensorMarkers) {
+      const { root, labelAnchor } = createSensorMarkerNode(marker, markerSize);
+      const cachedSurfacePoint = sensorMarkerSnapCacheRef.current[marker.id];
+      const surfacePoint = cachedSurfacePoint
+        ? cachedSurfacePoint.clone()
+        : snapPointToModelSurface(
+          modelRef.current,
+          getLabelWorldPosition(bounds, marker.anchor, 0),
+          surfaceSearchDistance,
+        );
+      if (!cachedSurfacePoint) {
+        sensorMarkerSnapCacheRef.current[marker.id] = surfacePoint.clone();
+      }
+      surfacePoint.y += marker.lift ?? markerSize * 0.08;
+      root.position.copy(surfacePoint);
+      root.visible = visibleIdSet ? visibleIdSet.has(marker.id) : true;
+      markerGroup.add(root);
+      nextLabelAnchors[marker.id] = labelAnchor;
+      nextMarkerNodes[marker.id] = root;
+    }
+
+    sensorMarkerBaseRotationYRef.current = modelRef.current?.rotation.y ?? 0;
+    sensorMarkerLabelAnchorsRef.current = nextLabelAnchors;
+    sensorMarkerNodesRef.current = nextMarkerNodes;
+    scene.add(markerGroup);
+    sensorMarkerGroupRef.current = markerGroup;
+
+    return () => {
+      if (sceneRef.current && sensorMarkerGroupRef.current === markerGroup) {
+        sceneRef.current.remove(markerGroup);
+      }
+      disposeObject(markerGroup);
+      if (sensorMarkerGroupRef.current === markerGroup) {
+        sensorMarkerGroupRef.current = null;
+        sensorMarkerLabelAnchorsRef.current = {};
+        sensorMarkerNodesRef.current = {};
+        sensorMarkerBaseRotationYRef.current = 0;
+      }
+    };
+  }, [modelLoaded, sensorMarkers]);
+
+  useEffect(() => {
+    const visibleIdSet = visibleSensorMarkerIdSetRef.current;
+
+    Object.entries(sensorMarkerNodesRef.current).forEach(([id, node]) => {
+      if (node) {
+        node.visible = visibleIdSet ? visibleIdSet.has(id) : true;
+      }
+    });
+
+    Object.entries(sensorMarkerLabelElementsRef.current).forEach(([id, element]) => {
+      if (element && visibleIdSet && !visibleIdSet.has(id)) {
+        element.style.opacity = "0";
+      }
+    });
+  }, [visibleSensorMarkerIds]);
 
   useEffect(() => {
     const scene = sceneRef.current;
@@ -1521,6 +1951,103 @@ export function HomeObjBackground3D({
           }
         }}
       />
+
+      {sensorMarkers.length > 0 && (
+        <div
+          ref={sensorMarkerLabelLayerRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 4,
+          }}
+        >
+          {sensorMarkers.map((marker) => {
+            const markerColor = marker.color ?? "#28e6d2";
+            return (
+              <div
+                key={marker.id}
+                ref={(node) => {
+                  sensorMarkerLabelElementsRef.current[marker.id] = node;
+                }}
+                style={{
+                  position: "absolute",
+                  left: "-9999px",
+                  top: "-9999px",
+                  transform: "translate(-50%, -100%) scale(0.92)",
+                  opacity: 0,
+                  transition: "opacity 180ms ease, transform 180ms ease",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "5px 8px",
+                  borderRadius: 8,
+                  border: `1px solid ${marker.borderColor ?? markerColor}`,
+                  background:
+                    marker.background ??
+                    "linear-gradient(135deg, rgba(7, 20, 36, 0.9) 0%, rgba(13, 43, 67, 0.84) 100%)",
+                  boxShadow:
+                    "0 8px 18px rgba(2, 12, 25, 0.42), inset 0 1px 0 rgba(210, 245, 255, 0.18)",
+                  backdropFilter: "blur(3px)",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1,
+                  "--sensor-leader-width": "14px",
+                  "--sensor-leader-angle": "90deg",
+                  "--sensor-leader-color": markerColor,
+                  "--sensor-leader-opacity": "0",
+                } as CSSProperties}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: "100%",
+                    width: "var(--sensor-leader-width)",
+                    height: 1,
+                    transformOrigin: "0 50%",
+                    transform: "rotate(var(--sensor-leader-angle))",
+                    background:
+                      "linear-gradient(90deg, var(--sensor-leader-color) 0%, rgba(255,255,255,0.72) 100%)",
+                    boxShadow: "0 0 8px var(--sensor-leader-color)",
+                    opacity: "var(--sensor-leader-opacity)",
+                    pointerEvents: "none",
+                  }}
+                />
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: markerColor,
+                    boxShadow: `0 0 10px ${markerColor}`,
+                  }}
+                />
+                <span
+                  style={{
+                    color: "#f1fbff",
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
+                >
+                  {marker.label}
+                </span>
+                {marker.count != null && marker.count > 1 && (
+                  <span
+                    style={{
+                      color: markerColor,
+                      fontSize: 12,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {marker.count}
+                    {marker.unit ?? "台"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {airflowLabels.length > 0 && (
         <div
